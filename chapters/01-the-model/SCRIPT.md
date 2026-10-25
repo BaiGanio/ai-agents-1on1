@@ -120,5 +120,5 @@ a folder it has never seen.
 
 **Proof.** The model made something up, on camera.
 
-**The handoff.** "It cannot look. Next video we tell it who it is — and the video after that,
-we give it hands."
+**The handoff.** "It cannot look. Next video we tell it who it is. Then we give it a
+page, and then hands."

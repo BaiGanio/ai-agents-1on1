@@ -5,6 +5,7 @@
 
 **Video:** about 15 minutes.
 **Code at the end of this chapter:** `git checkout 05-TODO-tag`
+**New words:** TODO — link each to [`GLOSSARY.md`](../../docs/GLOSSARY.md)
 
 ## What we solve
 
@@ -36,6 +37,16 @@ TODO
 ## What differs between the two
 
 TODO: or "nothing worth a sentence", which is also an answer.
+
+## When it breaks
+
+| What you see | What it means | What to do |
+|---|---|---|
+| TODO: copied from a real run | | |
+
+## Try it yourself
+
+TODO: one small task, 10-20 minutes, that changes the code.
 
 ## Done when
 

@@ -29,6 +29,8 @@ One row per chapter. Update it when a state changes. This is the first file to o
 - Node 26.12.0 runs `ts/src/main.ts` directly. No build step, no dependencies.
 - .NET 10.0.401. `dotnet run` in `csharp/` answers against the same endpoint.
 - Both stacks answered "In five words, what is an AI agent?" correctly and differently.
+- `scripts/check.sh` passed all six checks in 8.9 s, Ollama warm. With `MODEL=nope:1b` it
+  failed on the model line and exited 1.
 
 ## Decisions
 
@@ -45,11 +47,17 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 9 | One shared `web/index.html`. Both stacks serve it, same `/chat` endpoint. No dependencies. | 2026-10-25 | keeps "same behaviour in both". The HTML is not the lesson. |
 | 10 | `CLAUDE.md` is committed | 2026-10-25 | a course about agents can show how its author works with one |
 | 11 | Agentic workflows as chapter 08, after guardrails. Old 08-10 move to 09-11. | 2026-10-25 | the job market asks for it. It needs the loop and the guardrails first. |
+| 12 | Juniors are in the audience. Added `BASICS.md`, `GLOSSARY.md`, `scripts/check.sh`, and two chapter sections: "When it breaks", "Try it yourself". | 2026-10-25 | juniors stop at setup, at new words, and at the first error they cannot read |
+| 13 | Chapters 01-08 are two videos each, one per language | 2026-10-25 | two languages in one video is too much for a junior. Closes old open item 2. |
+
+## To do
+
+- `chapters/01-the-model/SCRIPT.md` is one script for both languages. Split it into a
+  TypeScript script (steps 0, 1, 2, 4) and a C# script (steps 0, 1, 3, 4).
 
 ## Open
 
 1. Tags or exported folders per chapter — decided after we see a viewer trip on `git checkout`.
-2. One video per chapter, or one per language — decided when we see how long chapter 04 runs.
-3. Whether chapter 11 (frameworks) exists at all.
-4. C# server for chapter 03: `HttpListener` (no project change) or a minimal API
+2. Whether chapter 11 (frameworks) exists at all.
+3. C# server for chapter 03: `HttpListener` (no project change) or a minimal API
    (`Microsoft.NET.Sdk.Web`, still no NuGet). Decided when we write the chapter.

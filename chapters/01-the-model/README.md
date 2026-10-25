@@ -3,6 +3,11 @@
 **Video:** about 12 minutes.
 **Code at the end of this chapter:** `git checkout ch01-model`
 **Files:** [`ts/src/main.ts`](../../ts/src/main.ts) · [`csharp/Program.cs`](../../csharp/Program.cs)
+**New words:** [model](../../docs/GLOSSARY.md#model) ·
+[endpoint](../../docs/GLOSSARY.md#endpoint) · [local model](../../docs/GLOSSARY.md#local-model) · [Ollama](../../docs/GLOSSARY.md#ollama) ·
+[message](../../docs/GLOSSARY.md#message) · [role](../../docs/GLOSSARY.md#role) ·
+[token](../../docs/GLOSSARY.md#token) · [streaming](../../docs/GLOSSARY.md#streaming)
+**New to HTTP or JSON?** Read [`docs/BASICS.md`](../../docs/BASICS.md) first.
 
 ## What we solve
 
@@ -133,6 +138,28 @@ Almost nothing, and that is the point of the chapter.
 
 The C# side types the wire. The TypeScript side describes it and hopes. Chapter 10 says which
 one that helps, and when.
+
+## When it breaks
+
+| What you see | What it means | What to do |
+|---|---|---|
+| `ECONNREFUSED` / `Connection refused` | the server is not running | `ollama serve` |
+| `model "..." not found` | you did not pull it | `ollama pull gemma4:e4b` |
+| first answer takes 30 seconds | the model is loading into RAM | wait. The next one is fast. |
+| C# answer is `null` | the JSON names did not match | keep `PropertyNamingPolicy = CamelCase` |
+
+More in [`docs/SETUP.md`](../../docs/SETUP.md#when-it-does-not-work).
+
+## Try it yourself
+
+The model remembers nothing. Prove it, then fix it by hand.
+
+1. Ask: `"My name is Sam. Say hi."` Then, in a new run, ask: `"What is my name?"`
+   It does not know.
+2. Change the code so `messages` holds three items: your first question, the model's answer
+   (role `assistant`), and the second question. Run it. Now it knows.
+
+You just built short memory. Chapter 06 does it properly.
 
 ## Done when
 

@@ -3,8 +3,11 @@
 Build an AI agent from nothing. No framework. No cloud. No API key.
 The model runs on your laptop. You write about 300 lines of code, in **TypeScript** and in **C#**.
 
-Eleven short videos. Most build one component each. One gives the agent a chat page.
-One shows agentic workflows: when your code should pick the path, and when the model should. The code in this repo is the finished code of each video.
+Twelve chapters. Most build one part of the agent, in two short videos: one TypeScript, one
+C#. Watch the language you use. One chapter gives the agent a chat page. One shows agentic
+workflows: when your code should pick the path, and when the model should.
+
+The code in this repo is the finished code of each chapter.
 
 ## An agent is six parts
 
@@ -36,11 +39,14 @@ agent> src/main.ts, line 14. It calls server.listen on the port from PORT.
 
 ## Start here
 
-1. [`docs/SETUP.md`](docs/SETUP.md) — install Ollama, pull the model, run both stacks
-2. [`chapters/`](chapters/) — the lessons, in order
-3. [`docs/PLAN.md`](docs/PLAN.md) — what the course is and why it is shaped this way
+1. New to HTTP or JSON? Read [`docs/BASICS.md`](docs/BASICS.md) first. Ten minutes.
+2. [`docs/SETUP.md`](docs/SETUP.md) — install Ollama, pull the model, run both stacks
+3. Run `./scripts/check.sh`. It says what is missing, and how to fix it.
+4. [`chapters/`](chapters/) — the lessons, in order
+5. [`docs/PLAN.md`](docs/PLAN.md) — what the course is and why it is shaped this way
+6. A word you do not know? [`docs/GLOSSARY.md`](docs/GLOSSARY.md)
 
-Each chapter ends on a git tag. To get the code as it stood at the end of video 5:
+Each chapter ends on a git tag. To get the code as it stood at the end of chapter 05:
 
 ```bash
 git checkout ch05-loop

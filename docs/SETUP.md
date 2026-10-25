@@ -295,6 +295,13 @@ export MODEL=qwen3.5:4b
 ## 8. One command to check everything
 
 ```bash
+./scripts/check.sh
+```
+
+It checks Node, .NET, the server, the model, and that the model can call tools. Each failed
+line says how to fix it. To check the two stacks by hand instead:
+
+```bash
 curl -s http://localhost:11434/api/version && \
   node ts/src/main.ts "Say ok." && \
   dotnet run --project csharp -- "Say ok."

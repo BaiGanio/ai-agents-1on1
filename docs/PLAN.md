@@ -4,11 +4,14 @@ One decision per line. We follow this file. When something changes, we change th
 
 ## What the course is
 
-A YouTube series plus this repo. Eleven videos. Most build **one component** of an AI agent. One (03) gives it a chat page.
+A YouTube series plus this repo. Twelve chapters. Most build **one component** of an AI agent.
+One (03) gives it a chat page.
 One (08) shows agentic workflows — the topic most job ads now name.
 Two stacks, same behaviour: **TypeScript** and **C#**. The model runs **on your machine**.
 
-Audience: working developers who have never built an agent. Self-study.
+Audience: junior and working developers who have never built an agent. Self-study. They can
+use a terminal and have written a small program. HTTP and JSON are in `docs/BASICS.md`, new
+words in `docs/GLOSSARY.md`, and `scripts/check.sh` tells them what is missing.
 
 This repo is the **simple sibling** of [`BaiGanio/agent-ready-payments`](https://github.com/BaiGanio/agent-ready-payments).
 That one goes deep: Postgres, SQL Server, MCP, EF Core, refunds, human approval. This one has
@@ -29,9 +32,11 @@ Three tools, and that is all:
 Why this one. No API key. No network. No fake server. It works offline, like the model does.
 Every viewer has a folder of files. The tools are 10 lines each in both languages.
 
-## The eleven videos
+## The twelve chapters
 
-Target: 12-15 minutes. Two of them may run to 20.
+Target: 12-15 minutes per chapter. Two of them may run to 20.
+Chapters 01-08 are two videos each, one per language (see `STYLE.md`). Minutes below are per
+video.
 "New code" is the amount you type on camera. If a chapter grows past it, we split the chapter.
 
 | # | Chapter | What the viewer learns | New code | Minutes |
@@ -88,6 +93,8 @@ ai-agents-1on1/
     PROGRESS.md               the board: one row per chapter
     SETUP.md                  install Ollama, pull the model, run both stacks
     STYLE.md                  how we write the docs and the code
+    BASICS.md                 HTTP and JSON, for viewers new to both
+    GLOSSARY.md               every new word, in one line
   chapters/NN-name/
     README.md                 the lesson: what we solve, example, why it matters
     SCRIPT.md                 the camera script: Goal / Why / Do / Proof, per step
@@ -96,7 +103,7 @@ ai-agents-1on1/
   csharp/                     one C# project, grows per chapter
   web/index.html              the chat page. One file, no framework. Both stacks serve it.
   sample-repo/                the folder the Librarian reads
-  scripts/                    ollama.sh, llama.sh
+  scripts/                    check.sh, ollama.sh, llama.sh
 ```
 
 `ts` and `csharp` do the same thing in every chapter: same tools, same prompt, same output.
@@ -108,9 +115,7 @@ Two choices we make later, when we see the code. Nothing in this plan depends on
 
 1. **Tags or folders.** We start with tags. If viewers trip on `git checkout`, we export each tag
    to a folder. The layout above survives either way.
-2. **One video or two per chapter.** Each chapter README keeps TypeScript and C# in separate
-   sections, so splitting a video later costs nothing.
-3. **Chapter 11, frameworks.** Simple wins. If it adds noise, it stays a text appendix.
+2. **Chapter 11, frameworks.** Simple wins. If it adds noise, it stays a text appendix.
 
 ## Order of work
 
