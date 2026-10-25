@@ -9,7 +9,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 |---|---|---|---|---|---|---|---|
 | 00 | the agent we build | — | n/a | n/a | — | — | — |
 | 01 | the model | ✅ | ✅ | ✅ | ✅ | — | `ch01-model` *(not final)* |
-| 01.A | thinking | — | — | — | — | — | — |
+| 01.A | thinking | — | ✅ | ✅ | — | — | — |
 | 02 | the prompt | — | — | — | — | — | — |
 | 03 | the chat page | — | — | — | — | — | — |
 | 04 | tools by hand | — | — | — | — | — | — |
@@ -31,6 +31,9 @@ One row per chapter. Update it when a state changes. This is the first file to o
 - `gemma4:e2b` (the default from decision 14) returns a correct `list_files` tool call in
   2.8 s warm, 6.6 s cold. 197 and 348 output tokens, because it thinks first. Both stacks
   answer with it. Chapter 01's examples were rerun on it.
+- Chapter 01.A code, both stacks, on `gemma4:e2b`: `THINK=on` streams grey notes, then the
+  answer, in 6.1 s. `THINK=off` answers in 0.5 s. `THINK` unset behaves like on for e2b, and
+  works on `phi4-mini:3.8b`, which cannot think. `THINK=on` on phi4-mini returns a 400.
 - RAM per model and context: see `docs/MODELS.md`. Measured with `scripts/measure.ts` and, for
   Ornith, llama.cpp 0.7.0. The `gemma4:26b` run was stopped before 64K.
 - Node 26.12.0 runs `ts/src/main.ts` directly. No build step, no dependencies.

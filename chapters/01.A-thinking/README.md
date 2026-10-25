@@ -5,7 +5,9 @@
 
 **Video:** about 12 minutes.
 **Code:** the chapter 01 code, plus about 30 new lines. Where it lives is not final.
-**New words:** TODO — link each to [`GLOSSARY.md`](../../docs/GLOSSARY.md)
+**Files:** [`ts/src/main.ts`](../../ts/src/main.ts) · [`csharp/Program.cs`](../../csharp/Program.cs)
+**New words:** [thinking](../../docs/GLOSSARY.md#thinking) ·
+[streaming](../../docs/GLOSSARY.md#streaming)
 
 ## What we solve
 
@@ -17,7 +19,24 @@ You decide which one your agent uses.
 
 ## Simple example
 
-TODO: one concrete thing the viewer sees happen on screen.
+Thinking on. The grey notes stream first, then the answer. The end of a real run:
+
+```bash
+cd ts && THINK=on node src/main.ts "In five words, what is an AI agent?"
+# ... "Perceives, reasons, acts, achieves goals." (Five words. Describes the core mechanism.)
+#
+# Perceives, reasons, acts, achieves goals.
+```
+
+Thinking off. No notes, and the answer is back in half a second instead of six:
+
+```bash
+cd ts && THINK=off node src/main.ts "In five words, what is an AI agent?"
+# Perceives, reasons, acts autonomously.
+```
+
+`THINK` unset sends nothing, and the model does what it ships with. `gemma4:e2b` ships with
+thinking on.
 
 ## Everyday picture
 
@@ -46,8 +65,7 @@ TODO: or "nothing worth a sentence", which is also an answer.
 
 | What you see | What it means | What to do |
 |---|---|---|
-| TODO: copied from a real run | | |
-
+| `400 Bad Request: {"error":"\"phi4-mini:3.8b\" does not support thinking"}` | you set `THINK=on` for a model that cannot think | leave `THINK` unset, or use `gemma4:e2b` |
 ## Try it yourself
 
 TODO: one small task, 10-20 minutes, that changes the code.
