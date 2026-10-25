@@ -1,10 +1,10 @@
-# Chapter 10 — Side by side
+# Chapter 11 — Side by side
 
 > **Not written yet.** This is the skeleton. See [`docs/PLAN.md`](../../docs/PLAN.md) for where
 > this chapter sits, and [`docs/STYLE.md`](../../docs/STYLE.md) for how to fill it in.
 
 **Video:** about 20 minutes.
-**Code at the end of this chapter:** `git checkout 10-TODO-tag`
+**Code at the end of this chapter:** `git checkout 11-TODO-tag`
 **New words:** TODO — link each to [`GLOSSARY.md`](../../docs/GLOSSARY.md)
 
 ## What we solve

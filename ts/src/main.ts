@@ -4,7 +4,7 @@
 // It sends back one more message. There is no magic, no SDK, and no state on the server.
 
 const OLLAMA_URL = process.env.OLLAMA_URL ?? "http://localhost:11434";
-const MODEL = process.env.MODEL ?? "gemma4:e4b";
+const MODEL = process.env.MODEL ?? "gemma4:e2b";
 
 type Message = { role: "system" | "user" | "assistant"; content: string };
 

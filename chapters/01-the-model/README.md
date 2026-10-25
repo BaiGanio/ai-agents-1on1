@@ -4,10 +4,11 @@
 **Code at the end of this chapter:** `git checkout ch01-model`
 **Files:** [`ts/src/main.ts`](../../ts/src/main.ts) · [`csharp/Program.cs`](../../csharp/Program.cs)
 **New words:** [model](../../docs/GLOSSARY.md#model) ·
-[endpoint](../../docs/GLOSSARY.md#endpoint) · [local model](../../docs/GLOSSARY.md#local-model) · [Ollama](../../docs/GLOSSARY.md#ollama) ·
+[endpoint](../../docs/GLOSSARY.md#endpoint) · [local model](../../docs/GLOSSARY.md#local-model) ·
+[Ollama](../../docs/GLOSSARY.md#ollama) ·
 [message](../../docs/GLOSSARY.md#message) · [role](../../docs/GLOSSARY.md#role) ·
 [token](../../docs/GLOSSARY.md#token) · [streaming](../../docs/GLOSSARY.md#streaming)
-**New to HTTP or JSON?** Read [`docs/BASICS.md`](../../docs/BASICS.md) first.
+**New to HTTP or JSON?** Read [`BASICS.md`](BASICS.md) first.
 
 ## What we solve
 
@@ -21,12 +22,12 @@ print what comes back. Forty lines, no library.
 
 ```bash
 cd ts && node src/main.ts "In five words, what is an AI agent?"
-# Autonomous software performing tasks for you.
+# Perceives, reasons, takes action.
 ```
 
 ```bash
 cd csharp && dotnet run -- "In five words, what is an AI agent?"
-# Autonomous entity that thinks, acts.
+# Perceives, reasons, acts autonomously.
 ```
 
 Two stacks, same endpoint, same model, slightly different wording. The wording changes every
@@ -50,7 +51,7 @@ flowchart TD
         APP["chat()<br/>POST /api/chat"]
     end
     APP -->|"messages: a list"| OLLAMA["ollama serve<br/>localhost:11434"]
-    OLLAMA -->|"loads"| M["gemma4:e4b<br/>9.6 GB in RAM"]
+    OLLAMA -->|"loads"| M["gemma4:e2b<br/>about 8 GB in RAM"]
     OLLAMA -->|"message: one reply"| APP
     APP --> OUT["printed to the terminal"]
 ```
@@ -62,22 +63,30 @@ This is the whole protocol. Everything else in this course is more of this.
 ```http
 POST http://localhost:11434/api/chat
 {
-  "model": "gemma4:e4b",
+  "model": "gemma4:e2b",
   "stream": false,
   "messages": [ { "role": "user", "content": "In five words, what is an AI agent?" } ]
 }
 ```
 
-And the whole answer:
+And the answer, cut short where it says `...`:
 
 ```json
 {
-  "message": { "role": "assistant", "content": "Autonomous software performing tasks for you." },
+  "message": {
+    "role": "assistant",
+    "content": "Perceives, decides, acts, achieves goals.",
+    "thinking": "1.  **Analyze the Request:** The user wants a definition ..."
+  },
   "done": true,
-  "eval_count": 15,
-  "total_duration": 5587467417
+  "eval_count": 387,
+  "total_duration": 6023645084
 }
 ```
+
+Look at `thinking`. Before it answered, the model wrote about 380
+[tokens](../../docs/GLOSSARY.md#token) of notes to itself. That is why five words took six seconds. Our code prints only `content`,
+so you never see the notes — but you wait for them.
 
 Three fields matter.
 
@@ -119,7 +128,7 @@ dotnet run -- "your question here"
 Two things in the C# file are not obvious:
 
 - **`Timeout = TimeSpan.FromMinutes(5)`.** The default is 100 seconds. A local model loading
-  9.6 GB into RAM can beat that on the first call, and the error you get looks like a network
+  gigabytes into RAM can beat that on the first call, and the error you get looks like a network
   fault instead of a slow disk.
 - **`PropertyNamingPolicy = CamelCase`.** Ollama's JSON is lower case, C# properties are not.
   Say it once here, and never think about it again.
@@ -136,7 +145,7 @@ Almost nothing, and that is the point of the chapter.
 | build step | none | `dotnet run` builds, first run is slow |
 | timeout | none by default | 100 s by default — must be raised |
 
-The C# side types the wire. The TypeScript side describes it and hopes. Chapter 10 says which
+The C# side types the wire. The TypeScript side describes it and hopes. Chapter 11 says which
 one that helps, and when.
 
 ## When it breaks
@@ -144,8 +153,8 @@ one that helps, and when.
 | What you see | What it means | What to do |
 |---|---|---|
 | `ECONNREFUSED` / `Connection refused` | the server is not running | `ollama serve` |
-| `model "..." not found` | you did not pull it | `ollama pull gemma4:e4b` |
-| first answer takes 30 seconds | the model is loading into RAM | wait. The next one is fast. |
+| `model "..." not found` | you did not pull it | `ollama pull gemma4:e2b` |
+| the first answer is much slower | the model is loading into RAM | wait. The next one is fast. |
 | C# answer is `null` | the JSON names did not match | keep `PropertyNamingPolicy = CamelCase` |
 
 More in [`docs/SETUP.md`](../../docs/SETUP.md#when-it-does-not-work).

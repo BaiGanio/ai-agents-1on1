@@ -3,7 +3,7 @@
 Build an AI agent from nothing. No framework. No cloud. No API key.
 The model runs on your laptop. You write about 300 lines of code, in **TypeScript** and in **C#**.
 
-Twelve chapters. Most build one part of the agent, in two short videos: one TypeScript, one
+Thirteen chapters. Most build one part of the agent, in two short videos: one TypeScript, one
 C#. Watch the language you use. One chapter gives the agent a chat page. One shows agentic
 workflows: when your code should pick the path, and when the model should.
 
@@ -39,12 +39,14 @@ agent> src/main.ts, line 14. It calls server.listen on the port from PORT.
 
 ## Start here
 
-1. New to HTTP or JSON? Read [`docs/BASICS.md`](docs/BASICS.md) first. Ten minutes.
+1. New to coding for the web? Each chapter has a `BASICS.md` with what you need first.
+   Chapter 01's covers HTTP and JSON.
 2. [`docs/SETUP.md`](docs/SETUP.md) — install Ollama, pull the model, run both stacks
 3. Run `./scripts/check.sh`. It says what is missing, and how to fix it.
 4. [`chapters/`](chapters/) — the lessons, in order
 5. [`docs/PLAN.md`](docs/PLAN.md) — what the course is and why it is shaped this way
 6. A word you do not know? [`docs/GLOSSARY.md`](docs/GLOSSARY.md)
+7. Which model for your machine? [`docs/MODELS.md`](docs/MODELS.md)
 
 Each chapter ends on a git tag. To get the code as it stood at the end of chapter 05:
 
@@ -66,8 +68,9 @@ git checkout ch05-loop
 | 07 | [guardrails](chapters/07-guardrails/) | stop it looping forever or doing damage |
 | 08 | [workflows](chapters/08-workflows/) | agentic workflows: chain, router, checker. Workflow or agent? |
 | 09 | [llama.cpp](chapters/09-llama-cpp/) | swap the runner and tune it |
-| 10 | [side by side](chapters/10-side-by-side/) | TypeScript against C# |
-| 11 | [frameworks](chapters/11-frameworks/) | the same agent in a framework *(optional)* |
+| 10 | [choosing a model](chapters/10-choosing-a-model/) | five models side by side: RAM, speed, vision |
+| 11 | [side by side](chapters/11-side-by-side/) | TypeScript against C# |
+| 12 | [frameworks](chapters/12-frameworks/) | the same agent in a framework *(optional)* |
 
 ## Going deeper
 
@@ -79,5 +82,5 @@ Its lab 09 is this course's chapter 05, with everything a payment platform adds.
 ## You will need
 
 - **Node 24+** and the **.NET 10 SDK**
-- **Ollama**, and about 10 GB of disk for the model
-- **16 GB of RAM.** Less works with a smaller model — `docs/SETUP.md` says which.
+- **Ollama**, and about 8 GB of disk for the model
+- **16 GB of RAM.** [`docs/MODELS.md`](docs/MODELS.md) says which model fits your machine.

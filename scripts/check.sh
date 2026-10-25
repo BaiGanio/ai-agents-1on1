@@ -6,7 +6,7 @@
 # not fix one, run again, and meet the next.
 
 OLLAMA_URL="${OLLAMA_URL:-http://localhost:11434}"
-MODEL="${MODEL:-gemma4:e4b}"
+MODEL="${MODEL:-gemma4:e2b}"
 failed=0
 
 ok()   { printf '  ok    %s\n' "$1"; }
@@ -37,8 +37,8 @@ elif ! version=$(curl -s -m 3 "$OLLAMA_URL/api/version"); then
 else
   ok "ollama server $version"
 
-  # `ollama list` prints "gemma4:e4b  <id>  9.6 GB ...". Match the name and a space, so that
-  # gemma4:e4b does not also match gemma4:e4b-something.
+  # `ollama list` prints "gemma4:e2b  <id>  7.5 GB ...". Match the name and a space, so that
+  # gemma4:e2b does not also match gemma4:e2b-something.
   if ollama list | grep -q "^$MODEL "; then
     ok "model $MODEL is pulled"
 
@@ -55,7 +55,7 @@ else
     }')
     if echo "$reply" | grep -q '"tool_calls"'; then ok "$MODEL can call tools"
     else fail "$MODEL answered in prose, not with a tool call" \
-              "use gemma4:e4b, or read chapter 04 (tools by hand)"; fi
+              "use gemma4:e2b, or read chapter 04 (tools by hand)"; fi
   else
     fail "model $MODEL is not pulled" "ollama pull $MODEL"
   fi

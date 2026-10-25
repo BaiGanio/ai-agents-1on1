@@ -9,8 +9,10 @@ the viewer's own machine. No framework, no cloud, no API key. The agent is the R
 2. `docs/PLAN.md` — the chapters, and the line and minute budget of each.
 3. `docs/STYLE.md` — how docs and code are written. Follow it exactly.
 
-The audience includes juniors. `docs/BASICS.md` (HTTP and JSON) and `docs/GLOSSARY.md` (every
-new word) exist for them. A new word goes in the glossary before a chapter uses it.
+The audience includes juniors. Each chapter has a `BASICS.md` with what a junior must know
+before it (chapter 01: HTTP and JSON). `docs/GLOSSARY.md` has every new word. A new word goes
+in the glossary before a chapter uses it. Basics go in the chapter that needs them, never in
+one big shared file.
 
 If a request goes against `PLAN.md` or a decision in `PROGRESS.md`, say so before you start.
 Change the file only when the user agrees.
@@ -24,7 +26,8 @@ cd ts && node src/main.ts "your question"      # Node 24+, no build step
 cd csharp && dotnet run -- "your question"     # .NET 10
 ```
 
-`OLLAMA_URL` and `MODEL` override the defaults (`http://localhost:11434`, `gemma4:e4b`).
+`OLLAMA_URL` and `MODEL` override the defaults (`http://localhost:11434`, `gemma4:e2b`).
+Which model fits which machine: `docs/MODELS.md`.
 More in `docs/SETUP.md`.
 
 ## Rules that are easy to break
@@ -50,8 +53,8 @@ More in `docs/SETUP.md`.
 ## When a chapter changes
 
 1. Update the code in both stacks and run both.
-2. Fill the chapter's `README.md`, `QA.md`, and one script per language, in the shape
-   `STYLE.md` gives. Add new words to `docs/GLOSSARY.md`.
+2. Fill the chapter's `README.md`, `BASICS.md`, `QA.md`, and one script per language,
+   in the shape `STYLE.md` gives. Add new words to `docs/GLOSSARY.md`.
 3. Update its row in `docs/PROGRESS.md`. Add a row to Decisions for any new choice.
 4. Renumbering a chapter touches the folder, its headings, its tag, and every "chapter NN" in
    docs and code comments. Grep for all of them.

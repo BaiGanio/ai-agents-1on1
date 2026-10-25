@@ -1,6 +1,6 @@
-# Basics: HTTP and JSON
+# Chapter 01 — basics: HTTP and JSON
 
-Read this before chapter 01 if HTTP or JSON is new to you. It takes ten minutes.
+Read this before the chapter if HTTP or JSON is new to you. It takes ten minutes.
 The whole course talks to the model in these two things, and nothing else.
 
 ## HTTP: a note and a reply
@@ -14,7 +14,7 @@ A request has four parts:
 | method | `GET` or `POST` | `GET` asks for something. `POST` sends something. |
 | URL | `http://localhost:11434/api/chat` | where to send it |
 | headers | `content-type: application/json` | notes about the body |
-| body | `{"model": "gemma4:e4b", ...}` | the data. `GET` has none. |
+| body | `{"model": "gemma4:e2b", ...}` | the data. `GET` has none. |
 
 A response has a **status code** and a **body**:
 
@@ -44,7 +44,7 @@ JSON is how the request body and the response body hold data.
 
 ```json
 {
-  "model": "gemma4:e4b",
+  "model": "gemma4:e2b",
   "stream": false,
   "messages": [
     { "role": "user", "content": "Hello" }
@@ -56,7 +56,7 @@ JSON is how the request body and the response body hold data.
 |---|---|---|
 | `{ }` | an **object**: names and values | `{"role": "user"}` |
 | `[ ]` | an **array**: a list | `[1, 2, 3]` |
-| `"..."` | a string | `"gemma4:e4b"` |
+| `"..."` | a string | `"gemma4:e2b"` |
 | `true` / `false` | a boolean | `false` |
 | `15` | a number | `15` |
 
@@ -69,7 +69,7 @@ This is the request chapter 01 sends. Now you can read every part of it:
 
 ```bash
 curl http://localhost:11434/api/chat -d '{
-  "model": "gemma4:e4b",
+  "model": "gemma4:e2b",
   "stream": false,
   "messages": [{"role": "user", "content": "In five words, what is an AI agent?"}]
 }'
@@ -78,4 +78,4 @@ curl http://localhost:11434/api/chat -d '{
 `-d` means "send this body", and it makes the method `POST`. The reply is JSON too.
 Chapter 01 takes it apart, field by field.
 
-New words go in [`GLOSSARY.md`](GLOSSARY.md).
+New words are in [`GLOSSARY.md`](../../docs/GLOSSARY.md).

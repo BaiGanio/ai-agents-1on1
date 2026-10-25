@@ -22,11 +22,11 @@ agent has, which is also why it fills up — chapter 06.
 
 </details>
 
-**Q3.** Your first call takes 28 seconds. The second takes 1 second. Why?
+**Q3.** Your first call takes 7 seconds. The same call again takes 3. Why?
 
 <details><summary>A</summary>
 
-The first call loads the model into RAM — 9.6 GB off the disk. After that it is resident and
+The first call loads the model into RAM — 7.5 GB off the disk. After that it is resident and
 answers fast. This is why the C# side raises `HttpClient.Timeout`: the 100-second default can
 be beaten by a cold load on a slow disk, and the error then looks like a network fault.
 

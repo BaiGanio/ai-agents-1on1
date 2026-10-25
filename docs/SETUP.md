@@ -96,14 +96,14 @@ A loaded model sits in RAM. See what is loaded:
 
 ```bash
 ollama ps
-# NAME         ID   SIZE   PROCESSOR   CONTEXT   UNTIL
-# gemma4:e4b   ...  11 GB  100% GPU    8192      4 minutes from now
+# NAME          ID              SIZE      PROCESSOR    CONTEXT    RUNNER    UNTIL
+# gemma4:e2b    45d11505b91d    7.4 GB    100% GPU     131072     mlx       4 minutes from now
 ```
 
 An empty table means nothing is loaded. Push one out now instead of waiting for the timeout:
 
 ```bash
-ollama stop gemma4:e4b
+ollama stop gemma4:e2b
 ```
 
 `ollama stop` unloads a **model**. It does not stop the **server**. Different things.
@@ -121,26 +121,27 @@ tail -f ~/.ollama/logs/server.log
 ## 3. Pull the model
 
 ```bash
-ollama pull gemma4:e4b      # 9.6 GB — the default for this course
+ollama pull gemma4:e2b      # 7.5 GB — the default for this course
 ```
 
-**Under 16 GB of RAM?** Use the small one:
+**Not sure it fits your machine?** [`MODELS.md`](MODELS.md) has a table: each model, each
+context size, and the RAM it needs. Pick a bigger one there if you have the RAM:
 
 ```bash
-ollama pull qwen3.5:4b      # 3.4 GB
+ollama pull gemma4:e4b      # 9.6 GB — a bit smarter, a bit slower
 ```
 
 Then tell the code to use it. Both stacks read this variable:
 
 ```bash
-export MODEL=qwen3.5:4b
+export MODEL=gemma4:e4b
 ```
 
 See what you have, and remove one you do not want:
 
 ```bash
 ollama list
-ollama rm qwen3.5:4b
+ollama rm gemma4:e4b
 ```
 
 ---
@@ -152,7 +153,7 @@ Test it **before** you start.
 
 ```bash
 curl -s http://localhost:11434/api/chat -d '{
-  "model": "gemma4:e4b",
+  "model": "gemma4:e2b",
   "stream": false,
   "messages": [{"role":"user","content":"List the files in the current folder."}],
   "tools": [{"type":"function","function":{
@@ -276,18 +277,18 @@ Both stacks read the same two environment variables. Neither is required.
 | Variable | Default | What it is |
 |---|---|---|
 | `OLLAMA_URL` | `http://localhost:11434` | where the model server listens |
-| `MODEL` | `gemma4:e4b` | the model to use |
+| `MODEL` | `gemma4:e2b` | the model to use |
 
 For one command only:
 
 ```bash
-MODEL=qwen3.5:4b node src/main.ts "hello"
+MODEL=gemma4:e4b node src/main.ts "hello"
 ```
 
 For the whole terminal:
 
 ```bash
-export MODEL=qwen3.5:4b
+export MODEL=gemma4:e4b
 ```
 
 ---
@@ -317,10 +318,10 @@ Three answers means you are ready for chapter 01.
 |---|---|---|
 | `ECONNREFUSED` / `Connection refused` | the server is not running | `ollama serve` |
 | `address already in use` | it is already running | nothing. Or `pkill ollama` to restart it. |
-| `model "..." not found` | you did not pull it | `ollama pull gemma4:e4b` |
+| `model "..." not found` | you did not pull it | `ollama pull gemma4:e2b` |
 | first answer takes 30 seconds | the model is loading into RAM | wait. The next one is fast. |
-| the whole Mac goes slow | the model does not fit in RAM | `ollama stop <model>`, then use `qwen3.5:4b` |
+| the whole Mac goes slow | the model does not fit in RAM | `ollama stop <model>`, then pick a smaller one in [`MODELS.md`](MODELS.md) |
 | `Unknown option: --` in dotnet | you dropped the `--` | `dotnet run -- "your words"` |
 | TypeScript error about `process` | `@types/node` is missing | `npm install -D @types/node` |
 | C# answer is `null` | the JSON names did not match | keep `PropertyNamingPolicy = CamelCase` |
-| prose where you expected `tool_calls` | that model cannot call tools | use `gemma4:e4b`, or see chapter 04 |
+| prose where you expected `tool_calls` | that model cannot call tools | use `gemma4:e2b`, or see chapter 04 |

@@ -41,13 +41,14 @@ something clever, because there is no library yet.
 
 ```bash
 curl -s http://localhost:11434/api/chat -d '{
-  "model": "gemma4:e4b",
+  "model": "gemma4:e2b",
   "stream": false,
   "messages": [{"role":"user","content":"In five words, what is an AI agent?"}]
 }' | python3 -m json.tool
 ```
 
 Point at three things in the output and nothing else: `message`, `done`, `eval_count`.
+Then point at `thinking`: the model wrote notes to itself first, and that is the wait.
 Then run the same command twice and let the viewer see the wording change.
 
 **Proof.** Two different answers to the same question, on screen.

@@ -4,14 +4,16 @@ One decision per line. We follow this file. When something changes, we change th
 
 ## What the course is
 
-A YouTube series plus this repo. Twelve chapters. Most build **one component** of an AI agent.
+A YouTube series plus this repo. Thirteen chapters. Most build **one component** of an AI agent.
 One (03) gives it a chat page.
 One (08) shows agentic workflows — the topic most job ads now name.
+One (10) puts the models side by side, so a viewer can pick one for their machine.
 Two stacks, same behaviour: **TypeScript** and **C#**. The model runs **on your machine**.
 
 Audience: junior and working developers who have never built an agent. Self-study. They can
-use a terminal and have written a small program. HTTP and JSON are in `docs/BASICS.md`, new
-words in `docs/GLOSSARY.md`, and `scripts/check.sh` tells them what is missing.
+use a terminal and have written a small program. Each chapter has a `BASICS.md` for what it
+needs first, new words are in `docs/GLOSSARY.md`, and `scripts/check.sh` tells them what is
+missing.
 
 This repo is the **simple sibling** of [`BaiGanio/agent-ready-payments`](https://github.com/BaiGanio/agent-ready-payments).
 That one goes deep: Postgres, SQL Server, MCP, EF Core, refunds, human approval. This one has
@@ -32,7 +34,7 @@ Three tools, and that is all:
 Why this one. No API key. No network. No fake server. It works offline, like the model does.
 Every viewer has a folder of files. The tools are 10 lines each in both languages.
 
-## The twelve chapters
+## The thirteen chapters
 
 Target: 12-15 minutes per chapter. Two of them may run to 20.
 Chapters 01-08 are two videos each, one per language (see `STYLE.md`). Minutes below are per
@@ -51,8 +53,9 @@ video.
 | 07 | `guardrails` | step cap, timeout, path allow-list, ask before you write | ~60 lines | 15 |
 | 08 | `workflows` | agentic workflows: chain, router, checker. Code picks the path, or the model does. | ~60 lines | 15 |
 | 09 | `llama-cpp` | swap the runner. Flags, quantisation, context size. | ~10 lines | 20 |
-| 10 | `side-by-side` | TypeScript against C#: what differs, what does not | none | 20 |
-| 11 | `frameworks` *(optional, text only)* | the same agent in a framework, and what it hid | — | — |
+| 10 | `choosing-a-model` | five models: file size, RAM per context, speed, vision. Pick one for your machine. | none | 15 |
+| 11 | `side-by-side` | TypeScript against C#: what differs, what does not | none | 20 |
+| 12 | `frameworks` *(optional, text only)* | the same agent in a framework, and what it hid | — | — |
 
 Chapter 03 comes early on purpose. Viewers want to see a page, not a terminal. The agent is still
 small at that point (model + prompt), so the server is small too. From 04 on, every tool call
@@ -70,12 +73,14 @@ with a nicer wrapper — and the fallback when a small model has no tool support
 
 | Chapter | Runner | Model | Why |
 |---|---|---|---|
-| 01-08 | Ollama | `gemma4:e4b` | one install, tool calling works, 9.6 GB |
-| 01-08 | Ollama | `qwen3.5:4b` | the fallback for a smaller machine |
+| 01-08 | Ollama | `gemma4:e2b` | **the default.** Tool calling works, vision, about 8 GB of RAM at any context |
+| 01-08 | Ollama | `gemma4:e4b` | the step up when e2b trips on a hard question |
 | 09 | llama.cpp | `Ornith-1.0-9B-MTP` (GGUF) | not in the Ollama library, so it earns the hard runner |
+| 10 | both | the above, plus `gemma4:26b` and `qwen3.5:4b` | the comparison |
 
-Floor: 16 GB RAM. Verified on an M1 Pro / 32 GB, 2026-10-25: `gemma4:e4b` returned a correct
-`list_files` tool call in 1.2 s after load.
+Floor: 16 GB RAM. The full table — file, RAM per context, tools, vision — is in
+[`MODELS.md`](MODELS.md). Verified on an M1 Pro / 32 GB, 2026-10-25: `gemma4:e2b` returned a
+correct `list_files` tool call in 2.8 s warm.
 
 ## Code layout
 
@@ -93,17 +98,18 @@ ai-agents-1on1/
     PROGRESS.md               the board: one row per chapter
     SETUP.md                  install Ollama, pull the model, run both stacks
     STYLE.md                  how we write the docs and the code
-    BASICS.md                 HTTP and JSON, for viewers new to both
     GLOSSARY.md               every new word, in one line
+    MODELS.md                 which model fits which machine: file, RAM per context, vision
   chapters/NN-name/
     README.md                 the lesson: what we solve, example, why it matters
     SCRIPT.md                 the camera script: Goal / Why / Do / Proof, per step
     QA.md                     questions a viewer should be able to answer
+    BASICS.md                 what a junior must know before this chapter
   ts/                         one TypeScript project, grows per chapter
   csharp/                     one C# project, grows per chapter
   web/index.html              the chat page. One file, no framework. Both stacks serve it.
   sample-repo/                the folder the Librarian reads
-  scripts/                    check.sh, ollama.sh, llama.sh
+  scripts/                    check.sh, measure.ts, ollama.sh, llama.sh
 ```
 
 `ts` and `csharp` do the same thing in every chapter: same tools, same prompt, same output.
@@ -115,7 +121,7 @@ Two choices we make later, when we see the code. Nothing in this plan depends on
 
 1. **Tags or folders.** We start with tags. If viewers trip on `git checkout`, we export each tag
    to a folder. The layout above survives either way.
-2. **Chapter 11, frameworks.** Simple wins. If it adds noise, it stays a text appendix.
+2. **Chapter 12, frameworks.** Simple wins. If it adds noise, it stays a text appendix.
 
 ## Order of work
 

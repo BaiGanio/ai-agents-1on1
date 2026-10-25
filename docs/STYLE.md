@@ -1,6 +1,6 @@
 # Style
 
-How we write, so twelve chapters read like one person wrote them. Borrowed from
+How we write, so thirteen chapters read like one person wrote them. Borrowed from
 [`agent-ready-payments`](https://github.com/BaiGanio/agent-ready-payments) and cut down.
 
 ## Words
@@ -11,7 +11,8 @@ How we write, so twelve chapters read like one person wrote them. Borrowed from
 - No hype. No "simply", no "just", no "obviously". If it were obvious there would be no video.
 - Never say "AI-powered". Say what it does.
 - The reader may be a junior. They can use a terminal and have written a small program. They
-  may not know HTTP or JSON — [`BASICS.md`](BASICS.md) covers that. They do not know what a
+  may not know HTTP or JSON. Each chapter's `BASICS.md` teaches what that chapter needs first.
+  They do not know what a
   tool call is.
 - Every new word links to [`GLOSSARY.md`](GLOSSARY.md) the first time a chapter uses it. If the
   word is not there, add it first.
@@ -36,7 +37,7 @@ How we write, so twelve chapters read like one person wrote them. Borrowed from
 
 Chapters 01-08 are two videos each: one TypeScript, one C#. Each video stands alone. It opens
 with the same short "what we solve" and "everyday picture", so a C# viewer never has to watch
-the TypeScript video. Chapters 00, 09, 10 are one video. Chapter 11 is text only.
+the TypeScript video. Chapters 00, 09, 10, 11 are one video. Chapter 12 is text only.
 
 ## Diagrams
 

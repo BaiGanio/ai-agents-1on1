@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 var ollamaUrl = Environment.GetEnvironmentVariable("OLLAMA_URL") ?? "http://localhost:11434";
-var model = Environment.GetEnvironmentVariable("MODEL") ?? "gemma4:e4b";
+var model = Environment.GetEnvironmentVariable("MODEL") ?? "gemma4:e2b";
 
 // One HttpClient for the process. A new one per call leaks sockets, and a local model can take
 // minutes on the first answer while it loads into RAM, so the 100-second default is too short.

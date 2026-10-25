@@ -3,6 +3,7 @@
 | Script | What it does |
 |---|---|
 | `check.sh` | checks Node, .NET, Ollama, the model, and tool calling. Says how to fix each failure. |
+| `measure.ts` | `node scripts/measure.ts <model>` — RAM at 16K, 32K, 64K, 128K on your machine |
 
 **Planned:**
 

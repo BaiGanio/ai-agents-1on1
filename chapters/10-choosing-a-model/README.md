@@ -1,15 +1,19 @@
-# Chapter 11 — Frameworks (optional)
+# Chapter 10 — Choosing a model
 
 > **Not written yet.** This is the skeleton. See [`docs/PLAN.md`](../../docs/PLAN.md) for where
 > this chapter sits, and [`docs/STYLE.md`](../../docs/STYLE.md) for how to fill it in.
 
-**Video:** about — minutes.
-**Code at the end of this chapter:** `git checkout 11-TODO-tag`
+**Video:** about 15 minutes.
+**Code at the end of this chapter:** `git checkout ch10-choosing-a-model`
 **New words:** TODO — link each to [`GLOSSARY.md`](../../docs/GLOSSARY.md)
 
 ## What we solve
 
-The same agent in a framework, and what the framework hid.
+Every model so far ran on one Mac. Yours may have 16 GB or 64 GB. We put five models side by
+side: how big each file is, how much RAM each needs at 16K, 32K, 64K and 128K of context, how
+fast each answers, and which ones can see images. Gemma 4 has vision. Ornith does not. Then
+`scripts/measure.ts` gives you the same table for your own machine. The full table is in
+[`docs/MODELS.md`](../../docs/MODELS.md).
 
 ## Simple example
 
@@ -26,17 +30,9 @@ flowchart TD
     TODO["TODO: what exists now"] --> TODO2["TODO: what this chapter adds"]
 ```
 
-## TypeScript
+## The comparison
 
-TODO
-
-## C#
-
-TODO
-
-## What differs between the two
-
-TODO: or "nothing worth a sentence", which is also an answer.
+TODO: the table from `docs/MODELS.md`, and a vision demo with a screenshot.
 
 ## When it breaks
 

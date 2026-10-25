@@ -17,8 +17,9 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 07 | guardrails | — | — | — | — | — | — |
 | 08 | workflows | — | — | — | — | — | — |
 | 09 | llama.cpp | — | — | — | — | — | — |
-| 10 | side by side | — | — | — | — | — | — |
-| 11 | frameworks *(optional)* | — | — | — | — | — | — |
+| 10 | choosing a model | — | n/a | n/a | — | — | — |
+| 11 | side by side | — | — | — | — | — | — |
+| 12 | frameworks *(optional)* | — | — | — | — | — | — |
 
 ## Verified on this machine
 
@@ -26,6 +27,11 @@ One row per chapter. Update it when a state changes. This is the first file to o
 
 - Ollama 0.40.6. `gemma4:e4b` returns a correct `list_files` tool call in 1.2 s once warm,
   5.6 s cold. 15 output tokens.
+- `gemma4:e2b` (the default from decision 14) returns a correct `list_files` tool call in
+  2.8 s warm, 6.6 s cold. 197 and 348 output tokens, because it thinks first. Both stacks
+  answer with it. Chapter 01's examples were rerun on it.
+- RAM per model and context: see `docs/MODELS.md`. Measured with `scripts/measure.ts` and, for
+  Ornith, llama.cpp 0.7.0. The `gemma4:26b` run was stopped before 64K.
 - Node 26.12.0 runs `ts/src/main.ts` directly. No build step, no dependencies.
 - .NET 10.0.401. `dotnet run` in `csharp/` answers against the same endpoint.
 - Both stacks answered "In five words, what is an AI agent?" correctly and differently.
@@ -47,17 +53,22 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 9 | One shared `web/index.html`. Both stacks serve it, same `/chat` endpoint. No dependencies. | 2026-10-25 | keeps "same behaviour in both". The HTML is not the lesson. |
 | 10 | `CLAUDE.md` is committed | 2026-10-25 | a course about agents can show how its author works with one |
 | 11 | Agentic workflows as chapter 08, after guardrails. Old 08-10 move to 09-11. | 2026-10-25 | the job market asks for it. It needs the loop and the guardrails first. |
-| 12 | Juniors are in the audience. Added `BASICS.md`, `GLOSSARY.md`, `scripts/check.sh`, and two chapter sections: "When it breaks", "Try it yourself". | 2026-10-25 | juniors stop at setup, at new words, and at the first error they cannot read |
+| 12 | Juniors are in the audience. Added a `BASICS.md` per chapter, `GLOSSARY.md`, `scripts/check.sh`, and two chapter sections: "When it breaks", "Try it yourself". | 2026-10-25 | juniors stop at setup, at new words, and at the first error they cannot read |
 | 13 | Chapters 01-08 are two videos each, one per language | 2026-10-25 | two languages in one video is too much for a junior. Closes old open item 2. |
+| 14 | `gemma4:e2b` is the default. `gemma4:e4b` is the step up. `qwen3.5:4b` is no longer the fallback. | 2026-10-25 | e2b calls tools, has vision, and needs about 8 GB at any context. qwen3.5:4b has a smaller file but needs more RAM. |
+| 15 | `docs/MODELS.md` and `scripts/measure.ts` | 2026-10-25 | a viewer picks a model by their RAM, and can measure their own machine |
+| 16 | Chapter 10 is "choosing a model", after llama.cpp. Old 10-11 move to 11-12. One video. | 2026-10-25 | Ornith runs only in llama.cpp, so the comparison comes after it |
 
 ## To do
 
+- Finish the `gemma4:26b` row in `docs/MODELS.md` (64K, 128K) and test tools on 26b, qwen3.5:4b
+  and Ornith. Needed by chapter 10.
 - `chapters/01-the-model/SCRIPT.md` is one script for both languages. Split it into a
   TypeScript script (steps 0, 1, 2, 4) and a C# script (steps 0, 1, 3, 4).
 
 ## Open
 
 1. Tags or exported folders per chapter — decided after we see a viewer trip on `git checkout`.
-2. Whether chapter 11 (frameworks) exists at all.
+2. Whether chapter 12 (frameworks) exists at all.
 3. C# server for chapter 03: `HttpListener` (no project change) or a minimal API
    (`Microsoft.NET.Sdk.Web`, still no NuGet). Decided when we write the chapter.
