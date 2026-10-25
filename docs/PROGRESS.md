@@ -9,7 +9,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | # | Chapter | Docs | Code TS | Code C# | Script | Video | Tag |
 |---|---|---|---|---|---|---|---|
 | 00 | the agent we build | — | n/a | n/a | — | — | — |
-| 01 | the model | ✅ | ✅ | ✅ | ✅ | — | `ch01-model` *(not final)* |
+| 01 | the model | ✅ | ✅ | ✅ | ✅ | — | — *(old tag `ch01-model` is out of date)* |
 | 01.A | thinking | — | ✅ | ✅ | — | — | — |
 | 02 | the prompt | — | — | — | — | — | — |
 | 03 | the chat page | — | — | — | — | — | — |
@@ -37,11 +37,17 @@ One row per chapter. Update it when a state changes. This is the first file to o
   works on `phi4-mini:3.8b`, which cannot think. `THINK=on` on phi4-mini returns a 400.
 - RAM per model and context: see `docs/MODELS.md`. Measured with `scripts/measure.ts` and, for
   Ornith, llama.cpp 0.7.0. The `gemma4:26b` run was stopped before 64K.
-- Node 26.12.0 runs `ts/src/main.ts` directly. No build step, no dependencies.
-- .NET 10.0.401. `dotnet run` in `csharp/` answers against the same endpoint.
+- Node 26.12.0 runs `src/main.ts` directly. No build step, no dependencies.
+- .NET 10.0.401. `dotnet run` in `code/csharp/` answers against the same endpoint.
 - Both stacks answered "In five words, what is an AI agent?" correctly and differently.
 - `scripts/check.sh` passed all six checks in 8.9 s, Ollama warm. With `MODEL=nope:1b` it
   failed on the model line and exited 1.
+
+- Chapter 01 code back from `17db27d` into `chapters/01-the-model/code/`. Rerun on `gemma4:e2b`:
+  TS answered "Perceives, reasons, acts autonomously." in 7.0 s. C# answered "Perceives,
+  reasons, acts to achieve." in 7.3 s.
+- Chapter 01.A code from `42f8ac5` in `chapters/01.A-thinking/code/`. `THINK=off` answers in
+  both stacks.
 
 ## Decisions
 
@@ -66,6 +72,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 17 | Thinking is chapter 01.A, right after the model: a `THINK` on/off flag, and streaming. Lettered so nothing renumbers. | 2026-10-25 | the default model thinks before every answer. Viewers should meet it, and choose, first. |
 | 18 | Code layout is not final. Replaces decision 3. Each chapter starts as a copy of the one before at recording. Folders or tags decided later. Tags made so far are not final. | 2026-10-25 | the author tracks what each chapter adds, in order, while recording |
 | 19 | No chapter is recorded until every chapter is `ready`. `ready` now means: docs, code and both scripts agree with each other and with the chapters after it. | 2026-10-25 | a chapter's code must lead into the next one. Recording early locks in code that a later chapter may change. |
+| 20 | One code folder per chapter: `chapters/NN-name/code/ts/` and `code/csharp/`. Replaces the shared `ts/` and `csharp/`. Chapter 01's code comes from `17db27d`, 01.A's from `42f8ac5`. Closes open item 1. | 2026-10-25 | 01 and 01.A sit side by side, so `diff -r` shows what a chapter adds. Decision 19 needs that check for every pair. |
 
 ## To do
 
@@ -78,7 +85,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 
 ## Open
 
-1. Code layout: a folder per chapter, or one project with tags. Decided while recording.
+1. ~~Code layout~~ — closed by decision 20.
 2. Whether chapter 12 (frameworks) exists at all.
 3. C# server for chapter 03: `HttpListener` (no project change) or a minimal API
    (`Microsoft.NET.Sdk.Web`, still no NuGet). Decided when we write the chapter.

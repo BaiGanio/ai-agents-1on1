@@ -22,8 +22,8 @@ Change the file only when the user agrees.
 ```bash
 ./scripts/check.sh                             # is everything installed and working?
 ollama serve                                   # the model server, port 11434
-cd ts && node src/main.ts "your question"      # Node 24+, no build step
-cd csharp && dotnet run -- "your question"     # .NET 10
+cd chapters/01-the-model/code/ts && node src/main.ts "your question"    # Node 24+, no build
+cd chapters/01-the-model/code/csharp && dotnet run -- "your question"   # .NET 10
 ```
 
 `OLLAMA_URL` and `MODEL` override the defaults (`http://localhost:11434`, `gemma4:e2b`).
@@ -33,14 +33,15 @@ More in `docs/SETUP.md`.
 ## Rules that are easy to break
 
 - **No dependencies.** No npm package, no NuGet package, unless the chapter is about it.
-- **Both stacks, same behavior.** A change in `ts/` needs the same change in `csharp/`.
+- **Both stacks, same behavior.** A change in a chapter's `code/ts/`
+  needs the same change in its `code/csharp/`.
   Each side stays natural for its language. Where they differ, the chapter README says why.
-- **Code layout is not final.** For now `ts/` and `csharp/` hold the latest chapter's code.
-  At recording, each chapter starts as a copy of the previous chapter's code, and only the new
-  code is typed, so each chapter shows what it adds and in what order. Folder per chapter or
-  one project with tags is decided while recording. Do not split into folders until asked.
-- **Do not overwrite a chapter's code with the next chapter's** before the user says so. Write
-  the docs skeleton first, then ask.
+- **One code folder per chapter** (decision 20). `chapters/NN-name/code/ts/` and
+  `code/csharp/`. A chapter's code starts as a copy of the previous chapter's code, and only
+  the new code is typed on camera. `diff -r` two chapters' `code/` folders to see what one adds.
+  A fix in one chapter's code is copied into every later chapter that has the same lines.
+- **Do not start a chapter's `code/` folder** before the user says so. Write the docs skeleton
+  first, then ask.
 - **Git tags are not final** while the repo is a skeleton. Do not create, move or delete one
   unless asked.
 - **The budget is real.** "New code" in `PLAN.md` is what the viewer types on camera.

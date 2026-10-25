@@ -57,7 +57,7 @@ Then run the same command twice and let the viewer see the wording change.
 
 ## Step 2 — TypeScript
 
-**Goal.** `ts/src/main.ts` exists and prints an answer.
+**Goal.** `code/ts/src/main.ts` exists and prints an answer.
 
 **Why.** Typing it yourself, after the curl, shows the code is only a wrapper around that one
 request. Keep saying "this is the curl" as you type.
@@ -82,7 +82,7 @@ node src/main.ts "In five words, what is an AI agent?"
 
 ## Step 3 — C#
 
-**Goal.** `csharp/Program.cs` does the same, and the viewer sees how little differs.
+**Goal.** `code/csharp/Program.cs` does the same, and the viewer sees how little differs.
 
 **Why.** Two stacks is the selling point of the course. Do not apologise for the repetition —
 name each difference as it appears, because that naming *is* the content.
@@ -90,7 +90,7 @@ name each difference as it appears, because that naming *is* the content.
 **Do.**
 
 ```bash
-cd csharp
+cd chapters/01-the-model/code/csharp
 dotnet new console -n RepoLibrarian -o . -f net10.0
 ```
 

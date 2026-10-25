@@ -179,8 +179,8 @@ Chapter 04 builds the by-hand fallback for exactly this case.
 
 ## 5. The TypeScript project
 
-Already in this repo at `ts/`. **Skip to "Run it"** unless you are following the video and
-making it yourself.
+Already in this repo, in each chapter's `code/ts/` folder. **Skip to "Run it"** unless you are
+following the video and making it yourself.
 
 ### Create it from nothing
 
@@ -201,7 +201,7 @@ There are **no runtime dependencies**, on purpose. `fetch` is built into Node.
 ### Run it
 
 ```bash
-cd ts
+cd chapters/01-the-model/code/ts
 node src/main.ts "In five words, what is an AI agent?"
 ```
 
@@ -224,7 +224,8 @@ npx tsc --noEmit
 
 ## 6. The C# project
 
-Already in this repo at `csharp/`. **Skip to "Run it"** unless you are making it yourself.
+Already in this repo, in each chapter's `code/csharp/` folder. **Skip to "Run it"** unless you
+are making it yourself.
 
 ### Create it from nothing
 
@@ -241,7 +242,7 @@ No NuGet packages. `HttpClient` and `System.Text.Json` are in the SDK.
 ### Run it
 
 ```bash
-cd csharp
+cd chapters/01-the-model/code/csharp
 dotnet run -- "In five words, what is an AI agent?"
 ```
 
@@ -250,7 +251,7 @@ The `--` matters. Without it, `dotnet run` eats your words as its own flags.
 From the repo root, without changing folder:
 
 ```bash
-dotnet run --project csharp -- "In five words, what is an AI agent?"
+dotnet run --project chapters/01-the-model/code/csharp -- "In five words, what is an AI agent?"
 ```
 
 The first run restores and compiles, so it is slow. Later runs are fast.
@@ -304,8 +305,8 @@ line says how to fix it. To check the two stacks by hand instead:
 
 ```bash
 curl -s http://localhost:11434/api/version && \
-  node ts/src/main.ts "Say ok." && \
-  dotnet run --project csharp -- "Say ok."
+  node chapters/01-the-model/code/ts/src/main.ts "Say ok." && \
+  dotnet run --project chapters/01-the-model/code/csharp -- "Say ok."
 ```
 
 Three answers means you are ready for chapter 01.

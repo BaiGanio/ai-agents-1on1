@@ -5,7 +5,8 @@
 
 **Video:** about 12 minutes.
 **Code:** the chapter 01 code, plus about 30 new lines. Where it lives is not final.
-**Files:** [`ts/src/main.ts`](../../ts/src/main.ts) · [`csharp/Program.cs`](../../csharp/Program.cs)
+**Files:** [`code/ts/src/main.ts`](code/ts/src/main.ts) ·
+[`code/csharp/Program.cs`](code/csharp/Program.cs)
 **New words:** [thinking](../../docs/GLOSSARY.md#thinking) ·
 [streaming](../../docs/GLOSSARY.md#streaming)
 
@@ -22,7 +23,7 @@ You decide which one your agent uses.
 Thinking on. The grey notes stream first, then the answer. The end of a real run:
 
 ```bash
-cd ts && THINK=on node src/main.ts "In five words, what is an AI agent?"
+cd chapters/01.A-thinking/code/ts && THINK=on node src/main.ts "In five words, what is an AI agent?"
 # ... "Perceives, reasons, acts, achieves goals." (Five words. Describes the core mechanism.)
 #
 # Perceives, reasons, acts, achieves goals.
@@ -31,7 +32,7 @@ cd ts && THINK=on node src/main.ts "In five words, what is an AI agent?"
 Thinking off. No notes, and the answer is back in half a second instead of six:
 
 ```bash
-cd ts && THINK=off node src/main.ts "In five words, what is an AI agent?"
+cd chapters/01.A-thinking/code/ts && THINK=off node src/main.ts "In five words, what is an AI agent?"
 # Perceives, reasons, acts autonomously.
 ```
 

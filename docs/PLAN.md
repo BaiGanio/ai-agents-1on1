@@ -90,8 +90,7 @@ correct `list_files` tool call in 2.8 s warm.
 
 ## Code layout
 
-**Not final.** It is decided while we record. Until then, `ts/` and `csharp/` hold the code of
-the latest chapter that has code.
+One folder per chapter (decision 20): `chapters/NN-name/code/ts/` and `code/csharp/`.
 
 **How a chapter is made.** At recording, each chapter starts as a copy of the code from the
 chapter before it. Only the new code is typed on camera. That way each chapter shows clearly
@@ -116,8 +115,8 @@ ai-agents-1on1/
     SCRIPT.md                 the camera script: Goal / Why / Do / Proof, per step
     QA.md                     questions a viewer should be able to answer
     BASICS.md                 what a junior must know before this chapter
-  ts/                         the TypeScript code. Layout per chapter not final.
-  csharp/                     the C# code. Layout per chapter not final.
+    code/ts/                  the TypeScript code at the end of this chapter
+    code/csharp/              the C# code at the end of this chapter
   web/index.html              the chat page. One file, no framework. Both stacks serve it.
   sample-repo/                the folder the Librarian reads
   scripts/                    check.sh, measure.ts, ollama.sh, llama.sh

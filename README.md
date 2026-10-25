@@ -48,8 +48,8 @@ agent> src/main.ts, line 14. It calls server.listen on the port from PORT.
 6. A word you do not know? [`docs/GLOSSARY.md`](docs/GLOSSARY.md)
 7. Which model for your machine? [`docs/MODELS.md`](docs/MODELS.md)
 
-How each chapter's code is shipped — a folder per chapter, or a git tag — is decided while the
-videos are recorded. For now `ts/` and `csharp/` hold the latest code.
+Each chapter has its own code, in `chapters/NN-name/code/ts/` and `code/csharp/`. A chapter's
+code is the one before it plus what the chapter adds.
 
 ## The chapters
 

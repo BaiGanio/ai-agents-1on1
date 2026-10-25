@@ -1,8 +1,8 @@
 # Chapter 01 — The model
 
 **Video:** about 12 minutes.
-**Code at the end of this chapter:** `git checkout ch01-model`
-**Files:** [`ts/src/main.ts`](../../ts/src/main.ts) · [`csharp/Program.cs`](../../csharp/Program.cs)
+**Files:** [`code/ts/src/main.ts`](code/ts/src/main.ts) ·
+[`code/csharp/Program.cs`](code/csharp/Program.cs)
 **New words:** [model](../../docs/GLOSSARY.md#model) ·
 [endpoint](../../docs/GLOSSARY.md#endpoint) · [local model](../../docs/GLOSSARY.md#local-model) ·
 [Ollama](../../docs/GLOSSARY.md#ollama) ·
@@ -21,12 +21,12 @@ print what comes back. Forty lines, no library.
 ## Simple example
 
 ```bash
-cd ts && node src/main.ts "In five words, what is an AI agent?"
+cd chapters/01-the-model/code/ts && node src/main.ts "In five words, what is an AI agent?"
 # Perceives, reasons, takes action.
 ```
 
 ```bash
-cd csharp && dotnet run -- "In five words, what is an AI agent?"
+cd chapters/01-the-model/code/csharp && dotnet run -- "In five words, what is an AI agent?"
 # Perceives, reasons, acts autonomously.
 ```
 
@@ -110,7 +110,7 @@ Node 24 and up runs `.ts` files directly — no build step, no `tsc`, no watcher
 `fetch` is built in. So: no dependencies at all, and nothing between you and the request.
 
 ```bash
-cd ts
+cd chapters/01-the-model/code/ts
 node src/main.ts "your question here"
 ```
 
@@ -121,7 +121,7 @@ in chapter 07, when there is something real to inject. `HttpClient` and `System.
 are in the box.
 
 ```bash
-cd csharp
+cd chapters/01-the-model/code/csharp
 dotnet run -- "your question here"
 ```
 
