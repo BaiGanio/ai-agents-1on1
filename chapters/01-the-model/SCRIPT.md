@@ -69,7 +69,7 @@ request. Keep saying "this is the curl" as you type.
 4. the three lines at the bottom: read `argv`, build the list, print
 
 Say out loud at the `messages` array: **"a list, not a string. The model gets the whole story
-every time, because it remembers nothing."** That line is the seed of chapter 05.
+every time, because it remembers nothing."** That line is the seed of chapter 06.
 
 **Proof.**
 

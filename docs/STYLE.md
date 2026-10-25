@@ -1,6 +1,6 @@
 # Style
 
-How we write, so ten chapters read like one person wrote them. Borrowed from
+How we write, so twelve chapters read like one person wrote them. Borrowed from
 [`agent-ready-payments`](https://github.com/BaiGanio/agent-ready-payments) and cut down.
 
 ## Words

@@ -1,14 +1,14 @@
-# Chapter 09 — Frameworks (optional)
+# Chapter 07 — Guardrails
 
 > **Not written yet.** This is the skeleton. See [`docs/PLAN.md`](../../docs/PLAN.md) for where
 > this chapter sits, and [`docs/STYLE.md`](../../docs/STYLE.md) for how to fill it in.
 
-**Video:** about — minutes.
-**Code at the end of this chapter:** `git checkout 09-TODO-tag`
+**Video:** about 15 minutes.
+**Code at the end of this chapter:** `git checkout 07-TODO-tag`
 
 ## What we solve
 
-The same agent in a framework, and what the framework hid.
+A step cap, a timeout, a path allow-list, and a yes before anything risky.
 
 ## Simple example
 

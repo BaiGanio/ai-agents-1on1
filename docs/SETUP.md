@@ -147,7 +147,7 @@ ollama rm qwen3.5:4b
 
 ## 4. Check that tool calling works
 
-This is the one thing that breaks on small models, and chapters 03 onwards depend on it.
+This is the one thing that breaks on small models, and chapters 04 onwards depend on it.
 Test it **before** you start.
 
 ```bash
@@ -172,7 +172,7 @@ You want a `tool_calls` array:
 ```
 
 If you get prose instead, that model cannot call tools. Pick another.
-Chapter 03 builds the by-hand fallback for exactly this case.
+Chapter 04 builds the by-hand fallback for exactly this case.
 
 ---
 
@@ -316,4 +316,4 @@ Three answers means you are ready for chapter 01.
 | `Unknown option: --` in dotnet | you dropped the `--` | `dotnet run -- "your words"` |
 | TypeScript error about `process` | `@types/node` is missing | `npm install -D @types/node` |
 | C# answer is `null` | the JSON names did not match | keep `PropertyNamingPolicy = CamelCase` |
-| prose where you expected `tool_calls` | that model cannot call tools | use `gemma4:e4b`, or see chapter 03 |
+| prose where you expected `tool_calls` | that model cannot call tools | use `gemma4:e4b`, or see chapter 04 |

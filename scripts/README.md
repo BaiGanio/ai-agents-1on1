@@ -5,7 +5,7 @@
 | Planned | What it will do | Needed by |
 |---|---|---|
 | `ollama.sh` | start the server, pull the model if missing, check tool calling works | chapter 01 |
-| `llama.sh` | start `llama-server` with the model and flags from `.env` | chapter 07 |
+| `llama.sh` | start `llama-server` with the model and flags from `.env` | chapter 09 |
 
 `llama.sh` is a trimmed copy of `scripts/llm.sh` in
 [`agent-ready-payments`](https://github.com/BaiGanio/agent-ready-payments).

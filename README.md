@@ -3,7 +3,8 @@
 Build an AI agent from nothing. No framework. No cloud. No API key.
 The model runs on your laptop. You write about 300 lines of code, in **TypeScript** and in **C#**.
 
-Nine short videos, one per component. The code in this repo is the finished code of each video.
+Eleven short videos. Most build one component each. One gives the agent a chat page.
+One shows agentic workflows: when your code should pick the path, and when the model should. The code in this repo is the finished code of each video.
 
 ## An agent is six parts
 
@@ -17,6 +18,10 @@ Nine short videos, one per component. The code in this repo is the finished code
 | **the guardrails** | a step cap, a timeout, an allow-list, and a yes/no before anything risky |
 
 That is the whole thing. A framework does not add a seventh part. It hides the loop.
+
+An **agentic workflow** is several of these calls wired together by your code. In a workflow,
+your code picks the path. In an agent, the model picks it. Chapter 08 builds both and says
+when to use which.
 
 ## What we build: the Repo Librarian
 
@@ -35,10 +40,10 @@ agent> src/main.ts, line 14. It calls server.listen on the port from PORT.
 2. [`chapters/`](chapters/) — the lessons, in order
 3. [`docs/PLAN.md`](docs/PLAN.md) — what the course is and why it is shaped this way
 
-Each chapter ends on a git tag. To get the code as it stood at the end of video 4:
+Each chapter ends on a git tag. To get the code as it stood at the end of video 5:
 
 ```bash
-git checkout ch04-loop
+git checkout ch05-loop
 ```
 
 ## The chapters
@@ -48,20 +53,22 @@ git checkout ch04-loop
 | 00 | [the agent we build](chapters/00-the-agent-we-build/) | the demo, and the six parts |
 | 01 | [the model](chapters/01-the-model/) | raw HTTP to a model on your machine |
 | 02 | [the prompt](chapters/02-the-prompt/) | the system prompt, and why it is cheap |
-| 03 | [tools by hand](chapters/03-tools-by-hand/) | a tool call is just the model writing JSON |
-| 04 | [the loop](chapters/04-the-loop/) | the while-loop that makes it an agent |
-| 05 | [memory](chapters/05-memory/) | what to keep, what to drop, what to save |
-| 06 | [guardrails](chapters/06-guardrails/) | stop it looping forever or doing damage |
-| 07 | [llama.cpp](chapters/07-llama-cpp/) | swap the runner and tune it |
-| 08 | [side by side](chapters/08-side-by-side/) | TypeScript against C# |
-| 09 | [frameworks](chapters/09-frameworks/) | the same agent in a framework *(optional)* |
+| 03 | [the chat page](chapters/03-the-chat-page/) | one HTML page to talk to the agent, served by both stacks |
+| 04 | [tools by hand](chapters/04-tools-by-hand/) | a tool call is just the model writing JSON |
+| 05 | [the loop](chapters/05-the-loop/) | the while-loop that makes it an agent |
+| 06 | [memory](chapters/06-memory/) | what to keep, what to drop, what to save |
+| 07 | [guardrails](chapters/07-guardrails/) | stop it looping forever or doing damage |
+| 08 | [workflows](chapters/08-workflows/) | agentic workflows: chain, router, checker. Workflow or agent? |
+| 09 | [llama.cpp](chapters/09-llama-cpp/) | swap the runner and tune it |
+| 10 | [side by side](chapters/10-side-by-side/) | TypeScript against C# |
+| 11 | [frameworks](chapters/11-frameworks/) | the same agent in a framework *(optional)* |
 
 ## Going deeper
 
 This repo is small on purpose. For the production shape of the same ideas — a database, MCP,
 idempotency, human approval of a refund — see
 [**BaiGanio/agent-ready-payments**](https://github.com/BaiGanio/agent-ready-payments).
-Its lab 09 is this course's chapter 04, with everything a payment platform adds.
+Its lab 09 is this course's chapter 05, with everything a payment platform adds.
 
 ## You will need
 

@@ -14,7 +14,7 @@ async function chat(messages: Message[]): Promise<Message> {
     method: "POST",
     headers: { "content-type": "application/json" },
     // stream:false means "one JSON object when you are done", not a drip of tokens.
-    // Streaming is nicer for a user and noisier for a lesson, so it stays off until chapter 05.
+    // Streaming is nicer for a user and noisier for a lesson, so it stays off until chapter 06.
     body: JSON.stringify({ model: MODEL, messages, stream: false }),
   });
 
@@ -31,7 +31,7 @@ async function chat(messages: Message[]): Promise<Message> {
 const prompt = process.argv.slice(2).join(" ") || "Say hello in five words.";
 
 // The model remembers nothing between calls. Every turn sends the whole history back.
-// That list is the agent's short memory, and it is the only memory it has until chapter 05.
+// That list is the agent's short memory, and it is the only memory it has until chapter 06.
 const messages: Message[] = [{ role: "user", content: prompt }];
 
 const answer = await chat(messages);

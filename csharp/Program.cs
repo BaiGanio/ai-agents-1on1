@@ -25,7 +25,7 @@ var json = new JsonSerializerOptions
 var prompt = args.Length > 0 ? string.Join(' ', args) : "Say hello in five words.";
 
 // The model remembers nothing between calls. Every turn sends the whole history back.
-// That list is the agent's short memory, and it is the only memory it has until chapter 05.
+// That list is the agent's short memory, and it is the only memory it has until chapter 06.
 List<Message> messages = [new("user", prompt)];
 
 var answer = await ChatAsync(messages);
@@ -35,7 +35,7 @@ Console.WriteLine(answer.Content.Trim());
 async Task<Message> ChatAsync(List<Message> history)
 {
     // stream:false means "one JSON object when you are done", not a drip of tokens.
-    // Streaming is nicer for a user and noisier for a lesson, so it stays off until chapter 05.
+    // Streaming is nicer for a user and noisier for a lesson, so it stays off until chapter 06.
     var request = new ChatRequest(model, history, Stream: false);
 
     var response = await http.PostAsJsonAsync("/api/chat", request, json);

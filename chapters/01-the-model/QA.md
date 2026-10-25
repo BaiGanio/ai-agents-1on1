@@ -18,7 +18,7 @@ temperature to 0 — and even then two different runners can differ.
 
 Because the server keeps nothing. Every call starts from zero. If you want the model to know
 what was said two turns ago, you send those two turns again. That list is the only memory an
-agent has, which is also why it fills up — chapter 05.
+agent has, which is also why it fills up — chapter 06.
 
 </details>
 
@@ -38,7 +38,7 @@ What is missing?
 <details><summary>A</summary>
 
 Hands. It has no way to look at your files, so it guessed from the shape of the question.
-Tools (chapter 03) and the loop (chapter 04) are what turn a guess into a look.
+Tools (chapter 04) and the loop (chapter 05) are what turn a guess into a look.
 
 </details>
 
@@ -49,7 +49,7 @@ Tools (chapter 03) and the loop (chapter 04) are what turn a guess into a look.
 `true` sends many small JSON objects, one per chunk of text, so a user sees words appear.
 `false` sends one object when the model is done. Streaming is better for a person and worse
 for a lesson — you would be parsing a stream before you understand the message. It comes back
-in chapter 05.
+in chapter 06.
 
 </details>
 
@@ -60,6 +60,6 @@ in chapter 05.
 The URL, an API key header, and the path. The message list and the `message` reply are nearly
 the same shape everywhere, because everyone copied the same design. That is also the warning:
 nearly is not the same, and the differences are in the tool-calling fields you meet in
-chapter 04.
+chapter 05.
 
 </details>

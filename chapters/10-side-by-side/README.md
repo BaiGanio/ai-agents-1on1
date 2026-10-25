@@ -1,14 +1,14 @@
-# Chapter 04 — The loop
+# Chapter 10 — Side by side
 
 > **Not written yet.** This is the skeleton. See [`docs/PLAN.md`](../../docs/PLAN.md) for where
 > this chapter sits, and [`docs/STYLE.md`](../../docs/STYLE.md) for how to fill it in.
 
-**Video:** about 15 minutes.
-**Code at the end of this chapter:** `git checkout 04-TODO-tag`
+**Video:** about 20 minutes.
+**Code at the end of this chapter:** `git checkout 10-TODO-tag`
 
 ## What we solve
 
-Send, run the tool, send the result, repeat. This is the whole agent.
+TypeScript against C#: what differs and what does not.
 
 ## Simple example
 

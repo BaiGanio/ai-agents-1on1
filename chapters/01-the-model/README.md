@@ -79,15 +79,15 @@ Three fields matter.
 | Field | Why you care |
 |---|---|
 | `messages` | a **list**. You send the whole conversation every single time. |
-| `stream` | `false` gives one JSON object. `true` drips tokens. Off until chapter 05. |
+| `stream` | `false` gives one JSON object. `true` drips tokens. Off until chapter 06. |
 | `message` | one message back, and only ever one |
 
-`role` has three values for now: `system`, `user`, `assistant`. Chapter 03 adds a fourth.
+`role` has three values for now: `system`, `user`, `assistant`. Chapter 04 adds a fourth.
 
 ## Why there is no SDK here
 
 An SDK would make this 5 lines instead of 40. We use raw HTTP because the 35 lines it saves
-are exactly the 35 lines this course is about. When your agent misbehaves in chapter 04, you
+are exactly the 35 lines this course is about. When your agent misbehaves in chapter 05, you
 will fix it by reading the request body. You cannot read a body you never wrote.
 
 ## TypeScript
@@ -103,7 +103,7 @@ node src/main.ts "your question here"
 ## C#
 
 One top-level `Program.cs`. No classes, no dependency injection, no interfaces — those arrive
-in chapter 06, when there is something real to inject. `HttpClient` and `System.Text.Json`
+in chapter 07, when there is something real to inject. `HttpClient` and `System.Text.Json`
 are in the box.
 
 ```bash
@@ -131,7 +131,7 @@ Almost nothing, and that is the point of the chapter.
 | build step | none | `dotnet run` builds, first run is slow |
 | timeout | none by default | 100 s by default — must be raised |
 
-The C# side types the wire. The TypeScript side describes it and hopes. Chapter 08 says which
+The C# side types the wire. The TypeScript side describes it and hopes. Chapter 10 says which
 one that helps, and when.
 
 ## Done when

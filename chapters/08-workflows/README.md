@@ -1,14 +1,17 @@
-# Chapter 05 — Memory
+# Chapter 08 — Workflows
 
 > **Not written yet.** This is the skeleton. See [`docs/PLAN.md`](../../docs/PLAN.md) for where
 > this chapter sits, and [`docs/STYLE.md`](../../docs/STYLE.md) for how to fill it in.
 
 **Video:** about 15 minutes.
-**Code at the end of this chapter:** `git checkout 05-TODO-tag`
+**Code at the end of this chapter:** `git checkout ch08-workflows`
 
 ## What we solve
 
-Keep the message list small. Save what matters to a file.
+Job ads ask for "agentic workflows". The term means several model calls wired together. We
+build three with the Librarian's tools: a chain (one step feeds the next), a router (one call
+picks who answers), and a checker (one call grades another and asks for a retry). Then the
+question that matters: should your code pick the path, or should the model?
 
 ## Simple example
 

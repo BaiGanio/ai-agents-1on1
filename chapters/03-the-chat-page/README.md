@@ -1,14 +1,16 @@
-# Chapter 08 — Side by side
+# Chapter 03 — The chat page
 
 > **Not written yet.** This is the skeleton. See [`docs/PLAN.md`](../../docs/PLAN.md) for where
 > this chapter sits, and [`docs/STYLE.md`](../../docs/STYLE.md) for how to fill it in.
 
-**Video:** about 20 minutes.
-**Code at the end of this chapter:** `git checkout 08-TODO-tag`
+**Video:** about 12 minutes.
+**Code at the end of this chapter:** `git checkout ch03-chat-page`
 
 ## What we solve
 
-TypeScript against C#: what differs and what does not.
+The terminal works, but it is a poor place to watch an agent think. We serve one HTML page and
+one `POST /chat` endpoint from each stack. The page is given. The server is the lesson. From
+chapter 04 on, every tool call the agent makes shows up in this page.
 
 ## Simple example
 

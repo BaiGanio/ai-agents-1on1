@@ -1,14 +1,14 @@
-# Chapter 03 — Tools by hand
+# Chapter 05 — The loop
 
 > **Not written yet.** This is the skeleton. See [`docs/PLAN.md`](../../docs/PLAN.md) for where
 > this chapter sits, and [`docs/STYLE.md`](../../docs/STYLE.md) for how to fill it in.
 
 **Video:** about 15 minutes.
-**Code at the end of this chapter:** `git checkout 03-TODO-tag`
+**Code at the end of this chapter:** `git checkout 05-TODO-tag`
 
 ## What we solve
 
-Ask the model for JSON, parse it, run a function. A tool call is just text.
+Send, run the tool, send the result, repeat. This is the whole agent.
 
 ## Simple example
 

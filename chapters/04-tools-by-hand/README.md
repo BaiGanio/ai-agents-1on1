@@ -1,14 +1,14 @@
-# Chapter 07 — llama.cpp
+# Chapter 04 — Tools by hand
 
 > **Not written yet.** This is the skeleton. See [`docs/PLAN.md`](../../docs/PLAN.md) for where
 > this chapter sits, and [`docs/STYLE.md`](../../docs/STYLE.md) for how to fill it in.
 
-**Video:** about 20 minutes.
-**Code at the end of this chapter:** `git checkout 07-TODO-tag`
+**Video:** about 15 minutes.
+**Code at the end of this chapter:** `git checkout 04-TODO-tag`
 
 ## What we solve
 
-Swap the runner. Pick a quantisation. Set the context size.
+Ask the model for JSON, parse it, run a function. A tool call is just text.
 
 ## Simple example
 
