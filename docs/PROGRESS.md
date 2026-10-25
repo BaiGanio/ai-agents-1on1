@@ -3,7 +3,8 @@
 One row per chapter. Update it when a state changes. This is the first file to open each session.
 
 **Legend.** `—` not started · `docs` lesson written · `code` code written and running ·
-`ready` docs + code + script, recordable · `shot` video recorded · `live` published
+`ready` docs + code + both scripts agree with each other and with the chapters after it
+(decision 19) · `shot` video recorded · `live` published
 
 | # | Chapter | Docs | Code TS | Code C# | Script | Video | Tag |
 |---|---|---|---|---|---|---|---|
@@ -64,9 +65,12 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 16 | Chapter 10 is "choosing a model", after llama.cpp. Old 10-11 move to 11-12. One video. | 2026-10-25 | Ornith runs only in llama.cpp, so the comparison comes after it |
 | 17 | Thinking is chapter 01.A, right after the model: a `THINK` on/off flag, and streaming. Lettered so nothing renumbers. | 2026-10-25 | the default model thinks before every answer. Viewers should meet it, and choose, first. |
 | 18 | Code layout is not final. Replaces decision 3. Each chapter starts as a copy of the one before at recording. Folders or tags decided later. Tags made so far are not final. | 2026-10-25 | the author tracks what each chapter adds, in order, while recording |
+| 19 | No chapter is recorded until every chapter is `ready`. `ready` now means: docs, code and both scripts agree with each other and with the chapters after it. | 2026-10-25 | a chapter's code must lead into the next one. Recording early locks in code that a later chapter may change. |
 
 ## To do
 
+- Chapter 01 is not `ready` under decision 19. Its docs and script do not match the code
+  yet. Its ✅ marks are from before the rule.
 - Finish the `gemma4:26b` row in `docs/MODELS.md` (64K, 128K) and test tools on 26b, qwen3.5:4b
   and Ornith. Needed by chapter 10.
 - `chapters/01-the-model/SCRIPT.md` is one script for both languages. Split it into a
