@@ -1,0 +1,15 @@
+# Both stacks
+node_modules/
+
+# TypeScript
+*.tsbuildinfo
+
+# C#
+bin/
+obj/
+
+# macOS
+.DS_Store
+
+# local settings
+.env
