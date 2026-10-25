@@ -35,7 +35,7 @@ Console.WriteLine(answer.Content.Trim());
 async Task<Message> ChatAsync(List<Message> history)
 {
     // stream:false means "one JSON object when you are done", not a drip of tokens.
-    // Streaming is nicer for a user and noisier for a lesson, so it stays off until chapter 06.
+    // Streaming is nicer for a user and noisier for a lesson, so it stays off until chapter 01.A.
     var request = new ChatRequest(model, history, Stream: false);
 
     var response = await http.PostAsJsonAsync("/api/chat", request, json);

@@ -8,7 +8,8 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | # | Chapter | Docs | Code TS | Code C# | Script | Video | Tag |
 |---|---|---|---|---|---|---|---|
 | 00 | the agent we build | — | n/a | n/a | — | — | — |
-| 01 | the model | ✅ | ✅ | ✅ | ✅ | — | `ch01-model` *(not cut)* |
+| 01 | the model | ✅ | ✅ | ✅ | ✅ | — | `ch01-model` *(not final)* |
+| 01.A | thinking | — | — | — | — | — | — |
 | 02 | the prompt | — | — | — | — | — | — |
 | 03 | the chat page | — | — | — | — | — | — |
 | 04 | tools by hand | — | — | — | — | — | — |
@@ -44,7 +45,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 |---|---|---|---|
 | 1 | Raw HTTP, no SDK | 2026-10-25 | the lines an SDK saves are the lines the course teaches |
 | 2 | Tools by hand (04) before native tools (05) | 2026-10-25 | shows a tool call is just text, and is the fallback for weak models |
-| 3 | One project per language that grows, git tag per chapter | 2026-10-25 | no copy-paste across 16 folders; `git diff` works on camera |
+| 3 | ~~One project per language that grows, git tag per chapter~~ *(replaced by 18)* | 2026-10-25 | no copy-paste across 16 folders; `git diff` works on camera |
 | 4 | `gemma4:e4b` default, `qwen3.5:4b` fallback | 2026-10-25 | tool calling works and is already proven on this machine |
 | 5 | Ornith-1.0-9B-MTP only in chapter 09 | 2026-10-25 | not in the Ollama library — it belongs with the hard runner |
 | 6 | No tests, no TDD in this repo | 2026-10-25 | the payments repo does TDD. A 15-minute video cannot. |
@@ -58,6 +59,8 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 14 | `gemma4:e2b` is the default. `gemma4:e4b` is the step up. `qwen3.5:4b` is no longer the fallback. | 2026-10-25 | e2b calls tools, has vision, and needs about 8 GB at any context. qwen3.5:4b has a smaller file but needs more RAM. |
 | 15 | `docs/MODELS.md` and `scripts/measure.ts` | 2026-10-25 | a viewer picks a model by their RAM, and can measure their own machine |
 | 16 | Chapter 10 is "choosing a model", after llama.cpp. Old 10-11 move to 11-12. One video. | 2026-10-25 | Ornith runs only in llama.cpp, so the comparison comes after it |
+| 17 | Thinking is chapter 01.A, right after the model: a `THINK` on/off flag, and streaming. Lettered so nothing renumbers. | 2026-10-25 | the default model thinks before every answer. Viewers should meet it, and choose, first. |
+| 18 | Code layout is not final. Replaces decision 3. Each chapter starts as a copy of the one before at recording. Folders or tags decided later. Tags made so far are not final. | 2026-10-25 | the author tracks what each chapter adds, in order, while recording |
 
 ## To do
 
@@ -68,7 +71,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 
 ## Open
 
-1. Tags or exported folders per chapter — decided after we see a viewer trip on `git checkout`.
+1. Code layout: a folder per chapter, or one project with tags. Decided while recording.
 2. Whether chapter 12 (frameworks) exists at all.
 3. C# server for chapter 03: `HttpListener` (no project change) or a minimal API
    (`Microsoft.NET.Sdk.Web`, still no NuGet). Decided when we write the chapter.

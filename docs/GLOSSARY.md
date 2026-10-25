@@ -28,6 +28,7 @@ If a word is missing, add it here before you use it in a chapter.
 | <a id="runner"></a>**runner** | the program that loads a model and answers HTTP calls. Ollama, llama.cpp. |
 | <a id="streaming"></a>**streaming** | the reply comes word by word, not all at the end |
 | <a id="system-prompt"></a>**system prompt** | the first message. It says who the agent is and what rules it follows. |
+| <a id="thinking"></a>**thinking** | notes the model writes to itself before it answers. Slower, often better. You can turn it off. Chapter 01.A. |
 | <a id="token"></a>**token** | a piece of a word. Models read and write tokens, not letters. |
 | <a id="tool"></a>**tool** | a function in *your* code that the model may ask you to run |
 | <a id="tool-call"></a>**tool call** | the model writes "run `list_files` with `path: .`". Your code runs it. The model runs nothing. |

@@ -14,7 +14,7 @@ async function chat(messages: Message[]): Promise<Message> {
     method: "POST",
     headers: { "content-type": "application/json" },
     // stream:false means "one JSON object when you are done", not a drip of tokens.
-    // Streaming is nicer for a user and noisier for a lesson, so it stays off until chapter 06.
+    // Streaming is nicer for a user and noisier for a lesson, so it stays off until chapter 01.A.
     body: JSON.stringify({ model: MODEL, messages, stream: false }),
   });
 

@@ -86,14 +86,14 @@ And the answer, cut short where it says `...`:
 
 Look at `thinking`. Before it answered, the model wrote about 380
 [tokens](../../docs/GLOSSARY.md#token) of notes to itself. That is why five words took six seconds. Our code prints only `content`,
-so you never see the notes — but you wait for them.
+so you never see the notes — but you wait for them. Chapter 01.A puts you in control of this.
 
 Three fields matter.
 
 | Field | Why you care |
 |---|---|
 | `messages` | a **list**. You send the whole conversation every single time. |
-| `stream` | `false` gives one JSON object. `true` drips tokens. Off until chapter 06. |
+| `stream` | `false` gives one JSON object. `true` drips tokens. Off until chapter 01.A. |
 | `message` | one message back, and only ever one |
 
 `role` has three values for now: `system`, `user`, `assistant`. Chapter 04 adds a fourth.

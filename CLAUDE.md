@@ -35,8 +35,14 @@ More in `docs/SETUP.md`.
 - **No dependencies.** No npm package, no NuGet package, unless the chapter is about it.
 - **Both stacks, same behavior.** A change in `ts/` needs the same change in `csharp/`.
   Each side stays natural for its language. Where they differ, the chapter README says why.
-- **The code grows.** One project per language. No copy per chapter. Each chapter ends on a
-  git tag, `chNN-name`. Never move a tag that is already on `origin`.
+- **Code layout is not final.** For now `ts/` and `csharp/` hold the latest chapter's code.
+  At recording, each chapter starts as a copy of the previous chapter's code, and only the new
+  code is typed, so each chapter shows what it adds and in what order. Folder per chapter or
+  one project with tags is decided while recording. Do not split into folders until asked.
+- **Do not overwrite a chapter's code with the next chapter's** before the user says so. Write
+  the docs skeleton first, then ask.
+- **Git tags are not final** while the repo is a skeleton. Do not create, move or delete one
+  unless asked.
 - **The budget is real.** "New code" in `PLAN.md` is what the viewer types on camera.
   Past it, the chapter splits. Say so — do not squeeze.
 - **Code in `main` reads top to bottom** in the order the video types it.
@@ -56,7 +62,8 @@ More in `docs/SETUP.md`.
 2. Fill the chapter's `README.md`, `BASICS.md`, `QA.md`, and one script per language,
    in the shape `STYLE.md` gives. Add new words to `docs/GLOSSARY.md`.
 3. Update its row in `docs/PROGRESS.md`. Add a row to Decisions for any new choice.
-4. Renumbering a chapter touches the folder, its headings, its tag, and every "chapter NN" in
+4. Prefer a letter (`01.A`) to renumbering. A renumber touches the folder, its headings, its
+   tag, and every "chapter NN" in
    docs and code comments. Grep for all of them.
 
 ## Git

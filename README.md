@@ -3,7 +3,7 @@
 Build an AI agent from nothing. No framework. No cloud. No API key.
 The model runs on your laptop. You write about 300 lines of code, in **TypeScript** and in **C#**.
 
-Thirteen chapters. Most build one part of the agent, in two short videos: one TypeScript, one
+Fourteen chapters. Most build one part of the agent, in two short videos: one TypeScript, one
 C#. Watch the language you use. One chapter gives the agent a chat page. One shows agentic
 workflows: when your code should pick the path, and when the model should.
 
@@ -48,11 +48,8 @@ agent> src/main.ts, line 14. It calls server.listen on the port from PORT.
 6. A word you do not know? [`docs/GLOSSARY.md`](docs/GLOSSARY.md)
 7. Which model for your machine? [`docs/MODELS.md`](docs/MODELS.md)
 
-Each chapter ends on a git tag. To get the code as it stood at the end of chapter 05:
-
-```bash
-git checkout ch05-loop
-```
+How each chapter's code is shipped — a folder per chapter, or a git tag — is decided while the
+videos are recorded. For now `ts/` and `csharp/` hold the latest code.
 
 ## The chapters
 
@@ -60,6 +57,7 @@ git checkout ch05-loop
 |---|---|---|
 | 00 | [the agent we build](chapters/00-the-agent-we-build/) | the demo, and the six parts |
 | 01 | [the model](chapters/01-the-model/) | raw HTTP to a model on your machine |
+| 01.A | [thinking](chapters/01.A-thinking/) | the model thinks first. Turn it on or off, stream it, or hide it. |
 | 02 | [the prompt](chapters/02-the-prompt/) | the system prompt, and why it is cheap |
 | 03 | [the chat page](chapters/03-the-chat-page/) | one HTML page to talk to the agent, served by both stacks |
 | 04 | [tools by hand](chapters/04-tools-by-hand/) | a tool call is just the model writing JSON |

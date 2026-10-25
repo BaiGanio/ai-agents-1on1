@@ -1,6 +1,6 @@
 # Style
 
-How we write, so thirteen chapters read like one person wrote them. Borrowed from
+How we write, so fourteen chapters read like one person wrote them. Borrowed from
 [`agent-ready-payments`](https://github.com/BaiGanio/agent-ready-payments) and cut down.
 
 ## Words
@@ -19,7 +19,7 @@ How we write, so thirteen chapters read like one person wrote them. Borrowed fro
 
 ## Every chapter README has these sections, in this order
 
-1. `# Chapter NN — Title`, then video length, the git tag, links to the files, and a
+1. `# Chapter NN — Title`, then video length, where the code is, links to the files, and a
    **New words** line that links each new word to the glossary
 2. `## What we solve` — the problem, in 3-5 sentences
 3. `## Simple example` — a command and its real output. Copied from a real run, never invented.
@@ -35,8 +35,8 @@ How we write, so thirteen chapters read like one person wrote them. Borrowed fro
 
 ## Videos
 
-Chapters 01-08 are two videos each: one TypeScript, one C#. Each video stands alone. It opens
-with the same short "what we solve" and "everyday picture", so a C# viewer never has to watch
+Chapters 01-08, and 01.A, are two videos each: one TypeScript, one C#. Each video stands alone. It
+opens with the same short "what we solve" and "everyday picture", so a C# viewer never has to watch
 the TypeScript video. Chapters 00, 09, 10, 11 are one video. Chapter 12 is text only.
 
 ## Diagrams

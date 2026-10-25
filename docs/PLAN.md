@@ -4,7 +4,7 @@ One decision per line. We follow this file. When something changes, we change th
 
 ## What the course is
 
-A YouTube series plus this repo. Thirteen chapters. Most build **one component** of an AI agent.
+A YouTube series plus this repo. Fourteen chapters. Most build **one component** of an AI agent.
 One (03) gives it a chat page.
 One (08) shows agentic workflows — the topic most job ads now name.
 One (10) puts the models side by side, so a viewer can pick one for their machine.
@@ -34,17 +34,18 @@ Three tools, and that is all:
 Why this one. No API key. No network. No fake server. It works offline, like the model does.
 Every viewer has a folder of files. The tools are 10 lines each in both languages.
 
-## The thirteen chapters
+## The fourteen chapters
 
 Target: 12-15 minutes per chapter. Two of them may run to 20.
-Chapters 01-08 are two videos each, one per language (see `STYLE.md`). Minutes below are per
-video.
+Chapters 01-08 (and 01.A) are two videos each, one per language (see `STYLE.md`).
+Minutes below are per video.
 "New code" is the amount you type on camera. If a chapter grows past it, we split the chapter.
 
 | # | Chapter | What the viewer learns | New code | Minutes |
 |---|---|---|---|---|
 | 00 | `the-agent-we-build` | the finished demo, and the six parts of an agent | none | 8 |
 | 01 | `the-model` | raw HTTP to a local model. It only reads text and writes text. | ~40 lines | 12 |
+| 01.A | `thinking` | the model thinks before it answers. A `THINK` on/off flag, and streaming so you watch it live. | ~30 lines | 12 |
 | 02 | `the-prompt` | the system prompt. The cheapest way to change behaviour. | ~20 lines | 12 |
 | 03 | `the-chat-page` | one HTML page, a `/chat` endpoint. Talk to the agent in a browser. | ~40 lines | 12 |
 | 04 | `tools-by-hand` | ask for JSON, parse it, run a function. Tool calling is just text. | ~70 lines | 15 |
@@ -56,6 +57,11 @@ video.
 | 10 | `choosing-a-model` | five models: file size, RAM per context, speed, vision. Pick one for your machine. | none | 15 |
 | 11 | `side-by-side` | TypeScript against C#: what differs, what does not | none | 20 |
 | 12 | `frameworks` *(optional, text only)* | the same agent in a framework, and what it hid | — | — |
+
+Chapter 01.A comes right after the model on purpose. The default model thinks before it
+answers, and the viewer waits for it from the first call. So they meet the flag first, and
+decide for themselves whether to see the thinking, stream it, or turn it off. It is called
+01.A, not 02, so the chapters after it keep their numbers.
 
 Chapter 03 comes early on purpose. Viewers want to see a page, not a terminal. The agent is still
 small at that point (model + prompt), so the server is small too. From 04 on, every tool call
@@ -84,11 +90,16 @@ correct `list_files` tool call in 2.8 s warm.
 
 ## Code layout
 
-**One project per language, and it grows.** Not a copy per chapter.
+**Not final.** It is decided while we record. Until then, `ts/` and `csharp/` hold the code of
+the latest chapter that has code.
 
-Each chapter ends on a **git tag**: `ch01-model`, `ch02-prompt`, and so on. A viewer who lands on
-video 6 runs `git checkout ch06-memory` and has working code. On camera you can run
-`git diff ch04-tools-by-hand..ch05-loop` to show exactly what changed.
+**How a chapter is made.** At recording, each chapter starts as a copy of the code from the
+chapter before it. Only the new code is typed on camera. That way each chapter shows clearly
+what it adds, and in what order — first, middle, last.
+
+When recording is done, we pick one of two shapes: a folder of code per chapter, or one project
+that grows with a git tag per chapter. Git tags made before then are not final and may be
+deleted.
 
 ```
 ai-agents-1on1/
@@ -105,8 +116,8 @@ ai-agents-1on1/
     SCRIPT.md                 the camera script: Goal / Why / Do / Proof, per step
     QA.md                     questions a viewer should be able to answer
     BASICS.md                 what a junior must know before this chapter
-  ts/                         one TypeScript project, grows per chapter
-  csharp/                     one C# project, grows per chapter
+  ts/                         the TypeScript code. Layout per chapter not final.
+  csharp/                     the C# code. Layout per chapter not final.
   web/index.html              the chat page. One file, no framework. Both stacks serve it.
   sample-repo/                the folder the Librarian reads
   scripts/                    check.sh, measure.ts, ollama.sh, llama.sh
@@ -119,8 +130,7 @@ Each side stays natural for its language. Where they must differ, `chapters/NN/R
 
 Two choices we make later, when we see the code. Nothing in this plan depends on them.
 
-1. **Tags or folders.** We start with tags. If viewers trip on `git checkout`, we export each tag
-   to a folder. The layout above survives either way.
+1. **Code layout.** A folder per chapter, or one project with tags. See "Code layout" above.
 2. **Chapter 12, frameworks.** Simple wins. If it adds noise, it stays a text appendix.
 
 ## Order of work
