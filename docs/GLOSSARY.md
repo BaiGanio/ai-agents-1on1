@@ -9,10 +9,12 @@ If a word is missing, add it here before you use it in a chapter.
 | <a id="agentic-workflow"></a>**agentic workflow** | several model calls wired together by your code. See [workflow](#workflow). |
 | <a id="context-window"></a>**context window** | how much text the model can read in one call. Past it, the oldest text falls out. |
 | <a id="endpoint"></a>**endpoint** | one URL on a server that does one job, like `POST /api/chat` |
+| <a id="environment-variable"></a>**environment variable** | a setting you put in front of a command: `THINK=off node main.ts`. It lives for that one run. |
 | <a id="gguf"></a>**GGUF** | a file format for a model, so one file holds the whole model. llama.cpp reads it. |
 | <a id="guardrail"></a>**guardrail** | a rule in *your* code that stops the agent: a step cap, a timeout, an allow-list |
 | <a id="hallucination"></a>**hallucination** | the model says something false, and sounds sure. It guesses instead of looks. |
 | <a id="json"></a>**JSON** | text that holds data: `{"name": "value"}`. See [chapter 01 basics](../chapters/01-the-model/BASICS.md). |
+| <a id="json-lines"></a>**JSON Lines** | many small JSON objects, one per line, instead of one big one. How Ollama streams. |
 | <a id="llama-cpp"></a>**llama.cpp** | a runner with more knobs than Ollama. Chapter 09. |
 | <a id="local-model"></a>**local model** | a model that runs on your computer, not in the cloud. No key, no bill. |
 | <a id="loop"></a>**the loop** | your code: send, run the tool the model asked for, send the result back, repeat |

@@ -3,6 +3,7 @@
 **Video:** about 12 minutes.
 **Files:** [`code/ts/src/main.ts`](code/ts/src/main.ts) ·
 [`code/csharp/Program.cs`](code/csharp/Program.cs)
+**Scripts:** [`SCRIPT-ts.md`](SCRIPT-ts.md) · [`SCRIPT-csharp.md`](SCRIPT-csharp.md)
 **New words:** [model](../../docs/GLOSSARY.md#model) ·
 [endpoint](../../docs/GLOSSARY.md#endpoint) · [local model](../../docs/GLOSSARY.md#local-model) ·
 [Ollama](../../docs/GLOSSARY.md#ollama) ·

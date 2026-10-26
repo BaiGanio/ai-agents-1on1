@@ -112,7 +112,8 @@ ai-agents-1on1/
     MODELS.md                 which model fits which machine: file, RAM per context, vision
   chapters/NN-name/
     README.md                 the lesson: what we solve, example, why it matters
-    SCRIPT.md                 the camera script: Goal / Why / Do / Proof, per step
+    SCRIPT-ts.md              the TypeScript camera script: Goal / Why / Do / Proof
+    SCRIPT-csharp.md          the C# camera script. Shared steps are word for word.
     QA.md                     questions a viewer should be able to answer
     BASICS.md                 what a junior must know before this chapter
     code/ts/                  the TypeScript code at the end of this chapter

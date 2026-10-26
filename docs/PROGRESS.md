@@ -10,7 +10,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 |---|---|---|---|---|---|---|---|
 | 00 | the agent we build | — | n/a | n/a | — | — | — |
 | 01 | the model | ✅ | ✅ | ✅ | ✅ | — | — *(old tag `ch01-model` is out of date)* |
-| 01.A | thinking | — | ✅ | ✅ | — | — | — |
+| 01.A | thinking | ✅ | ✅ | ✅ | ✅ | — | — |
 | 02 | the prompt | — | — | — | — | — | — |
 | 03 | the chat page | — | — | — | — | — | — |
 | 04 | tools by hand | — | — | — | — | — | — |
@@ -49,6 +49,22 @@ One row per chapter. Update it when a state changes. This is the first file to o
 - Chapter 01.A code from `42f8ac5` in `chapters/01.A-thinking/code/`. `THINK=off` answers in
   both stacks.
 
+**2026-10-26, same machine. For the chapter 01.A docs.**
+
+- `gemma4:e2b`, "In five words, what is an AI agent?", warm:
+  TS `THINK=off` 0.4 s, "Perceives, reasons, acts autonomously."
+  TS `THINK=on` 5.4 s, "Perceives, reasons, acts, achieves goals."
+  C# `THINK=off` 1.1 s, "Perceives, reasons, acts, learns." C# `THINK=on`, "Autonomous agent
+  perceiving acting." The C# times include about 0.5 s of `dotnet run`.
+- Streamed "Say hi in two words." on `gemma4:e2b`: **330 lines**, 328 of thinking and 2 of
+  answer. `eval_count` 379. The last line is the only one with the counts.
+- The `think` field has three behaviours, all checked by curl on `gemma4:e2b`:
+  no field → 714 characters of thinking, `eval_count` 204.
+  `"think": null` → no thinking at all. `"think": true` → thinking.
+  So `null` is **not** the same as absent. That is what the C# `WhenWritingNull` option buys.
+- `MODEL=phi4-mini:3.8b THINK=on` → `400 Bad Request: {"error":"\"phi4-mini:3.8b\" does not
+  support thinking"}`. The same model with `THINK` unset answered "AI agent automates tasks."
+
 ## Decisions
 
 | # | Decision | Date | Why |
@@ -72,16 +88,22 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 17 | Thinking is chapter 01.A, right after the model: a `THINK` on/off flag, and streaming. Lettered so nothing renumbers. | 2026-10-25 | the default model thinks before every answer. Viewers should meet it, and choose, first. |
 | 18 | Code layout is not final. Replaces decision 3. Each chapter starts as a copy of the one before at recording. Folders or tags decided later. Tags made so far are not final. | 2026-10-25 | the author tracks what each chapter adds, in order, while recording |
 | 19 | No chapter is recorded until every chapter is `ready`. `ready` now means: docs, code and both scripts agree with each other and with the chapters after it. | 2026-10-25 | a chapter's code must lead into the next one. Recording early locks in code that a later chapter may change. |
+| 21 | One camera script per language: `SCRIPT-ts.md` and `SCRIPT-csharp.md`. Chapter 01's `SCRIPT.md` is split and deleted. Shared steps are copied word for word, not linked. | 2026-10-26 | decision 13 makes each video stand alone. A reader of one script must never jump to the other. Closes the third To-do item. |
+| 22 | `chapters/01.A-thinking/code/lk-csharp/` is the author's own copy. It stays, and nothing in the course links to it. | 2026-10-26 | the author uses it while recording. It is not part of the layout in `PLAN.md`, so it must not be deleted as a stray. |
+| 23 | Chapter 02 loads the system prompt from a file. `prompts/librarian.md` and a second persona, picked by a `PROMPT` environment variable. It also adds a terminal read-loop, so the prompt holds across turns. | 2026-10-26 | a prompt you edit without touching code is the lesson. The read-loop shows the system prompt surviving many turns, which one-shot cannot. |
 | 20 | One code folder per chapter: `chapters/NN-name/code/ts/` and `code/csharp/`. Replaces the shared `ts/` and `csharp/`. Chapter 01's code comes from `17db27d`, 01.A's from `42f8ac5`. Closes open item 1. | 2026-10-25 | 01 and 01.A sit side by side, so `diff -r` shows what a chapter adds. Decision 19 needs that check for every pair. |
 
 ## To do
 
-- Chapter 01 is not `ready` under decision 19. Its docs and script do not match the code
-  yet. Its ✅ marks are from before the rule.
+- Chapter 01 is not `ready` under decision 19. Its docs and scripts match its own code now,
+  but nothing after chapter 02 exists to check them against.
+- Chapter 01.A is not `ready` under decision 19, for the same reason. Docs, code and both
+  scripts agree with each other and were run on 2026-10-26.
+- Chapter 02 is over its ~20-line budget in `PLAN.md`. Decision 23 adds a prompt file **and**
+  a terminal read-loop, which is nearer 40 lines. If the video runs long, split it: `02` for
+  the prompt file, `02.A` for the read-loop.
 - Finish the `gemma4:26b` row in `docs/MODELS.md` (64K, 128K) and test tools on 26b, qwen3.5:4b
   and Ornith. Needed by chapter 10.
-- `chapters/01-the-model/SCRIPT.md` is one script for both languages. Split it into a
-  TypeScript script (steps 0, 1, 2, 4) and a C# script (steps 0, 1, 3, 4).
 
 ## Open
 
