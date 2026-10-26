@@ -70,8 +70,8 @@ warning. Chapter 06 gives the list a size and gives the agent a notes file that 
 
 <details><summary>A</summary>
 
-TypeScript: `ENOENT: no such file or directory, open 'prompts/nope.md'`.
-C#: `System.IO.DirectoryNotFoundException` or `FileNotFoundException`, with the full path.
+TypeScript: `ENOENT: no such file or directory, open '../prompts/nope.md'`.
+C#: `System.IO.FileNotFoundException`, with the full path it tried.
 The usual cause is not a typo. It is the working directory — you ran the program from
 somewhere other than the code folder.
 

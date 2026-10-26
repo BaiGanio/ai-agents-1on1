@@ -25,7 +25,11 @@ const string Reset = "\x1b[0m";
 
 // One HttpClient for the process. A new one per call leaks sockets, and a local model can take
 // minutes on the first answer while it loads into RAM, so the 100-second default is too short.
-using var http = new HttpClient { BaseAddress = new Uri(ollamaUrl), Timeout = TimeSpan.FromMinutes(5) };
+using var http = new HttpClient
+{
+    BaseAddress = new Uri(ollamaUrl),
+    Timeout = TimeSpan.FromMinutes(5),
+};
 
 // Ollama's field names are lower case. C# properties are not, so we say so once, here, and
 // never think about it again. WhenWritingNull is what makes `think: null` mean "not sent".
@@ -61,7 +65,8 @@ async Task<Message> ChatAsync(List<Message> history)
         // Ollama puts the real reason in the body — an unknown model, a bad field. Without this
         // line you get a bare 500 and no idea which of the two it was.
         var body = await response.Content.ReadAsStringAsync();
-        throw new HttpRequestException($"{(int)response.StatusCode} {response.ReasonPhrase}: {body}");
+        throw new HttpRequestException(
+            $"{(int)response.StatusCode} {response.ReasonPhrase}: {body}");
     }
 
     var content = new StringBuilder();
