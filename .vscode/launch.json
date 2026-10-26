@@ -1,0 +1,36 @@
+{
+  // Chapter-free on purpose. Both configs follow the file you have open, so a
+  // new chapter needs no edit here.
+  "version": "0.2.0",
+  "inputs": [
+    {
+      "id": "question",
+      "type": "promptString",
+      "description": "Question for the Repo Librarian",
+      "default": "What does this repo do?"
+    }
+  ],
+  "configurations": [
+    {
+      "name": "TS: debug open file",
+      "type": "node",
+      "request": "launch",
+      "program": "${file}",
+      "args": ["${input:question}"],
+      "cwd": "${fileDirname}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "C#: debug open file's project",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build the open file's C# project",
+      "program": "${fileDirname}/bin/Debug/net10.0/RepoLibrarian.dll",
+      "args": ["${input:question}"],
+      "cwd": "${fileDirname}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    }
+  ]
+}
