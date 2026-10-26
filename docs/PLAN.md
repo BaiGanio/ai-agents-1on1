@@ -118,6 +118,7 @@ ai-agents-1on1/
     BASICS.md                 what a junior must know before this chapter
     code/ts/                  the TypeScript code at the end of this chapter
     code/csharp/              the C# code at the end of this chapter
+    code/prompts/             the system prompts. Both stacks read this one folder.
   web/index.html              the chat page. One file, no framework. Both stacks serve it.
   sample-repo/                the folder the Librarian reads
   scripts/                    check.sh, measure.ts, ollama.sh, llama.sh

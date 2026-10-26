@@ -24,6 +24,7 @@ If a word is missing, add it here before you use it in a chapter.
 | <a id="model"></a>**model** | a program that reads text and writes the text most likely to come next |
 | <a id="ollama"></a>**Ollama** | a runner. It loads a model and gives it an HTTP endpoint on port 11434. |
 | <a id="parameters"></a>**parameters** | the numbers a model learned. "4B" means 4 billion. More is smarter and slower. |
+| <a id="persona"></a>**persona** | who the agent acts like. One [system prompt](#system-prompt) file per persona. Chapter 02. |
 | <a id="prompt"></a>**prompt** | the text you send the model |
 | <a id="quantisation"></a>**quantisation** | making a model smaller by storing its numbers with less detail. Faster, a bit less clever. |
 | <a id="role"></a>**role** | who wrote a message: `system`, `user`, `assistant`, or `tool` |
