@@ -166,6 +166,19 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
 - No line in either source file, or in `index.html`, is over 100 columns. `bin/` and `obj/` are
   ignored by `.gitignore` lines 8 and 9, so the chapter adds 8 files to git.
 
+**2026-10-27, same machine. Chapter 01's C# rewritten in the `lk-csharp` shape (decision 33).**
+
+- `Helper.cs` 35 lines, `Program.cs` 46 lines. `dotnet build` clean, 0 warnings, 1.8 s.
+- Two turns piped in, `gemma4:e2b`: "In five words, what is an AI agent?" then "And in three?".
+  It printed `Perceives, decides, acts, achieves goals.` then `Perceives, decides, acts.`
+  The second answer is shorter, so turn two saw turn one. That is the `messages.Add(reply.Message)`
+  line doing its job, inside one run.
+- **47 code lines** (blank and comment lines not counted): 24 in `Helper.cs`, 23 in `Program.cs`.
+  Over the ~40 in `PLAN.md`. See To do.
+- The nine C# blocks in `SCRIPT-csharp.md` rebuild `Helper.cs` and `Program.cs` byte for byte,
+  checked by script. No line in either file is over 100 columns.
+- Not rerun: `scripts/check.sh`, and the TypeScript side, which is untouched.
+
 ## Decisions
 
 | # | Decision | Date | Why |
@@ -202,6 +215,7 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
 | 29 | `chat` / `ChatAsync` takes a `send` callback instead of printing. Two callers: `toTerminal` and the one that writes a JSON line into the response. | 2026-10-27 | one function, two windows. It is four lines, and it means chapter 05's loop does not have to touch `chat` at all. |
 | 30 | The `POST /chat` handler wraps the model call in a `try`, writes `{"error": "..."}` into the stream, and pops the unanswered question. | 2026-10-27 | measured: without it, Ollama being down kills the server and the browser gets nothing. Chapters 04-08 all live in this process, so it must not die on one bad request. |
 | 31 | A camera script is a numbered runbook, not prose. Every step is **Say / Type / Proof**, plus **Note** for a must-say line. Shell commands are written out in full and copy-paste ready, including the scaffold (`npm init`, `dotnet new console`) and an off-camera **Before you record** block. Code steps give a line range in the chapter's finished file, never a pasted code block. Amends decision 21. Chapter 01 is rewritten in this shape — 01.A, 02 and 03 still have to follow. | 2026-10-27 | the author stopped mid-take to look up commands. A script must be readable top to bottom while recording, with nothing else open. |
+| 33 | Chapter 01's C# follows `chapters/01-the-model/code/lk-csharp/`: two files (`Helper.cs` for the plumbing, `Program.cs` for the conversation), and a `while (true)` terminal loop that reads `You:` until an empty line. No command-line arguments. The reply is appended to `messages`, so turn two sees turn one. Kept from the old code against `lk-csharp`: the `OLLAMA_URL` and `MODEL` environment reads, and the 5-minute `Timeout`. Amends decisions 23 and 25 for the C# side only — TypeScript is untouched and still one-shot. | 2026-10-27 | the author's own file is the one he can record from without hesitating, and `Program.cs` reading as nothing but the conversation is the clearer lesson. The two keeps are not style: `scripts/check.sh` runs `MODEL=nope:1b`, `docs/MODELS.md` swaps models by environment, and a cold model can pass the 100-second default and fail as a fake network error. |
 | 32 | A code step in a camera script carries the real code block, copied from the chapter's finished file, plus the line range it came from. `SCRIPT-csharp.md` is the first one. Amends decision 31, which asked for line ranges alone. | 2026-10-27 | a line range sends the author to a second file mid-take, which is the problem decision 31 set out to fix. The drift risk is real, so the blocks are checked against the file: the six C# blocks rebuild `Program.cs` byte for byte. Re-run that check whenever a chapter's code changes. |
 
 ## To do
@@ -211,9 +225,21 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
 - Chapter 01's two scripts are runbooks under decision 31. `01.A`, `02` and `03` are still
   prose in the old Goal / Why / Do / Proof shape. Rewrite them before any recording, or
   the four chapters do not read alike.
+- **Decision 33 has not been carried past chapter 01.** The C# loop now lives in chapter 01, so
+  every one of these still describes the old one-shot code and must be reworked, in this order:
+  `docs/SETUP.md` lines 246-261 and 309-325, `CLAUDE.md` line 26, chapter `01.A`'s README and
+  `SCRIPT-csharp.md` (five `dotnet run -- "..."` commands), chapter `02`'s README, `BASICS.md`
+  and `SCRIPT-csharp.md` (the loop it adds is already built), and chapter `03`'s README and
+  `SCRIPT-csharp.md`. Chapter 02's C# video loses its second half and needs a new one.
+- Chapter 01's C# is **47 code lines** against the ~40 in `PLAN.md`. The split line, if the
+  video runs long, is after step 9: `01` for `Helper.cs` and one question, `01.A` for the loop.
+  Do not squeeze it — reprice the row in `PLAN.md` or split.
+- Decision 22 keeps `chapters/01-the-model/code/lk-csharp/` as the author's private copy. It is
+  now nearly the same as `code/csharp/`. Ask whether it still earns a folder.
 - `SCRIPT-csharp.md` carries full code blocks under decision 32. `SCRIPT-ts.md` still has
   line ranges alone. Give it the same blocks, or the two videos are recorded off different
-  kinds of script.
+  kinds of script. The author asked to settle the C# side first, then split TypeScript into
+  `helper.ts` + `main.ts` to match.
 - Nobody has recorded a take against the chapter 01 runbook yet. The `Before you record`
   commands P1-P6 (P1-P7 in C#) are written but unrun as a block.
 - Chapter 01.A is not `ready` under decision 19, for the same reason. Docs, code and both

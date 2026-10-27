@@ -4,19 +4,25 @@ Target 12 minutes. Read this file top to bottom while you record. Nothing else n
 every command and every line of code is here.
 
 Every step is **Say / Type / Proof**, and some add a **Note** — the one sentence you must not
-forget. **Type** is exactly what goes on air. The finished file is
-[`code/csharp/Program.cs`](code/csharp/Program.cs), and each code step says which lines of it
+forget. **Type** is exactly what goes on air. The finished files are
+[`code/csharp/Helper.cs`](code/csharp/Helper.cs) and
+[`code/csharp/Program.cs`](code/csharp/Program.cs), and each code step says which lines of them
 you are typing, so a bad take is one paste away.
 
-The TypeScript video is [`SCRIPT-ts.md`](SCRIPT-ts.md). Steps 1, 2, 3, 4, 15 and 16 are shared
-with it word for word, so a TypeScript viewer never has to watch this one.
+Two files, on purpose. `Helper.cs` is the plumbing: where the model lives, one HTTP client, one
+set of JSON options, three records. `Program.cs` is only the conversation, and it reads top to
+bottom. Say that out loud at step 6.
+
+The TypeScript video is [`SCRIPT-ts.md`](SCRIPT-ts.md). Steps 1, 2, 3 and 4 are shared with it
+word for word, so a TypeScript viewer never has to watch this one.
 
 | Act | Steps | Minutes |
 |---|---|---|
 | 0 — the promise | 1 | 0:00–1:00 |
 | 1 — the endpoint, by curl | 2–4 | 1:00–3:30 |
-| 2 — the code | 5–12 | 3:30–9:30 |
-| 3 — break it, and hand off | 13–16 | 9:30–12:00 |
+| 2 — Helper.cs, the plumbing | 5–9 | 3:30–6:30 |
+| 3 — Program.cs, the conversation | 10–14 | 6:30–9:30 |
+| 4 — break it, and hand off | 15–18 | 9:30–12:00 |
 
 ---
 
@@ -121,7 +127,7 @@ wait goes. Chapter 01.A turns it off.
 
 ---
 
-## Act 2 — The code · 3:30–9:30
+## Act 2 — Helper.cs, the plumbing · 3:30–6:30
 
 ### 5. Make the project
 
@@ -139,46 +145,49 @@ dotnet new console -n RepoLibrarian -o . -f net10.0
 
 **Proof.** `RepoLibrarian.csproj` and `Program.cs` exist.
 
-### 6. The header, the usings, the two settings · lines 1-11
+### 6. Start Helper.cs — where the model lives · Helper.cs lines 1-13
 
-**Say.** "Delete the hello world. Where the model lives, and which model. Both come from the
-environment, with a default, so nobody has to edit code to switch model."
+**Say.** "Two files. This one is the plumbing, and you write it once and forget it. The other
+one is the conversation, and it reads top to bottom."
 
-**Type.** Open `Program.cs`, delete everything in it, then type this.
+**Type.** Make a new file, `Helper.cs`.
 
 ```csharp
-// Chapter 01 — the model.
-//
-// The whole point of this file: a model is an HTTP endpoint. You send it a list of messages.
-// It sends back one more message. There is no magic, no SDK, and no state on the server.
-
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-var ollamaUrl = Environment.GetEnvironmentVariable("OLLAMA_URL") ?? "http://localhost:11434";
-var model = Environment.GetEnvironmentVariable("MODEL") ?? "gemma4:e2b";
+// Everything needed to reach the model, in one place, so Program.cs is only the conversation.
+public static class Helper
+{
+    // Both read the environment first. Nobody has to edit code to point at another machine
+    // or swap the model.
+    public static readonly string Model =
+        Environment.GetEnvironmentVariable("MODEL") ?? "gemma4:e2b";
+
+    public static readonly string OllamaUrl =
+        Environment.GetEnvironmentVariable("OLLAMA_URL") ?? "http://localhost:11434";
 ```
 
-**Note.** This is a top-level `Program.cs`. No classes, no interfaces, no dependency injection.
-Say so, and say when they arrive: chapter 07, when there is something real to inject.
+**Note.** Both read the environment first, with a default. Nobody has to edit code to point at
+another machine or swap the model. Chapter 10 leans on that.
 
-**Proof.** The file exists and the hello world is gone.
+**Proof.** The file exists.
 
-### 7. One HttpClient, and a long timeout · lines 13-19
+### 7. One HttpClient · Helper.cs lines 15-22
 
 **Say.** "One client for the whole process. A new one per call leaks sockets."
 
 **Type.**
 
 ```csharp
-// One HttpClient for the process. A new one per call leaks sockets, and a local model can take
-// minutes on the first answer while it loads into RAM, so the 100-second default is too short.
-using var http = new HttpClient
-{
-    BaseAddress = new Uri(ollamaUrl),
-    Timeout = TimeSpan.FromMinutes(5),
-};
+    // One client for the whole process. A new one per call leaks sockets, and a local model can
+    // take minutes on the first answer while it loads into RAM, so 100 seconds is too short.
+    public static readonly HttpClient OllamaHttpClient =
+        new()
+        {
+            BaseAddress = new Uri(OllamaUrl),
+            Timeout = TimeSpan.FromMinutes(5),
+        };
 ```
 
 **Note.** The default timeout is 100 seconds. A local model can take minutes on the first
@@ -187,87 +196,31 @@ really a slow disk.
 
 **Proof.** —
 
-### 8. The JSON options · lines 21-27
+### 8. The JSON options · Helper.cs lines 24-31
 
-**Say.** "Ollama's field names are lower case. C# properties are not. We say so once, here."
-
-**Type.**
-
-```csharp
-// Ollama's field names are lower case. C# properties are not, so we say so once, here, and
-// never think about it again.
-var json = new JsonSerializerOptions
-{
-    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-};
-```
-
-**Note.** Two options, and both matter. `PropertyNamingPolicy` maps the names.
-`DefaultIgnoreCondition` keeps empty fields out of the request body.
-We come back and delete the first one at step 13.
-
-**Proof.** —
-
-### 9. The three lines that do the work · lines 29-36
-
-**Say.** "Read the question, build the list, print the answer."
+**Say.** "Ollama's field names are lower case. C# properties are not. We say so once, here,
+and never think about it again."
 
 **Type.**
 
 ```csharp
-var prompt = args.Length > 0 ? string.Join(' ', args) : "Say hello in five words.";
-
-// The model remembers nothing between calls. Every turn sends the whole history back.
-// That list is the agent's short memory, and it is the only memory it has until chapter 06.
-List<Message> messages = [new("user", prompt)];
-
-var answer = await ChatAsync(messages);
-Console.WriteLine(answer.Content.Trim());
-```
-
-**Note.** Stop at the `List<Message>` line. Say: **"a list, not a string. The model gets the
-whole story every time, because it remembers nothing."** That line is the seed of chapter 06.
-
-**Proof.** The editor shows one error: `ChatAsync` does not exist yet. Say that is next.
-
-### 10. The request · lines 38-58
-
-**Say.** "This is the curl. Same URL, same body, same `Stream: false`."
-
-**Type.**
-
-```csharp
-// Sends the conversation so far. Returns the one message the model wrote.
-async Task<Message> ChatAsync(List<Message> history)
-{
-    // stream:false means "one JSON object when you are done", not a drip of tokens.
-    // Streaming is nicer for a user and noisier for a lesson, so it stays off until chapter 06.
-    var request = new ChatRequest(model, history, Stream: false);
-
-    var response = await http.PostAsJsonAsync("/api/chat", request, json);
-
-    if (!response.IsSuccessStatusCode)
-    {
-        // Ollama puts the real reason in the body — an unknown model, a bad field. Without this
-        // line you get a bare 500 and no idea which of the two it was.
-        var body = await response.Content.ReadAsStringAsync();
-        throw new HttpRequestException(
-            $"{(int)response.StatusCode} {response.ReasonPhrase}: {body}");
-    }
-
-    var reply = await response.Content.ReadFromJsonAsync<ChatResponse>(json);
-    return reply!.Message;
+    public static readonly JsonSerializerOptions AgentJsonOptions =
+        new()
+        {
+            // Ollama's field names are lower case. C# properties are not, so we say so once, here.
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
 }
 ```
 
-**Note.** `Stream: false` means one JSON object at the end, not a drip of words. Streaming is
-nicer for a user and noisier for a lesson, so it waits until chapter 06. And the status check
-exists because Ollama puts the real reason in the body — without it you get a bare 500.
+**Note.** Both options matter. `PropertyNamingPolicy` maps the names.
+`DefaultIgnoreCondition` keeps empty fields out of the request body.
+We come back and delete the first one at step 15.
 
-**Proof.** —
+**Proof.** The class closes. `Helper.cs` is 31 lines so far.
 
-### 11. The three records · lines 60-62
+### 9. The three records · Helper.cs lines 33-35
 
 **Say.** "Three lines for the whole protocol. No classes, no properties, no boilerplate."
 
@@ -279,40 +232,156 @@ record ChatRequest(string Model, List<Message> Messages, bool Stream);
 record ChatResponse(Message Message);
 ```
 
-**Note.** Records go at the bottom. Top-level statements must come before any type.
+**Note.** They sit outside the class, at the bottom of the file. That is the whole API shape:
+one message in a list, one message back.
 
-**Proof.** The file is 62 lines and the errors are gone.
+**Proof.** `Helper.cs` is 35 lines and `Helper.cs` alone builds.
 
-### 12. Run it
+---
 
-**Say.** "The two dashes matter. Without them, `dotnet run` eats your words as its own flags."
+## Act 3 — Program.cs, the conversation · 6:30–9:30
+
+### 10. Clear Program.cs and set up · Program.cs lines 1-14
+
+**Say.** "Delete the hello world. Three lines of set-up, and all three come from `Helper`."
+
+**Type.** Open `Program.cs`, delete everything, then type this.
+
+```csharp
+// Chapter 01 — the model.
+//
+// The whole point of this file: a model is an HTTP endpoint.
+// You send it a list of messages.
+// It sends back one more message.
+// There is no magic, no SDK, and no state on the server.
+
+using System.Net.Http.Json;
+
+List<Message> messages = [];
+
+HttpClient http = Helper.OllamaHttpClient;
+
+Console.WriteLine("Type a question. An empty line stops the app.");
+```
+
+**Note.** Stop at `List<Message> messages = []`. Say: **"a list, not a string. The model gets
+the whole story every time, because it remembers nothing."** That line is the seed of
+chapter 06.
+
+**Proof.** The hello world is gone.
+
+### 11. The loop and the question · Program.cs lines 16-24
+
+**Say.** "No command-line arguments. You talk to it, like a chat."
+
+**Type.**
+
+```csharp
+while (true)
+{
+    Console.Write("You: ");
+
+    // ReadLine gives null when input ends, so this one check covers both quit and end of input.
+    string? prompt = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(prompt)) break;
+
+    messages.Add(new("user", prompt));
+```
+
+**Note.** `ReadLine` gives `null` when input ends, so one check covers both an empty line and
+a piped file that ran out. Say that — it is why there is no second `if`.
+
+**Proof.** —
+
+### 12. The request · Program.cs lines 26-37
+
+**Say.** "This is the curl. Same URL, same body, same `Stream: false`."
+
+**Type.**
+
+```csharp
+    ChatRequest request = new(Helper.Model, messages, Stream: false);
+
+    var response = await http.PostAsJsonAsync("/api/chat", request, Helper.AgentJsonOptions);
+
+    if (!response.IsSuccessStatusCode)
+    {
+        // Ollama puts the real reason in the body — an unknown model, a bad field. Without this
+        // line you get a bare 500 and no idea which of the two it was.
+        var body = await response.Content.ReadAsStringAsync();
+        throw new HttpRequestException(
+            $"{(int)response.StatusCode} {response.ReasonPhrase}: {body}");
+    }
+```
+
+**Note.** `Stream: false` means one JSON object at the end, not a drip of words. Streaming is
+nicer for a user and noisier for a lesson, so it waits until chapter 01.A. And the status check
+exists because Ollama puts the real reason in the body — without it you get a bare 500.
+
+**Proof.** —
+
+### 13. The reply, printed and remembered · Program.cs lines 39-46
+
+**Say.** "Read the one message it wrote, print it, and put it back in the list."
+
+**Type.**
+
+```csharp
+    var reply = await response.Content.ReadFromJsonAsync<ChatResponse>(Helper.AgentJsonOptions);
+
+    Console.WriteLine(
+        $"{Helper.Model} (role: {reply!.Message.Role}): {reply.Message.Content.Trim()}");
+
+    // The reply goes back into the list. The model remembers nothing, so the list is the memory.
+    messages.Add(reply.Message);
+}
+```
+
+**Note.** The last line is the one to linger on. The reply goes into the same list the next
+question goes into, so turn two sees turn one. That is the only memory an agent gets until
+chapter 06.
+
+**Proof.** `Program.cs` is 46 lines and the build is clean.
+
+### 14. Run it
+
+**Say.** "No arguments, no flags. It asks you."
 
 **Type.**
 
 ```bash
-dotnet run -- "In five words, what is an AI agent?"
+dotnet run
 ```
 
-**Proof.** An answer in the terminal, from your own code.
+Then type two questions that lean on each other, and an empty line to stop:
+
+```text
+In five words, what is an AI agent?
+And in three?
+```
+
+**Note.** The second answer proves the list is the memory. Point at it.
+
+**Proof.** Two answers in the terminal, the second one shorter, from your own code.
 
 ---
 
-## Act 3 — Break it, and hand off · 9:30–12:00
+## Act 4 — Break it, and hand off · 9:30–12:00
 
-### 13. Delete the camelCase option
+### 15. Delete the camelCase option
 
 **Say.** "This is the one that bites every C# viewer. Watch."
 
-**Type.** Delete this one line from the JSON options:
+**Type.** In `Helper.cs`, delete this one line:
 
 ```csharp
-    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 ```
 
-Then run it:
+Then run it and ask anything:
 
 ```bash
-dotnet run -- "hello"
+dotnet run
 ```
 
 Put the line back and run again.
@@ -322,35 +391,35 @@ that out loud — it is not an HTTP problem.
 
 **Proof.** A `NullReferenceException` on screen, then a working answer.
 
-### 14. Kill the server
+### 16. Kill the server
 
 **Say.** "This is the error you will hit first. Here is what it looks like."
 
-**Type.** In the `ollama serve` window, press `Ctrl+C`. Then:
+**Type.** In the `ollama serve` window, press `Ctrl+C`. Then run and ask anything:
 
 ```bash
-dotnet run -- "hello"
+dotnet run
 ```
 
 Then start the server again.
 
 **Proof.** A connection-refused error on screen.
 
-### 15. Let it make something up
+### 17. Let it make something up
 
 **Say.** "It has never seen this folder. Watch it answer anyway."
 
-**Type.**
+**Type.** At the `You:` prompt:
 
-```bash
-dotnet run -- "Which file starts the HTTP server?"
+```text
+Which file starts the HTTP server?
 ```
 
 **Note.** This is the reason the rest of the course exists. Do not fix it here.
 
 **Proof.** The model invented a filename, on camera.
 
-### 16. Hand off
+### 18. Hand off
 
 **Say.** "Five words took six seconds, and you saw why in the `thinking` field. Next video you
 get a flag for that, and you watch the answer arrive word by word."
