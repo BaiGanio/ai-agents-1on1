@@ -1,8 +1,9 @@
 # Chapter 02 — The prompt
 
 **Video:** about 12 minutes. Two videos: one TypeScript, one C#.
-**Code:** the chapter 01.A code, plus 38 new lines in TypeScript and 37 in C#.
+**Code:** the chapter 01.A code, plus 38 new lines in TypeScript and **4 in C#**.
 **Files:** [`code/ts/src/main.ts`](code/ts/src/main.ts) ·
+[`code/csharp/Helper.cs`](code/csharp/Helper.cs) ·
 [`code/csharp/Program.cs`](code/csharp/Program.cs) ·
 [`code/prompts/`](code/prompts/)
 **Scripts:** [`SCRIPT-ts.md`](SCRIPT-ts.md) · [`SCRIPT-csharp.md`](SCRIPT-csharp.md)
@@ -10,6 +11,13 @@
 [hallucination](../../docs/GLOSSARY.md#hallucination) ·
 [persona](../../docs/GLOSSARY.md#persona)
 **New to reading files or stdin?** Read [`BASICS.md`](BASICS.md) first.
+
+> **The two stacks do not match yet.** The C# side follows chapters 01 and 01.A: three files,
+> a `while (true)` loop, and no command-line arguments. The TypeScript side is still chapter
+> 01.A's one file, with a one-shot `argv` path and a `THINK` environment variable. Both answer
+> the same questions with the same prompts, and the lesson of this chapter is identical in
+> both. The shape is not. The TypeScript pass closes the gap — see
+> [`docs/PROGRESS.md`](../../docs/PROGRESS.md) "To do".
 
 ## What we solve
 
@@ -48,8 +56,22 @@ cd chapters/02-the-prompt/code/ts && PROMPT=pirate THINK=off node src/main.ts "W
 
 That is the whole chapter. One block of text is the cheapest control you have over a model.
 
-A question on the command line still gives one answer and exits, exactly as in chapter 01.
-Run it with **no** question and you get the terminal loop instead.
+The C# side has no question on the command line (see the note at the top). You type at the
+`You:` prompt instead, and the answer is the same:
+
+```bash
+cd chapters/02-the-prompt/code/csharp && dotnet run
+# You: Which file starts the HTTP server?
+# gemma4:e2b: I cannot see the files yet. Please provide the code or tell me which files are
+# available so I can answer your question.
+```
+
+```bash
+cd chapters/02-the-prompt/code/csharp && PROMPT=pirate dotnet run
+# You: Which file starts the HTTP server?
+# gemma4:e2b: Ahoy! It be the file that sets sail the digital ship, ye landlubber. Without
+# that scroll, the cannons won't fire!
+```
 
 ## Everyday picture
 
@@ -76,6 +98,11 @@ flowchart TD
 
 Two new things. The first message in the list is read from a file. And the list now survives
 between questions, so the system prompt is sent again on every turn.
+
+In C# that second thing costs **nothing**, because chapter 01 already built the loop and
+chapter 01.A already appends every reply to the list. So the whole chapter is four lines of
+C#: one field in `Helper.cs`, one `File.ReadAllTextAsync`, one changed `messages` line, and a
+comment. The lesson is the text file, not the code.
 
 ## The system prompt is just a message
 
@@ -198,36 +225,56 @@ Three things in the file are not obvious:
 
 ## C#
 
+Three files, carried over from chapter 01.A: [`ChatProtocol.cs`](code/csharp/ChatProtocol.cs)
+is the wire format, [`Helper.cs`](code/csharp/Helper.cs) is the plumbing, and
+[`Program.cs`](code/csharp/Program.cs) is the conversation and nothing else.
+`ChatProtocol.cs` does not change in this chapter.
+
 ```bash
 cd chapters/02-the-prompt/code/csharp
-THINK=off dotnet run -- "one question"           # one answer, then exit
-THINK=off dotnet run                             # no question: the loop
-PROMPT=pirate THINK=off dotnet run               # the pirate, same code
+dotnet run                                       # the librarian
+PROMPT=pirate dotnet run                         # the pirate, same code
 ```
 
-Three things in the file are not obvious:
+There is no question on the command line. Type at the `You:` prompt, and an empty line stops
+the app. To see the answer without the thinking, set `Think = false` in `Helper.cs`.
 
-- **`Console.ReadLine()` returns `null` at the end of input.** That is Ctrl-D. The loop is
-  `while (Console.ReadLine() is { } line)`, which stops on `null` and keeps the string
-  otherwise. No `break` on a magic word.
+Four lines of C#, and three things about them are not obvious:
+
+- **`Helper.cs` is the only file that reads the environment.** `Model`, `OllamaUrl` and now
+  `PromptName` sit together. Nothing else in the project calls
+  `Environment.GetEnvironmentVariable`.
+- **`await` at the top of `Program.cs`, with no `async Task Main`.** C# writes that for you in
+  a top-level program, so `await File.ReadAllTextAsync(...)` works on line 12.
 - **The working directory is the project folder, not `bin/`.** `dotnet run` sets it for you,
   so `../prompts/librarian.md` resolves. Run the built binary straight out of
   `bin/Debug/net10.0/` and the same path fails with a `DirectoryNotFoundException` that names
   `bin/Debug/prompts/`. Always `dotnet run`, or pass a full path.
-- **One `if` picks the mode.** `args` holds a question, or it does not. One answer and exit,
-  or the loop. Both paths send the same list, built the same way.
+
+The loop itself is chapter 01.A's, untouched. It appends the question and appends the reply, so
+the system message at index 0 rides along on every call without one line of new code.
 
 ## What differs between the two
 
 | | TypeScript | C# |
 |---|---|---|
 | read the prompt file | `await readFile(path, "utf8")` | `await File.ReadAllTextAsync(path)` |
-| read a line | `for await (const line of rl)` | `while (Console.ReadLine() is { } line)` |
-| end of input | the `for await` ends | `ReadLine()` returns `null` |
+| read a line | `for await (const line of rl)` | `while (true)`, then `Console.ReadLine()` |
+| end of input | the `for await` ends | `ReadLine()` returns `null`, or the line is empty |
 | missing file | `ENOENT: no such file or directory` | `DirectoryNotFoundException` or `FileNotFoundException` |
 | working directory | the folder you ran `node` from | the project folder, set by `dotnet run` |
 
-Nothing here is a real difference in how an agent works. Both read a file and both read a line.
+The first row is the only real difference in how an agent works, and it is not one: both read a
+file and both read a line.
+
+**These three are differences we have not fixed yet, not lessons.** They close in the
+TypeScript pass:
+
+| | TypeScript | C# |
+|---|---|---|
+| how many files | one, `src/main.ts` | three, split in chapter 01.A |
+| one question on the command line | `node src/main.ts "a question"` works | not supported. Type at the prompt. |
+| turning thinking off | `THINK=off` in the environment | `Think = false` in `Helper.cs` |
 
 ## When it breaks
 

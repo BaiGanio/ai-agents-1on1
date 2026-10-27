@@ -1,8 +1,15 @@
 # Chapter 02 — camera script, TypeScript
 
+> **Not a runbook yet.** This script is still the old Goal / Why / Do / Proof prose, and it
+> describes `src/main.ts` as it is today: one file, a one-shot `argv` path, and a `THINK`
+> environment variable. The TypeScript pass changes all three — `main.ts` splits into
+> `helper.ts` + `main.ts`, and `THINK` becomes a constant you flip, matching the C# side. This
+> script is rewritten then, as a numbered runbook under decisions 31 and 38. Writing it twice
+> would be waste. [`SCRIPT-csharp.md`](SCRIPT-csharp.md) is the finished shape to copy.
+
 Target 12 minutes. Each step is **Goal / Why / Do / Proof**. The **Do** is what you type on air.
-The C# video is [`SCRIPT-csharp.md`](SCRIPT-csharp.md). Steps 0, 1 and 5 are shared word for
-word, so a C# viewer never has to watch this one.
+The C# video is [`SCRIPT-csharp.md`](SCRIPT-csharp.md). Steps 0, 1 and 5 cover the same ground
+as its Acts 0, 1 and 6, so a C# viewer never has to watch this one.
 
 Before you hit record: `ollama serve` is running, `gemma4:e2b` is **warm**, `code/ts/` holds
 the chapter 01.A file unchanged, and `code/prompts/` does **not** exist yet. You write it on

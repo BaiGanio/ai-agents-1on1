@@ -11,8 +11,8 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 00 | the agent we build | — | n/a | n/a | — | — | — |
 | 01 | the model | ✅ | ✅ | ✅ | ✅ | — | — *(old tag `ch01-model` is out of date)* |
 | 01.A | thinking | ✅ | ✅ *(out of step — reads THINK from the environment)* | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
-| 02 | the prompt | ⚠️ *(describes the old one-file C#)* | ✅ | ✅ *(three files, decision 37)* | ⚠️ *(both scripts describe the old C# and are still prose)* | — | — |
-| 04 | tools by hand | — | — | — | — | — | — |
+| 02 | the prompt | ✅ | ✅ | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
+| 04 | tools by hand | ✅ *(code not written yet — see the note at the top of its README)* | — | — | — | — | — |
 | 05 | the loop | — | — | — | — | — | — |
 | 06 | memory | — | — | — | — | — | — |
 | 07 | guardrails | — | — | — | — | — | — |
@@ -227,8 +227,85 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
   `chapters/02-the-prompt/code/ts/src/main.ts` changed in two places. Rerun: TypeScript answered
   *"I cannot see the files yet. Please provide the code or specify which files you are referring
   to."* in **2.68 s**.
-- Not rerun: `scripts/check.sh`. Not done: chapter 02's `README.md`, `BASICS.md`, `QA.md`,
-  `SCRIPT-csharp.md` and `SCRIPT-ts.md` still describe the old one-file C#. See To do.
+- Not rerun: `scripts/check.sh`.
+
+**2026-10-27, same machine. Chapter 02's docs reworked for the three-file C#.**
+
+- `README.md`: the C# section is rewritten (no `args`, no `THINK`, three files, `Helper.Think`),
+  the header says **4 new C# lines** instead of 37, the "Simple example" gains the two real C#
+  runs above, and "What differs between the two" gains a **second table** for the three
+  differences that are not lessons: file count, the command-line question, and how thinking is
+  turned off. A block quote at the top says the two stacks do not match yet.
+- `BASICS.md` section 3: the C# loop is now `while (true)` + `IsNullOrWhiteSpace`, which is
+  what the code does. The "how a loop ends" table gains the empty-line row and the piped-input
+  row.
+- `QA.md` gains Q7 — "the C# side is four lines, where did the rest go?" — and the old Q7
+  becomes Q8.
+- `SCRIPT-csharp.md` is **rewritten as a runbook** under decisions 31 and 38: 17 steps in 6
+  acts, Say / Type / Proof, a **Before you record** block P1-P7 with absolute paths, and an
+  **After the take** list. It is 1 step shorter in acts than 01.A's and much shorter in lines,
+  because decision 38 drops the "Already there" blocks.
+- **The by-script check passes** (decision 38). 37 fenced blocks in the script, 6 of them
+  claimed as file content, all 6 verbatim and in file order:
+  `prompts/librarian.md` 1-8, `prompts/pirate.md` 1-5, `Helper.cs` 16-19,
+  `Program.cs` 1-4, 9-12 and 14-16. The other 31 blocks are shell commands, lines you type at
+  the `You:` prompt, real output, and one raw string literal you type and then delete.
+- Three curl steps in Act 1 were run fresh for their proofs, `gemma4:e2b`, `think: false`,
+  same question each time — "Which file starts the HTTP server?".
+  **No system message:** *"The file that starts the HTTP server depends entirely on how the
+  server is being started..."*, then a list naming Python, Node.js and C++.
+  **Weak system message** ("You are the Repo Librarian. You answer questions about code."):
+  still guessed, naming `app.py`, `manage.py`, `server.js` and `index.js`.
+  **The full `librarian.md`:** the whole answer was *"I cannot see the files yet."*
+  So the chapter's one lesson — write behaviour, not a job title — is provable by curl before
+  any code is typed. That is why Act 1 now carries it.
+- `SCRIPT-ts.md` is **not** rewritten. It gains a block quote saying why: it describes
+  TypeScript code that the TypeScript pass changes in three ways, so a runbook written now
+  would be thrown away. Its `you>` strings are `You: ` now (decision 39).
+- The verifier for the by-script check lives in a scratch folder, not in `scripts/`. Still
+  open — see To do.
+
+**2026-10-27, same machine. Chapter 04's docs, from real curl runs.** Ollama 0.40.6,
+`gemma4:e2b`, `think: false`. No `code/` folder was written — CLAUDE.md forbids it until asked.
+
+- The tool list was written as prose in a scratch system prompt: the three tools, and *"To use
+  a tool, answer with one line of JSON and nothing else."* No `tools` field (decision 2 keeps
+  that for chapter 05).
+- **"What files are in this folder?"** → the whole of `message.content` was
+  `{"tool": "list_files", "path": "."}`. 35 characters, no prose, no markdown fence.
+- The result was handed back as two more messages — the model's own JSON as `assistant`, then
+  the nine file names of `chapters/02-the-prompt/code/` as `user`. The model answered:
+  *"There are several files in this folder, including C# files, a .csproj file, and TypeScript
+  files. The folder also contains prompts in a prompts directory."* So the full round trip
+  works with no `tools` field and no loop.
+- All three tools were picked correctly, one question each:
+  `What is in Helper.cs?` → `{"tool": "read_file", "path": "Helper.cs"}`.
+  `Find every line that contains the word Timeout.` → `{"tool": "search_text", "query": "Timeout"}`.
+  `Search the code for the word Timeout.` → the same `search_text` call.
+- **The finding worth a beat on camera.** `Which file sets the HTTP timeout?` →
+  `{"tool": "list_files", "path": "."}`. Asked *which file*, the model asked to look around
+  first instead of searching. Nobody prompted that. It is one step of a plan, and chapter 04
+  stops after one tool, so chapter 05's loop is what lets it take the second step.
+- `phi4-mini:3.8b` returned the same correct `list_files` call, so the chapter does not need a
+  thinking model. `Qwen3.5:4b` returned the correct `search_text` call.
+- **The parse failure is the normal path.** `Hello, who are you?` → prose, because there is no
+  tool for hello: *"I am the Repo Librarian. I can answer questions about a folder of code
+  using my tools."* Parsing that, from two throwaway files:
+  Node 26.12.0 → `SyntaxError: Unexpected token 'I', "I am the R"... is not valid JSON`.
+  .NET 10 → `System.Text.Json.JsonException: 'I' is an invalid start of a value. Path: $ |
+  LineNumber: 0 | BytePositionInLine: 0.`
+- The markdown-fence failure was **forced, not observed** — `gemma4:e2b` never fenced its JSON
+  in any run above. Parsing a hand-written fenced string gives
+  `SyntaxError: Unexpected token '`', "```json {""... is not valid JSON` and
+  `JsonException: '`' is an invalid start of a value.` Both errors are in the docs, and the
+  docs say the fence was not seen on this model, so the chapter adds no stripping code.
+- **`sample-repo/` is still empty**, so every example above runs against
+  `chapters/02-the-prompt/code/` as a stand-in. The chapter README says so at the top, in a
+  block quote, and says the examples get rerun once `sample-repo/` exists.
+- Written: `README.md` in the ten-section shape, `BASICS.md` (parsing, and `try`/`catch` with
+  the real error text in both languages), `QA.md` (9 questions). Five new words in
+  `docs/GLOSSARY.md`: dispatch, parse, round trip, tool result, tool schema. One
+  `flowchart TD`, no `;` in any line.
 
 ## Decisions
 
@@ -293,10 +370,17 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
   describing the old one-shot code with `dotnet run -- "..."`: `docs/SETUP.md` lines 246-261 and
   309-325, `CLAUDE.md` line 26, and chapter `02`'s README, `BASICS.md` and `SCRIPT-csharp.md`.
   Chapter 02's C# video loses its second half and needs a new one.
-- **Chapter 02's C# code is reshaped and run. Its docs are not.** `README.md`, `BASICS.md`,
-  `QA.md`, `SCRIPT-csharp.md` and `SCRIPT-ts.md` still describe the old one-file `Program.cs`,
-  the `args` one-shot path and the `THINK` environment variable. The example output in them is
-  from the old code. Rewrite them, and make both scripts runbooks under decisions 31 and 38.
+- **Chapter 02's TypeScript is the last thing out of step.** Its code is still one
+  `src/main.ts` with an `argv` one-shot path and a `THINK` environment read, and
+  `SCRIPT-ts.md` is still prose. The pass: split into `helper.ts` + `main.ts`, make `THINK` a
+  constant, drop the `argv` path, then rewrite `SCRIPT-ts.md` as a runbook. The same pass
+  closes chapter 01.A's TypeScript, which has the same two problems. Chapter 02's README names
+  all three gaps in a second table, so the docs are honest until then.
+- **A by-script verifier (decision 38) has no home.** It is a 30-line Python script that takes
+  a script path plus `file:start-end` for each file-bearing block, and checks each block is
+  verbatim and in file order. It was used on chapter 02's `SCRIPT-csharp.md` and it passed, but
+  it lives in a scratch folder and will be gone next session. Ask whether it belongs in
+  `scripts/`.
 - **Chapter 01.A's two stacks now behave differently, and that is a broken rule.** C# flips
   `Helper.Think` in the file (decision 36). TypeScript still reads `THINK=on|off` from the
   environment. The README says so out loud in a block quote, which is honest but not finished.
@@ -323,6 +407,14 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
   the `Helper.cs` shape now, so chapter 04 has room. **TypeScript still does not**: `main.ts`
   carries all the plumbing in one file, and chapter 04 adds about 70 lines to it. Split it into
   `helper.ts` + `main.ts` before chapter 04's TypeScript code.
+- **Chapter 04's `code/` is not written** (CLAUDE.md: ask first). Its docs describe the code
+  that gets typed: `tools.ts` / `Tools.cs` for the three functions and the dispatch, a `try`
+  around the parse, and a second round trip for the tool result. Both `SCRIPT-ts.md` and
+  `SCRIPT-csharp.md` are missing. The C# base is ready; the TypeScript base needs the
+  `helper.ts` split first.
+- **`sample-repo/` is still one README.** Chapter 04's three tools have nothing real to read,
+  and its examples use `chapters/02-the-prompt/code/` as a stand-in. This is step 3 in
+  `PLAN.md` "Order of work" and it blocks chapter 04's `code/` being run honestly.
 - Finish the `gemma4:26b` row in `docs/MODELS.md` (64K, 128K) and test tools on 26b, qwen3.5:4b
   and Ornith. Needed by chapter 10.
 

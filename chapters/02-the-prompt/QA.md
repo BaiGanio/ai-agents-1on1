@@ -66,7 +66,19 @@ warning. Chapter 06 gives the list a size and gives the agent a notes file that 
 
 </details>
 
-**Q7.** Your prompt file is not found. What does each stack say?
+**Q7.** The C# side of this chapter is four lines of code. Where did the rest go?
+
+<details><summary>A</summary>
+
+Into chapters 01 and 01.A. The loop, the `HttpClient`, the JSON options, the streaming and the
+`messages.Add(reply)` line were all built there and all live in `Helper.cs`. This chapter adds
+one field (`PromptName`), one `File.ReadAllTextAsync`, one changed `messages` line, and a
+comment. That is what a chapter looks like when the chapter before it left the code in the
+right shape. The TypeScript side is still one file, so it adds 38 lines for the same lesson.
+
+</details>
+
+**Q8.** Your prompt file is not found. What does each stack say?
 
 <details><summary>A</summary>
 

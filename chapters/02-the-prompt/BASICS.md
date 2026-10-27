@@ -101,23 +101,31 @@ for await (const line of rl) {
 **C#:**
 
 ```csharp
-while (Console.ReadLine() is { } line)
+while (true)
 {
+    string? line = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(line)) break;
+
     Console.WriteLine("you said: " + line);
 }
 ```
 
-`is { } line` means "is not null, and call it `line`". It is a pattern, not a comparison.
+`string?` means "a string, or null". `Console.ReadLine()` returns `null` when the input ends,
+and `IsNullOrWhiteSpace` catches that **and** an empty line in one check. So one `if` ends the
+loop two ways.
 
 ### How a loop like this ends
 
-Not with a magic word. With **end of input**, which you send by pressing **Ctrl-D** on macOS
-and Linux, or **Ctrl-Z then Enter** on Windows.
+Three ways, and none of them is a magic word.
 
-| | What happens at end of input |
+| How you stop it | What happens |
 |---|---|
-| TypeScript | the `for await` finishes and the code after it runs |
-| C# | `Console.ReadLine()` returns `null`, so the `while` stops |
+| press **Enter** on an empty line | C# only. `IsNullOrWhiteSpace` is true, so the loop breaks. |
+| **end of input** — Ctrl-D on macOS and Linux, Ctrl-Z then Enter on Windows | TypeScript: the `for await` finishes. C#: `ReadLine()` returns `null`. |
+| **Ctrl-C** | the program dies at once and nothing after the loop runs |
 
-Ctrl-C is different. It kills the program at once, and nothing after the loop runs. Both work
-for quitting this chapter's code, because there is nothing after the loop yet.
+End of input is also what happens on the last line when you **pipe** text in, like
+`printf 'hi\n' | dotnet run`. That is how both stacks are tested, so both have to handle it.
+
+Ctrl-C works for quitting this chapter's code, because there is nothing after the loop yet.
+From chapter 06 on there is, so get used to the empty line.
