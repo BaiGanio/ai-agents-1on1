@@ -1,69 +1,46 @@
 // Chapter 01.A — thinking.
 //
-// Chapter 01 showed a model is an HTTP endpoint. This chapter shows it thinks before it answers,
-// and lets you choose: watch the thinking, or turn it off. The reply now streams, word by word.
+// Chapter 01 showed a model is an HTTP endpoint.
+// This chapter shows it thinks before it answers, and that the reply arrives word by word.
+// The thinking is grey. The answer is plain.
 
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
-var ollamaUrl = Environment.GetEnvironmentVariable("OLLAMA_URL") ?? "http://localhost:11434";
-var model = Environment.GetEnvironmentVariable("MODEL") ?? "gemma4:e2b";
+List<Message> messages = [];
 
-// on, off, or unset. Unset sends nothing, so the model does what it ships with. We do not send
-// true by default: a model that cannot think answers that with an error, not with an answer.
-bool? think = Environment.GetEnvironmentVariable("THINK") switch
+HttpClient http = Helper.OllamaHttpClient;
+
+Console.WriteLine("Type a question. An empty line stops the app.");
+
+while (true)
 {
-    "on" => true,
-    "off" => false,
-    _ => null,
-};
+    Console.Write("You: ");
 
-const string Grey = "\x1b[90m";
-const string Reset = "\x1b[0m";
+    // ReadLine gives null when input ends, so this one check covers both quit and end of input.
+    string? prompt = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(prompt)) break;
 
-// One HttpClient for the process. A new one per call leaks sockets, and a local model can take
-// minutes on the first answer while it loads into RAM, so the 100-second default is too short.
-using var http = new HttpClient
-{
-    BaseAddress = new Uri(ollamaUrl),
-    Timeout = TimeSpan.FromMinutes(5),
-};
+    messages.Add(new("user", prompt));
 
-// Ollama's field names are lower case. C# properties are not, so we say so once, here, and
-// never think about it again. WhenWritingNull is what makes `think: null` mean "not sent".
-var json = new JsonSerializerOptions
-{
-    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-};
+    ChatRequest request = new(Helper.Model, messages, Stream: true, Think: Helper.Think);
 
-var prompt = args.Length > 0 ? string.Join(' ', args) : "Say hello in five words.";
+    using HttpRequestMessage message =
+        new(HttpMethod.Post, "/api/chat")
+        {
+            Content = JsonContent.Create(request, options: Helper.AgentJsonOptions),
+        };
 
-// The model remembers nothing between calls. Every turn sends the whole history back.
-// That list is the agent's short memory, and it is the only memory it has until chapter 06.
-List<Message> messages = [new("user", prompt)];
-
-await ChatAsync(messages);
-
-// Sends the conversation so far. Prints the reply as it streams. Returns the whole message.
-async Task<Message> ChatAsync(List<Message> history)
-{
-    var request = new ChatRequest(model, history, Stream: true, Think: think);
-
-    // ResponseHeadersRead: return as soon as the headers arrive. Without it HttpClient waits for
-    // the whole body first, and the stream stops being a stream.
-    using var message = new HttpRequestMessage(HttpMethod.Post, "/api/chat")
-    {
-        Content = JsonContent.Create(request, options: json),
-    };
-    using var response = await http.SendAsync(message, HttpCompletionOption.ResponseHeadersRead);
+    // ResponseHeadersRead hands us the stream as it arrives. Without it HttpClient waits for the
+    // last byte, and the stream stops being a stream.
+    using var response =
+        await http.SendAsync(message, HttpCompletionOption.ResponseHeadersRead);
 
     if (!response.IsSuccessStatusCode)
     {
-        // Ollama puts the real reason in the body — an unknown model, a bad field. Without this
-        // line you get a bare 500 and no idea which of the two it was.
+        // Ollama puts the real reason in the body — an unknown model, a model that cannot think.
+        // Without this line you get a bare 400 and no idea which of the two it was.
         var body = await response.Content.ReadAsStringAsync();
         throw new HttpRequestException(
             $"{(int)response.StatusCode} {response.ReasonPhrase}: {body}");
@@ -78,15 +55,19 @@ async Task<Message> ChatAsync(List<Message> history)
     while (await reader.ReadLineAsync() is { } line)
     {
         if (line.Length == 0) continue;
-        var part = JsonSerializer.Deserialize<ChatResponse>(line, json)!.Message;
+
+        Message part =
+            JsonSerializer.Deserialize<ChatResponse>(line, Helper.AgentJsonOptions)!.Message;
 
         if (!string.IsNullOrEmpty(part.Thinking))
         {
-            Console.Write(Grey + part.Thinking + Reset);
+            Console.Write(Helper.Grey + part.Thinking + Helper.Reset);
             thinking.Append(part.Thinking);
         }
+
         if (!string.IsNullOrEmpty(part.Content))
         {
+            // The first word of the answer needs a gap after the grey, or the two run together.
             if (content.Length == 0 && thinking.Length > 0) Console.Write("\n\n");
             Console.Write(part.Content);
             content.Append(part.Content);
@@ -94,9 +75,7 @@ async Task<Message> ChatAsync(List<Message> history)
     }
 
     Console.WriteLine();
-    return new Message("assistant", content.ToString(), thinking.ToString());
-}
 
-record Message(string Role, string Content, string? Thinking = null);
-record ChatRequest(string Model, List<Message> Messages, bool Stream, bool? Think);
-record ChatResponse(Message Message);
+    // The reply goes back into the list. The model remembers nothing, so the list is the memory.
+    messages.Add(new Message("assistant", content.ToString(), thinking.ToString()));
+}

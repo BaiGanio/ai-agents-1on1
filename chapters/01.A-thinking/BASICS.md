@@ -1,4 +1,4 @@
-# Chapter 01.A — basics: streams and environment variables
+# Chapter 01.A — basics: three states, and streams
 
 Two things this chapter needs. Nothing else.
 
@@ -6,33 +6,42 @@ New words are in [`GLOSSARY.md`](../../docs/GLOSSARY.md).
 
 ---
 
-## 1. An environment variable
+## 1. A value that can be "not set"
 
-A setting you hand a program when you start it, from outside the program. You write it in
-front of the command:
+Most switches have two states: on and off. The thinking switch in this chapter has **three**:
+on, off, and **not asked for at all**. The third one is not a tidy-up. It is the only safe
+setting for a model you have not tested, because a model that cannot think answers "think: true"
+with an error instead of an answer.
 
-```bash
-THINK=off node src/main.ts "hello"
-```
-
-That runs `node` with one variable, `THINK`, set to `off`. The variable lives for that one
-run and then it is gone. Nothing is saved, and no file changed.
-
-You read it inside the program:
-
-```ts
-const think = process.env.THINK;          // TypeScript. A string, or undefined.
-```
+So the code needs a third state, and both languages have one:
 
 ```csharp
-var think = Environment.GetEnvironmentVariable("THINK");   // C#. A string, or null.
+bool? think = true;      // C#. true, false, or null. The ? is what buys you null.
 ```
 
-Three states, not two. `"on"`, `"off"`, and **not set at all**. The third one matters in this
-chapter, so we keep it instead of turning it into `false`.
+```ts
+let think: boolean | undefined = true;   // TypeScript. true, false, or undefined.
+```
 
-Why not a command-line argument? Because the question is already the argument. A setting that
-is not part of the question stays out of the question.
+A plain `bool` cannot hold "not set", so the question mark is the point, not decoration.
+
+The other half is making "not set" mean **nothing on the wire**. If you send the field as
+`null`, the server reads that as "no thinking", which is a different answer from "I did not
+ask". C# needs one option for that, `DefaultIgnoreCondition = WhenWritingNull`. TypeScript
+gets it free: `JSON.stringify` drops a key whose value is `undefined`.
+
+### Environment variables, from chapter 01
+
+You met these already. A setting you hand a program when you start it, written in front of the
+command:
+
+```bash
+MODEL=gemma4:e4b dotnet run
+```
+
+That runs with one variable, `MODEL`, set to `gemma4:e4b`. It lives for that one run and then
+it is gone. Nothing is saved, and no file changed. The thinking switch is **not** one of these
+— it is a line in the code you flip, because you choose it once per project, not once per run.
 
 ---
 

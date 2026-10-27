@@ -3,9 +3,11 @@
 Build an AI agent from nothing. No framework. No cloud. No API key.
 The model runs on your laptop. You write about 300 lines of code, in **TypeScript** and in **C#**.
 
-Fourteen chapters. Most build one part of the agent, in two short videos: one TypeScript, one
-C#. Watch the language you use. One chapter gives the agent a chat page. One shows agentic
-workflows: when your code should pick the path, and when the model should.
+Thirteen chapters. Most build one part of the agent, in two short videos: one TypeScript, one
+C#. Watch the language you use. One shows agentic workflows: when your code should pick the
+path, and when the model should.
+
+The only client is the console. There is no web page in this course (decision 35).
 
 The code in this repo is the finished code of each chapter.
 
@@ -59,7 +61,6 @@ code is the one before it plus what the chapter adds.
 | 01 | [the model](chapters/01-the-model/) | raw HTTP to a model on your machine |
 | 01.A | [thinking](chapters/01.A-thinking/) | the model thinks first. Turn it on or off, stream it, or hide it. |
 | 02 | [the prompt](chapters/02-the-prompt/) | the system prompt, and why it is cheap |
-| 03 | [the chat page](chapters/03-the-chat-page/) | one HTML page to talk to the agent, served by both stacks |
 | 04 | [tools by hand](chapters/04-tools-by-hand/) | a tool call is just the model writing JSON |
 | 05 | [the loop](chapters/05-the-loop/) | the while-loop that makes it an agent |
 | 06 | [memory](chapters/06-memory/) | what to keep, what to drop, what to save |

@@ -12,14 +12,20 @@ all of them and threw them away, because it printed only `content`.
 
 </details>
 
-**Q2.** Why does `THINK` have three states and not two?
+**Q2.** Why is the thinking switch a `bool?` and not a `bool`?
 
 <details><summary>A</summary>
 
-`on`, `off`, and **not set**. Not set sends no `think` field at all, so the model does what it
-ships with. That matters because a model that cannot think answers `think: true` with a 400
-error, not with an answer. Two states would force us to pick one for every model, and one of
-the two would break on some of them.
+Because there are three states, not two: `true`, `false`, and **not sent at all**. Not sent
+means the model does what it ships with, and that is the only safe setting for a model you have
+not tested — a model that cannot think answers `think: true` with a 400 error, not with an
+answer. A plain `bool` cannot hold the third state, so it would force you to pick one of the
+two for every model, and one of the two breaks on some of them.
+
+The second half is `DefaultIgnoreCondition = WhenWritingNull`. Without it, `null` goes on the
+wire as `"think": null`, which Ollama reads as "no thinking" — a different thing from "I did
+not ask". Measured on this machine: no field gives 714 characters of thinking, `"think": null`
+gives none.
 
 </details>
 

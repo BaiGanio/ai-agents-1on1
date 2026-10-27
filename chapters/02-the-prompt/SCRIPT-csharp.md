@@ -183,5 +183,5 @@ forever. And the message list grows with no limit, so a long session quietly run
 
 **Proof.** The viewer can say what a prompt cannot do.
 
-**The handoff.** "It knows who it is, and it holds that over many turns. But you are still
-typing into a terminal. Next video it gets a page in a browser."
+**The handoff.** "It knows who it is, and it holds that over many turns. But it still cannot
+look at a single file. Next video it gets hands."

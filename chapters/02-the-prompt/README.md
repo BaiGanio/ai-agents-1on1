@@ -103,8 +103,8 @@ Three rules that come out of that.
 
 ## The two prompt files
 
-Both stacks read the same folder, `code/prompts/`. One prompt, two languages — the same rule
-as the chat page in chapter 03.
+Both stacks read the same folder, `code/prompts/`. One prompt, two languages, so "same
+behaviour in both" stays true by construction.
 
 `prompts/librarian.md` is the real agent. It will grow in every chapter after this one:
 

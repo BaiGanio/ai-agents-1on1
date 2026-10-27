@@ -4,8 +4,7 @@ One decision per line. We follow this file. When something changes, we change th
 
 ## What the course is
 
-A YouTube series plus this repo. Fourteen chapters. Most build **one component** of an AI agent.
-One (03) gives it a chat page.
+A YouTube series plus this repo. Thirteen chapters. Most build **one component** of an AI agent.
 One (08) shows agentic workflows — the topic most job ads now name.
 One (10) puts the models side by side, so a viewer can pick one for their machine.
 Two stacks, same behaviour: **TypeScript** and **C#**. The model runs **on your machine**.
@@ -34,7 +33,7 @@ Three tools, and that is all:
 Why this one. No API key. No network. No fake server. It works offline, like the model does.
 Every viewer has a folder of files. The tools are 10 lines each in both languages.
 
-## The fourteen chapters
+## The thirteen chapters
 
 Target: 12-15 minutes per chapter. Two of them may run to 20.
 Chapters 01-08 (and 01.A) are two videos each, one per language (see `STYLE.md`).
@@ -48,9 +47,8 @@ never on lines.
 |---|---|---|---|---|
 | 00 | `the-agent-we-build` | the finished demo, and the six parts of an agent | none | 8 |
 | 01 | `the-model` | raw HTTP to a local model. It only reads text and writes text. | ~40 lines | 12 |
-| 01.A | `thinking` | the model thinks before it answers. A `THINK` on/off flag, and streaming so you watch it live. | ~30 lines | 12 |
+| 01.A | `thinking` | the model thinks before it answers. One switch in your own code, and streaming so you watch it live. | ~30 lines | 12 |
 | 02 | `the-prompt` | the system prompt. The cheapest way to change behaviour. | ~20 lines | 12 |
-| 03 | `the-chat-page` | one HTML page, a `/chat` endpoint. Talk to the agent in a browser. | ~40 lines | 12 |
 | 04 | `tools-by-hand` | ask for JSON, parse it, run a function. Tool calling is just text. | ~70 lines | 15 |
 | 05 | `the-loop` | the native `tools` field, and the while-loop. Now it is an agent. | ~60 lines | 15 |
 | 06 | `memory` | short memory (the message list) and long memory (a notes file) | ~50 lines | 15 |
@@ -62,18 +60,17 @@ never on lines.
 | 12 | `frameworks` *(optional, text only)* | the same agent in a framework, and what it hid | — | — |
 
 Chapter 01.A comes right after the model on purpose. The default model thinks before it
-answers, and the viewer waits for it from the first call. So they meet the flag first, and
+answers, and the viewer waits for it from the first call. So they meet the switch first, and
 decide for themselves whether to see the thinking, stream it, or turn it off. It is called
 01.A, not 02, so the chapters after it keep their numbers.
 
-Chapter 03 comes early on purpose. Viewers want to see a page, not a terminal. The agent is still
-small at that point (model + prompt), so the server is small too. From 04 on, every tool call
-shows up in the page. The page is not a seventh part of an agent. It is a window onto the loop.
-The HTML is given, not typed on camera. The server is typed, because that is the lesson.
+**There is no chapter 03.** It was a chat page, and it is dropped (decision 35). The console is
+the only client in this course. The numbers after it keep their place — 02 is followed by 04 —
+because a renumber touches five folder names, every heading, every tag and every "chapter NN" in
+the docs and the code. The gap is cheaper than the churn.
 
-The page lives in the chapter, at `code/web/index.html`, next to `code/prompts/` (decision 26).
-Both stacks read `../web/index.html`, so a chapter folder stands on its own and `diff -r` shows
-what a chapter added.
+So the window onto the agent is the terminal. Every chapter from 04 on prints its tool calls
+there, in the same `you>` loop the viewer already knows from chapter 01.
 
 Chapter 08 comes after guardrails on purpose. A workflow runs several model calls, so each one
 needs the step cap and timeout from 07. It reuses the Librarian's tools — no new domain.
@@ -126,7 +123,6 @@ ai-agents-1on1/
     code/ts/                  the TypeScript code at the end of this chapter
     code/csharp/              the C# code at the end of this chapter
     code/prompts/             the system prompts. Both stacks read this one folder.
-    code/web/index.html       the chat page, from chapter 03. Both stacks serve this one file.
   sample-repo/                the folder the Librarian reads
   scripts/                    check.sh, measure.ts, ollama.sh, llama.sh
 ```
@@ -146,5 +142,6 @@ Two choices we make later, when we see the code. Nothing in this plan depends on
 1. `docs/` and the chapter skeletons. **Done.**
 2. Chapter 01 code, both stacks, running. **Done.**
 3. `sample-repo` with something worth asking questions about.
-4. Chapters 02-05. That is the heart of the course — get these right before anything else.
+4. Chapters 02, 04 and 05. That is the heart of the course — get these right before anything
+   else.
 5. Record 00 only after 05 works. The demo in video 00 must be the real thing.

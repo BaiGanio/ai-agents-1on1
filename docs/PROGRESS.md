@@ -10,9 +10,8 @@ One row per chapter. Update it when a state changes. This is the first file to o
 |---|---|---|---|---|---|---|---|
 | 00 | the agent we build | — | n/a | n/a | — | — | — |
 | 01 | the model | ✅ | ✅ | ✅ | ✅ | — | — *(old tag `ch01-model` is out of date)* |
-| 01.A | thinking | ✅ | ✅ | ✅ | ✅ | — | — |
+| 01.A | thinking | ✅ | ✅ | ✅ | ✅ *(C# is a runbook, TS is still prose)* | — | — |
 | 02 | the prompt | ✅ | ✅ | ✅ | ✅ | — | — |
-| 03 | the chat page | ✅ | ✅ | ✅ | ✅ | — | — |
 | 04 | tools by hand | — | — | — | — | — | — |
 | 05 | the loop | — | — | — | — | — | — |
 | 06 | memory | — | — | — | — | — | — |
@@ -108,63 +107,16 @@ One row per chapter. Update it when a state changes. This is the first file to o
   in `STYLE.md`: the `HttpClient` initialiser and the `HttpRequestException` throw. Both are
   wrapped now in all three chapters. All three still build and answer.
 
-**2026-10-27, same machine. For the chapter 03 docs.** The server was drafted in a scratch
-folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0, .NET 10.0.401.
+**2026-10-27, same machine. Chapter 03 — built, measured, then dropped.**
 
-- Both stacks serve the page on port 3000 and stream `POST /chat` as JSON Lines. The two
-  streams are **byte for byte identical**: `{"role":"assistant","content":"I"}`, then
-  `" cannot"`, `" see"`, `" the"`, `" files"`, `" yet"`, `"."`, `""`.
-- `Transfer-Encoding: chunked` in both, confirmed with `curl -D -`.
-- History holds across requests. Turn two, "What did I just ask you?" → "You asked which file
-  starts the HTTP server." Both stacks.
-- **What streaming is worth.** `THINK=on`, measured from the browser's own reader loop: first
-  words on the page at **204 ms** and **267 ms** on two runs. Answers finished at **6.2 s** and
-  **3.9 s**. 387 and 240 lines in the stream. So the page fills in a fifth of a second where a
-  non-streamed page would be blank for 4 to 6 seconds.
-- One-shot still works in both. TS 4.5 s cold, C# 1.6 s warm including `dotnet run`.
-- **Node and HttpListener do not bind the same address.** Node takes `[::]:3000`, HttpListener
-  takes `127.0.0.1:3000`. Both ran at once on port 3000 with no error. Two copies of the *same*
-  stack do collide: `EADDRINUSE` in Node, `HttpListenerException (48): Address already in use`
-  in C#.
-- **Concurrency differs, and it is a real bug in TS.** Two curls fired together asking for
-  `RED` and `BLUE`: the TypeScript server answered **`RED` to both**, because both handlers
-  pushed onto the shared list and both sent it. The C# `while` loop answered `RED` and `BLUE`.
-- **Bug found and fixed while writing the server.** With Ollama down, an uncaught throw in the
-  request handler **killed the process** in both stacks — TS `[TypeError: fetch failed]` with
-  `ECONNREFUSED` in `cause`, C# `HttpRequestException: Connection refused`. The browser got a
-  dead connection (TS) or a `200` with an empty body (C#). Fixed with a `try` that writes
-  `{"error": "..."}` into the stream and pops the unanswered question. Both now survive and
-  recover without a restart.
-- **Two C# claims were wrong until measured.** Removing `OutputStream.Flush()` does **not**
-  break the stream — 11 reads, first bytes at 0.18 s. And the trailing-slash error is
-  `ArgumentException: Only Uri prefixes ending in '/' are allowed. (Parameter 'uriPrefix')`,
-  thrown by `Prefixes.Add`, not by `Start()`. Both corrected in the docs.
-- `SendChunked = false` is the sharp C# trap: the response goes out as `Content-Length: 0`, and
-  the first write then throws `HttpListenerException: Unable to write data to the transport
-  connection: Broken pipe.`, killing the server.
-- Missing page file. TS: `ENOENT: no such file or directory, open '../web/index.html'`.
-  C#: `System.IO.FileNotFoundException`, with the full path it tried.
-- The page's reader loop was run as a standalone Node script against the live server, to prove
-  the JSON Lines parsing. **The page itself has not been opened in a browser yet** — the Chrome
-  extension was not connected. See To do.
+Chapter 03 (the chat page) was written and run on this machine: both stacks served the page on
+port 3000, streamed `POST /chat` as JSON Lines byte for byte alike, survived Ollama being down,
+and put the first words on the page in 204 ms against a 6.2 s full answer. 41 new code lines in
+TypeScript, 65 in C#. The page itself was never opened in a browser.
 
-**2026-10-27, same machine. Chapter 03 `code/`, written and run.**
-
-- `chapters/03-the-chat-page/code/` is a copy of 02's two stacks and `prompts/`, plus the new
-  `code/web/index.html`. `diff -r` against chapter 02 shows exactly three things: the two source
-  files differ, and `web` is new.
-- New code lines, counted the same way as chapter 02 (no blanks, no comment-only lines):
-  **41 in TypeScript, 65 in C#.** Over the ~40 in `PLAN.md` on the C# side, as decision 27 priced.
-- Both stacks, run from their own folder: the page serves at 200 with 3813 bytes,
-  `Transfer-Encoding: chunked` is present, `POST /chat` answers "I cannot see the files yet.",
-  and turn two answers "You asked which file starts the HTTP server."
-- One-shot in both: `node src/main.ts "Say READY and nothing else."` and the `dotnet run`
-  equivalent both print `READY` and exit.
-- With `OLLAMA_URL` pointed at a dead port, the page gets `{"error":"TypeError: fetch failed"}`
-  from TS and `{"error":"Connection refused (localhost:19999)"}` from C#, and **both servers
-  stay up** — port 3000 still answers 200 afterwards.
-- No line in either source file, or in `index.html`, is over 100 columns. `bin/` and `obj/` are
-  ignored by `.gitignore` lines 8 and 9, so the chapter adds 8 files to git.
+It is **deleted** under decision 35. The runs were real but the code they measured is gone from
+the tree — it lives in git history, in the commit before decision 35. No later chapter depends
+on any number above.
 
 **2026-10-27, same machine. Chapter 01's C# rewritten in the `lk-csharp` shape (decision 33).**
 
@@ -180,6 +132,30 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
   checked by script. No line in either file is over 100 columns.
 - Not rerun: `scripts/check.sh`, and the TypeScript side, which is untouched.
 
+**2026-10-27, same machine. Chapter 01.A's C# reworked in the `lk-csharp` shape (decisions 33
+and 36).** Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401.
+
+- `Helper.cs` 45 lines, `Program.cs` 81 lines. `dotnet build` clean, 0 warnings. No line in
+  either file is over 100 columns.
+- **76 code lines** (blank and comment lines not counted): 27 in `Helper.cs`, 49 in `Program.cs`.
+  Chapter 01's C# is 47, so chapter 01.A adds **29** against the ~30 guide in `PLAN.md`.
+- `diff -r` against `chapters/01-the-model/code/csharp` shows exactly two differences: the two
+  `.cs` files. `RepoLibrarian.csproj` is byte identical, so the chapter adds no project change.
+- Two turns piped in, `Think = true`: "In five words, what is an AI agent?" then "And in three?".
+  It printed `Perceives, reasons, takes actions.` then `Sense, think, act.`, **8.3 s** for both
+  including `dotnet run`. Turn two's grey thinking quotes turn one's answer on screen, so the
+  `messages.Add` line is visible as it happens.
+- One turn, same question. `Think = true`: **7.1 s**, `Perceives, reasons, acts to achieve
+  goals.` `Think = false`: **1.45 s**, `Autonomous program interacting with environment.`
+  Both include about half a second of `dotnet run`. Five times the wait, and no better an answer.
+- `MODEL=phi4-mini:3.8b` with `Think = true` →
+  `System.Net.Http.HttpRequestException: 400 Bad Request: {"error":"\"phi4-mini:3.8b\" does not
+  support thinking"}`. `MODEL=nope:1b` → `404 Not Found: {"error":"model 'nope:1b' not found"}`.
+- The 5 C# blocks for `Helper.cs` and the 8 for `Program.cs` in `SCRIPT-csharp.md` rebuild both
+  files **byte for byte**, checked by script (decision 32).
+- Not rerun: `scripts/check.sh`, and the TypeScript side, which is untouched and now out of step
+  — see To do.
+
 ## Decisions
 
 | # | Decision | Date | Why |
@@ -191,8 +167,8 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
 | 5 | Ornith-1.0-9B-MTP only in chapter 09 | 2026-10-25 | not in the Ollama library — it belongs with the hard runner |
 | 6 | No tests, no TDD in this repo | 2026-10-25 | the payments repo does TDD. A 15-minute video cannot. |
 | 7 | This repo is the simple sibling of `agent-ready-payments` | 2026-10-25 | audience is developers new to agents. No DB, no MCP, no domain. |
-| 8 | A chat page as chapter 03, right after the prompt. Old 03-09 move to 04-10. | 2026-10-25 | viewers see a page early, and every later tool call shows in it |
-| 9 | One shared `web/index.html`. Both stacks serve it, same `/chat` endpoint. No dependencies. | 2026-10-25 | keeps "same behaviour in both". The HTML is not the lesson. |
+| 8 | ~~A chat page as chapter 03, right after the prompt. Old 03-09 move to 04-10.~~ **Dead — decision 35.** The renumber it did stands: 04-10 keep their numbers and 03 is now a gap. | 2026-10-25 | viewers see a page early, and every later tool call shows in it |
+| 9 | ~~One shared `web/index.html`. Both stacks serve it, same `/chat` endpoint. No dependencies.~~ **Dead — decision 35.** | 2026-10-25 | keeps "same behaviour in both". The HTML is not the lesson. |
 | 10 | `CLAUDE.md` is committed | 2026-10-25 | a course about agents can show how its author works with one |
 | 11 | Agentic workflows as chapter 08, after guardrails. Old 08-10 move to 09-11. | 2026-10-25 | the job market asks for it. It needs the loop and the guardrails first. |
 | 12 | Juniors are in the audience. Added a `BASICS.md` per chapter, `GLOSSARY.md`, `scripts/check.sh`, and two chapter sections: "When it breaks", "Try it yourself". | 2026-10-25 | juniors stop at setup, at new words, and at the first error they cannot read |
@@ -210,29 +186,37 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
 | 24 | `chapters/NN/code/prompts/` is shared by both stacks. Each reads `../prompts/<name>.md`. Chapter 02 ships `librarian.md` and `pirate.md`, picked by a `PROMPT` environment variable. | 2026-10-26 | same rule as decision 9 for the chat page. One prompt, two languages, so "same behaviour in both" stays true by construction. |
 | 25 | Chapter 02 keeps the one-shot path. A question in the arguments gives one answer and exits. No question starts the loop. | 2026-10-26 | every command printed in chapters 01 and 01.A keeps working, and the README examples stay one line. |
 
-| 26 | The chat page lives in the chapter: `chapters/NN/code/web/index.html`, read by both stacks as `../web/index.html`. Amends decision 9, which put it at the repo root. | 2026-10-27 | decision 20 needs `diff -r` on two chapters' `code/` folders to show what a chapter adds. A page outside `code/` never appears in that diff, and a chapter folder would not stand on its own. Same shape as `code/prompts/` in decision 24. May move back to one shared `web/` once the chapters are written. |
-| 27 | Chapter 03's C# server is `HttpListener`, not a minimal API. The `.csproj` stays a plain console app — no NuGet, no `Microsoft.NET.Sdk.Web`. Closes open item 3. | 2026-10-27 | it mirrors Node's bare `node:http`, so both videos teach the same idea, and it keeps decision 1 (raw HTTP, no SDK) true. A minimal API would boot a web host and print its own logging into the terminal the model output goes to. It costs about 20 lines — see To do. |
-| 28 | Chapter 03's no-argument path starts the server. Chapter 02's `you>` terminal loop is deleted. A question in the arguments still answers once and exits. | 2026-10-27 | the page replaces the loop, and that is the chapter. Keeping both would put three modes in one file. Decision 25 still holds, so every command printed in 01, 01.A and 02 keeps working. |
-| 29 | `chat` / `ChatAsync` takes a `send` callback instead of printing. Two callers: `toTerminal` and the one that writes a JSON line into the response. | 2026-10-27 | one function, two windows. It is four lines, and it means chapter 05's loop does not have to touch `chat` at all. |
-| 30 | The `POST /chat` handler wraps the model call in a `try`, writes `{"error": "..."}` into the stream, and pops the unanswered question. | 2026-10-27 | measured: without it, Ollama being down kills the server and the browser gets nothing. Chapters 04-08 all live in this process, so it must not die on one bad request. |
+| 26 | ~~The chat page lives in the chapter: `chapters/NN/code/web/index.html`, read by both stacks as `../web/index.html`. Amends decision 9, which put it at the repo root. | 2026-10-27 | decision 20 needs `diff -r` on two chapters' `code/` folders to show what a chapter adds. A page outside `code/` never appears in that diff, and a chapter folder would not stand on its own. Same shape as `code/prompts/` in decision 24. May move back to one shared `web/` once the chapters are written.~~ **Dead — decision 35.** The rule it set still governs `code/prompts/` (decision 24). |
+| 27 | ~~Chapter 03's C# server is `HttpListener`, not a minimal API. The `.csproj` stays a plain console app — no NuGet, no `Microsoft.NET.Sdk.Web`. Closes open item 3. | 2026-10-27 | it mirrors Node's bare `node:http`, so both videos teach the same idea, and it keeps decision 1 (raw HTTP, no SDK) true. A minimal API would boot a web host and print its own logging into the terminal the model output goes to. It costs about 20 lines.~~ **Dead — decision 35.** Open item 3 stays closed: there is no server to choose. |
+| 28 | ~~Chapter 03's no-argument path starts the server. Chapter 02's `you>` terminal loop is deleted.~~ **Dead — decision 35.** The `you>` loop is not deleted by anything now. It lives in chapter 01 (decision 33) and every chapter after it keeps it. | 2026-10-27 | the page replaces the loop, and that is the chapter. Keeping both would put three modes in one file. |
+| 29 | ~~`chat` / `ChatAsync` takes a `send` callback instead of printing. Two callers: `toTerminal` and the one that writes a JSON line into the response.~~ **Dead — decision 35.** One window, so printing straight to the console is the simpler code. If chapter 05 wants the seam, it earns it there. | 2026-10-27 | one function, two windows. The second window is gone. |
+| 30 | ~~The `POST /chat` handler wraps the model call in a `try`, writes `{"error": "..."}` into the stream, and pops the unanswered question.~~ **Dead — decision 35.** There is no long-lived server to keep alive, so a throw killing a one-shot run is fine. | 2026-10-27 | measured: without it, Ollama being down kills the server and the browser gets nothing. Chapters 04-08 all live in this process, so it must not die on one bad request. |
 | 31 | A camera script is a numbered runbook, not prose. Every step is **Say / Type / Proof**, plus **Note** for a must-say line. Shell commands are written out in full and copy-paste ready, including the scaffold (`npm init`, `dotnet new console`) and an off-camera **Before you record** block. Code steps give a line range in the chapter's finished file, never a pasted code block. Amends decision 21. Chapter 01 is rewritten in this shape — 01.A, 02 and 03 still have to follow. | 2026-10-27 | the author stopped mid-take to look up commands. A script must be readable top to bottom while recording, with nothing else open. |
-| 34 | The "New code" numbers in `PLAN.md` are a guide, not a cap. A chapter may go well past them. The hard limit is **no source file over 200 lines**: past that, a part moves into its own file (`Helper.cs`, `helper.ts`) and the chapter stays whole. A chapter splits on minutes, never on lines. Replaces the budget rule in `CLAUDE.md` and the split rule in `PLAN.md`, and closes the three over-budget items for chapters 01, 02 and 03. | 2026-10-27 | the line counts were guesses made before any code existed, and three of four written chapters beat them. A viewer is not hurt by a longer chapter — they are hurt by a 200-line file they cannot hold in their head, and by a video that runs 25 minutes. So the limit moves to the thing that actually hurts. `chapters/03-the-chat-page/code/csharp/Program.cs` is already 193 lines and chapters 04-08 grow from it, so the next chapter needs the file split either way. |
+| 34 | The "New code" numbers in `PLAN.md` are a guide, not a cap. A chapter may go well past them. The hard limit is **no source file over 200 lines**: past that, a part moves into its own file (`Helper.cs`, `helper.ts`) and the chapter stays whole. A chapter splits on minutes, never on lines. Replaces the budget rule in `CLAUDE.md` and the split rule in `PLAN.md`, and closes the three over-budget items for chapters 01, 02 and 03. | 2026-10-27 | the line counts were guesses made before any code existed, and three of four written chapters beat them. A viewer is not hurt by a longer chapter — they are hurt by a 200-line file they cannot hold in their head, and by a video that runs 25 minutes. So the limit moves to the thing that actually hurts. Chapter 03's C# `Program.cs` reached 193 lines before that chapter was dropped, which is what showed the limit was needed at all. |
 | 33 | Chapter 01's C# follows `chapters/01-the-model/code/lk-csharp/`: two files (`Helper.cs` for the plumbing, `Program.cs` for the conversation), and a `while (true)` terminal loop that reads `You:` until an empty line. No command-line arguments. The reply is appended to `messages`, so turn two sees turn one. Kept from the old code against `lk-csharp`: the `OLLAMA_URL` and `MODEL` environment reads, and the 5-minute `Timeout`. Amends decisions 23 and 25 for the C# side only — TypeScript is untouched and still one-shot. | 2026-10-27 | the author's own file is the one he can record from without hesitating, and `Program.cs` reading as nothing but the conversation is the clearer lesson. The two keeps are not style: `scripts/check.sh` runs `MODEL=nope:1b`, `docs/MODELS.md` swaps models by environment, and a cold model can pass the 100-second default and fail as a fake network error. |
 | 32 | A code step in a camera script carries the real code block, copied from the chapter's finished file, plus the line range it came from. `SCRIPT-csharp.md` is the first one. Amends decision 31, which asked for line ranges alone. | 2026-10-27 | a line range sends the author to a second file mid-take, which is the problem decision 31 set out to fix. The drift risk is real, so the blocks are checked against the file: the six C# blocks rebuild `Program.cs` byte for byte. Re-run that check whenever a chapter's code changes. |
+
+| 35 | **Chapter 03, the chat page, is dropped.** The folder `chapters/03-the-chat-page/` is deleted. The console is the only client in this course. The number 03 stays a gap: 02 is followed by 04. Kills decisions 8, 9, 26, 27, 28, 29 and 30. | 2026-10-27 | two reasons together. One, the page is not the lesson: an HTML page and a hand-rolled HTTP server teach web serving, not agents, and they cost 12 minutes that buy no agent knowledge. Two, the code does not pay for itself: the server pushed C# `Program.cs` to 193 lines before chapter 04 added anything, and every chapter from 04 to 08 would then have to keep a browser path alive on top of the loop, in two languages. The gap instead of a renumber follows `CLAUDE.md`: a renumber touches five folder names, every heading, every tag and every "chapter NN" in docs and code. |
+
+| 36 | Chapter 01.A's thinking switch is `public static readonly bool? Think` in `Helper.cs`, a line you flip, not a `THINK` environment variable. The three states stay: `true`, `false`, and `null` for "do not send the field". Follows `chapters/01.A-thinking/code/lk-csharp/`, but keeps the course default model (`gemma4:e2b`, not the author's `Qwen3.5:4b`), the `MODEL` and `OLLAMA_URL` environment reads, and the 5-minute `Timeout`. The C# side is done. **TypeScript still reads `THINK` and is out of step** until the TypeScript pass. | 2026-10-27 | the author's own file is the one he can record from without hesitating, and the switch is a once-per-project choice, not a once-per-run one. The three states are the lesson and they survive: `null` is why the field is a `bool?` and why `WhenWritingNull` is in the JSON options. The three keeps are not style — `scripts/check.sh` runs `MODEL=nope:1b`, `docs/MODELS.md` swaps models by environment, and a cold model can pass the 100-second default and fail as a fake network error. |
 
 ## To do
 
 - Chapter 01 is not `ready` under decision 19. Its docs and scripts match its own code now,
   but nothing after chapter 02 exists to check them against.
-- Chapter 01's two scripts are runbooks under decision 31. `01.A`, `02` and `03` are still
-  prose in the old Goal / Why / Do / Proof shape. Rewrite them before any recording, or
-  the four chapters do not read alike.
-- **Decision 33 has not been carried past chapter 01.** The C# loop now lives in chapter 01, so
-  every one of these still describes the old one-shot code and must be reworked, in this order:
-  `docs/SETUP.md` lines 246-261 and 309-325, `CLAUDE.md` line 26, chapter `01.A`'s README and
-  `SCRIPT-csharp.md` (five `dotnet run -- "..."` commands), chapter `02`'s README, `BASICS.md`
-  and `SCRIPT-csharp.md` (the loop it adds is already built), and chapter `03`'s README and
-  `SCRIPT-csharp.md`. Chapter 02's C# video loses its second half and needs a new one.
+- Runbooks under decision 31: chapter 01 both scripts, and chapter 01.A's `SCRIPT-csharp.md`.
+  Still prose in the old Goal / Why / Do / Proof shape: chapter 01.A's `SCRIPT-ts.md`, and both
+  of chapter 02's. Rewrite them before any recording, or the chapters do not read alike.
+- **Decision 33 is carried to chapter 01.A, not past it.** Chapter 01.A's C# code, README,
+  `BASICS.md`, `QA.md` and `SCRIPT-csharp.md` are reworked and run. Still describing the old
+  one-shot code with `dotnet run -- "..."`: `docs/SETUP.md` lines 246-261 and 309-325,
+  `CLAUDE.md` line 26, and chapter `02`'s README, `BASICS.md` and `SCRIPT-csharp.md`.
+  Chapter 02's C# video loses its second half and needs a new one.
+- **Chapter 01.A's two stacks now behave differently, and that is a broken rule.** C# flips
+  `Helper.Think` in the file (decision 36). TypeScript still reads `THINK=on|off` from the
+  environment. The README says so out loud in a block quote, which is honest but not finished.
+  The TypeScript pass closes it: a `THINK` constant in `helper.ts`, no `process.env` read.
+  `BASICS.md` and `QA.md` are already written for the switch, not the variable.
 - Decision 22 keeps `chapters/01-the-model/code/lk-csharp/` as the author's private copy. It is
   now nearly the same as `code/csharp/`. Ask whether it still earns a folder.
 - `SCRIPT-csharp.md` carries full code blocks under decision 32. `SCRIPT-ts.md` still has
@@ -241,27 +225,18 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
   `helper.ts` + `main.ts` to match.
 - Nobody has recorded a take against the chapter 01 runbook yet. The `Before you record`
   commands P1-P6 (P1-P7 in C#) are written but unrun as a block.
-- Chapter 01.A is not `ready` under decision 19, for the same reason. Docs, code and both
-  scripts agree with each other and were run on 2026-10-26.
+- Chapter 01.A is not `ready` under decision 19, for the same reason as chapter 01.
 - Chapter 02 runs 38 new code lines in TypeScript and 37 in C#, against the ~20 guide. Fine
   under decision 34. The 7:30 cut line in both scripts stays, but it is now a **minutes** cut,
   not a lines cut: use it only if the video runs long.
-- Chapter 02 now has chapter 03 to check against, and it agrees: chapter 03's `code/` is
-  chapter 02's with the readline loop removed and the `send` parameter added, and the five files
-  03 does not touch (`prompts/`, `package.json`, `tsconfig.json`, the `.csproj`) are byte
-  identical. Still not `ready` under decision 19, because the chain stops at 03.
-- **The chat page has never been opened in a browser.** Its reader loop was proven in Node
-  against the live server, but nobody has looked at the page. Do that before chapter 03 is
-  `ready`.
-- Chapter 03 runs 41 new code lines in TypeScript and 65 in C#, against the ~40 guide. Fine
-  under decision 34. The cut line after step 3 in both scripts stays as a **minutes** cut only.
-- **File size is now the limit that bites (decision 34).** Longest files today:
-  `chapters/03-the-chat-page/code/csharp/Program.cs` **193 lines**,
-  `chapters/03-the-chat-page/code/ts/src/main.ts` 132,
-  `chapters/02-the-prompt/code/csharp/Program.cs` 131. Chapter 04 copies chapter 03's `code/`
-  and adds about 70 lines, so the C# file crosses 200 on the next chapter. Pull the plumbing out
-  into `Helper.cs` and `helper.ts` first — chapter 01's C# already has that shape (decision 33).
-- Chapter 03 is not `ready` under decision 19. Chapter 04 does not exist to check it against.
+- Chapter 02 is not `ready` under decision 19. It is the last written chapter now, so nothing
+  exists after it to check it against. Chapter 04 is next and grows from chapter 02's `code/`,
+  not from a server.
+- **File size is the limit that bites (decision 34).** Longest files today:
+  `chapters/02-the-prompt/code/csharp/Program.cs` 131 lines,
+  `chapters/02-the-prompt/code/ts/src/main.ts` 97. Chapter 04 copies chapter 02's `code/` and
+  adds about 70 lines, so pull the plumbing into `Helper.cs` and `helper.ts` first — chapter 01's
+  C# already has that shape (decision 33), and this job carries it to 01.A, 02 and TypeScript.
 - Finish the `gemma4:26b` row in `docs/MODELS.md` (64K, 128K) and test tools on 26b, qwen3.5:4b
   and Ornith. Needed by chapter 10.
 
@@ -269,4 +244,4 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
 
 1. ~~Code layout~~ — closed by decision 20.
 2. Whether chapter 12 (frameworks) exists at all.
-3. ~~C# server for chapter 03~~ — closed by decision 27. `HttpListener`, no project change.
+3. ~~C# server for chapter 03~~ — moot. Chapter 03 is deleted by decision 35.

@@ -3,46 +3,57 @@
 **Video:** about 12 minutes. Two videos: one TypeScript, one C#.
 **Code:** the chapter 01 code, plus about 30 new lines.
 **Files:** [`code/ts/src/main.ts`](code/ts/src/main.ts) ·
+[`code/csharp/Helper.cs`](code/csharp/Helper.cs) ·
 [`code/csharp/Program.cs`](code/csharp/Program.cs)
 **Scripts:** [`SCRIPT-ts.md`](SCRIPT-ts.md) · [`SCRIPT-csharp.md`](SCRIPT-csharp.md)
 **New words:** [thinking](../../docs/GLOSSARY.md#thinking) ·
 [streaming](../../docs/GLOSSARY.md#streaming) ·
 [JSON Lines](../../docs/GLOSSARY.md#json-lines) ·
 [environment variable](../../docs/GLOSSARY.md#environment-variable)
-**New to streams or environment variables?** Read [`BASICS.md`](BASICS.md) first.
+**New to streams, or to a value that can be "not set"?** Read [`BASICS.md`](BASICS.md) first.
 
 ## What we solve
 
 Our default model thinks before it answers. In chapter 01 a five-word answer cost about 380
-tokens of thinking, and we waited for all of it without seeing any. This chapter adds one flag,
-`THINK=on|off`, and turns on streaming, so the answer arrives word by word. With thinking on,
-you watch the notes appear first, in grey, then the answer. With it off, the answer comes fast.
-You decide which one your agent uses.
+tokens of thinking, and we waited for all of it without seeing any. This chapter does two
+things. It turns on [streaming](../../docs/GLOSSARY.md#streaming), so the words arrive one at a
+time instead of all at the end. And it gives you one switch for the thinking itself: watch the
+notes appear first, in grey, or skip them and get the answer fast. You decide which one your
+agent uses.
+
+The switch is one line in your own code, not a flag on the command. You pick it once per
+project, not once per run.
 
 ## Simple example
 
 Thinking on. The grey notes stream first, then the answer. The end of a real run:
 
 ```bash
-cd chapters/01.A-thinking/code/ts && THINK=on node src/main.ts "In five words, what is an AI agent?"
-# ... "Perceives, reasons, acts, achieves goals." (This is a strong, functional definition.)
-# 7.  **Format the Answer.**
+cd chapters/01.A-thinking/code/csharp && dotnet run
+# You: In five words, what is an AI agent?
+# ... 6.  **Final Polish (5 words):** "Perceives, reasons, acts to achieve goals."
 #
-# Perceives, reasons, acts, achieves goals.
+# Perceives, reasons, acts to achieve goals.
 ```
 
-Thinking off. No notes, and the answer is back in under half a second instead of five:
+Thinking off — one word changed in [`code/csharp/Helper.cs`](code/csharp/Helper.cs):
+
+```csharp
+public static readonly bool? Think = false;
+```
 
 ```bash
-cd chapters/01.A-thinking/code/ts && THINK=off node src/main.ts "In five words, what is an AI agent?"
-# Perceives, reasons, acts autonomously.
+cd chapters/01.A-thinking/code/csharp && dotnet run
+# You: In five words, what is an AI agent?
+# Autonomous program interacting with environment.
 ```
 
-Measured on this machine: 5.4 s with thinking, 0.4 s without. Same model, same question.
-Thinking cost us twelve times the wait for an answer that is no better.
+Measured on this machine: **7.1 s** with thinking, **1.45 s** without, both including the half
+second `dotnet run` costs. Same model, same question. Thinking cost five times the wait for an
+answer that is no better.
 
-`THINK` unset sends nothing, and the model does what it ships with. `gemma4:e2b` ships with
-thinking on.
+`Think = null` sends nothing at all, and the model does what it ships with. `gemma4:e2b` ships
+with thinking on.
 
 ## Everyday picture
 
@@ -58,14 +69,14 @@ it and answer from the top of their head. Fast and sometimes wrong, or slow and 
 
 ```mermaid
 flowchart TD
-    YOU["you<br/>a question, plus THINK=on or off"] --> APP
+    YOU["you<br/>a question at the You: prompt"] --> APP
     subgraph app["your code"]
-        APP["chat()<br/>POST /api/chat"]
+        APP["the request<br/>POST /api/chat"]
         SPLIT{"which field<br/>is in this line?"}
         GREY["print grey<br/>thinking"]
         PLAIN["print plain<br/>content"]
     end
-    APP -->|"stream: true, think: on off or absent"| OLLAMA["ollama serve<br/>localhost:11434"]
+    APP -->|"stream: true, think: true false or absent"| OLLAMA["ollama serve<br/>localhost:11434"]
     OLLAMA -->|"one JSON object per line"| SPLIT
     SPLIT -->|"thinking"| GREY
     SPLIT -->|"content"| PLAIN
@@ -94,7 +105,9 @@ POST http://localhost:11434/api/chat
 | `think` | **not sent** | the model does what it ships with. Safe for every model. |
 
 Not sending the field matters. A model that cannot think answers `think: true` with a 400,
-not with an answer. So `THINK` unset sends nothing at all.
+not with an answer. So the switch is a `bool?`, and `null` means the field never goes on the
+wire. Measured by curl on this machine: no field gives 714 characters of thinking,
+`"think": null` gives none at all. `null` and absent are **not** the same thing.
 
 One line per token. "Say hi in two words." came back as **330 lines** on this machine —
 328 of thinking, 2 of answer. The first, the last two, and the very last, cut short:
@@ -113,6 +126,11 @@ is 379 tokens for an answer of two words.
 
 ## TypeScript
 
+> **Not in step with the C# side yet.** The TypeScript code still reads a `THINK=on|off`
+> environment variable instead of a line in the file, and it is still one file. It is brought
+> in line in the TypeScript pass — see the To do list in
+> [`docs/PROGRESS.md`](../../docs/PROGRESS.md).
+
 Three new pieces. The `THINK` flag, read once at the top. The stream reader, which is a
 `for await` over the body. And the line buffer.
 
@@ -124,29 +142,40 @@ THINK=off node src/main.ts "In five words, what is an AI agent?"
 
 Two things in the file are not obvious:
 
-- **`JSON.stringify` drops a key whose value is `undefined`.** That is why `THINK` unset means
-  no `think` field on the wire, with no `if` anywhere.
+- **`JSON.stringify` drops a key whose value is `undefined`.** That is why an unset switch
+  means no `think` field on the wire, with no `if` anywhere.
 - **The `buffer` variable.** A network chunk can stop in the middle of a line. We split on
   `\n`, keep the last piece — which may be half a line — and glue the next chunk onto it.
   Without this, one `JSON.parse` in ten throws.
 
 ## C#
 
-The same three pieces, in C# shapes.
+Two files, as in chapter 01. [`Helper.cs`](code/csharp/Helper.cs) is the plumbing and gains
+two things: the `Think` switch, and the two colour codes.
+[`Program.cs`](code/csharp/Program.cs) is the conversation, and its one `PostAsJsonAsync` call
+becomes a stream it reads a line at a time.
 
 ```bash
 cd chapters/01.A-thinking/code/csharp
-THINK=on  dotnet run -- "In five words, what is an AI agent?"
-THINK=off dotnet run -- "In five words, what is an AI agent?"
+dotnet run
 ```
 
-Two things in the file are not obvious:
+Then type a question. An empty line stops it. To turn thinking off, change one word in
+`Helper.cs`:
+
+```csharp
+public static readonly bool? Think = false;    // true, false, or null for "do not ask"
+```
+
+Three things in the files are not obvious:
 
 - **`HttpCompletionOption.ResponseHeadersRead`.** Without it, `HttpClient` waits for the whole
   body before it gives you anything, and your stream is not a stream. The code runs, the output
   looks right, and nothing appears until the end. It is the one line that makes streaming real.
 - **`DefaultIgnoreCondition = WhenWritingNull`.** This is what makes `Think = null` mean
   "not on the wire" instead of `"think": null`.
+- **Two `StringBuilder`s, not one.** You print each piece as it arrives, but the message list
+  needs the finished message. Printing and remembering are two jobs.
 
 ## What differs between the two
 
@@ -164,10 +193,13 @@ lines. C# gives you lines and makes you ask for the bytes early.
 
 | What you see | What it means | What to do |
 |---|---|---|
-| `Error: 400 Bad Request: {"error":"\"phi4-mini:3.8b\" does not support thinking"}` | you set `THINK=on` for a model that cannot think | leave `THINK` unset, or use `gemma4:e2b` |
-| `SyntaxError: Unexpected end of JSON input` | you parsed a half line. The `buffer` is missing or wrong. | keep the `lines.pop()` line |
+| `400 Bad Request: {"error":"\"phi4-mini:3.8b\" does not support thinking"}` | you asked for thinking on a model that cannot think | set `Think = null`, or use `gemma4:e2b` |
+| `404 Not Found: {"error":"model 'nope:1b' not found"}` | the model name is wrong, or it is not pulled | `ollama pull <name>`, and check `ollama list` |
 | nothing prints, then everything at once (C#) | `ResponseHeadersRead` is missing | add it to `http.SendAsync` |
+| `SyntaxError: Unexpected end of JSON input` (TS) | you parsed a half line. The `buffer` is missing or wrong. | keep the `lines.pop()` line |
 | grey text stays grey after the program ends | the reset code never printed | end every grey write with `\x1b[0m` |
+
+Every error above is copied from a real run on this machine.
 
 ## Try it yourself
 
@@ -180,12 +212,14 @@ Thinking is not free, so measure it before you keep it.
 3. Decide. Does the slow answer beat the fast one often enough to pay for the wait?
 
 There is no right answer in this repo. It depends on your model and your question. That is the
-point — you now have the flag, so you can ask.
+point — you now own the switch, so you can ask.
 
 ## Done when
 
-- [ ] `THINK=on node src/main.ts "hello"` prints grey notes, then an answer
-- [ ] `THINK=off` prints only the answer, and is clearly faster
+- [ ] `dotnet run` with `Think = true` prints grey notes, then an answer
+- [ ] `Think = false` prints only the answer, and is clearly faster
+- [ ] the second question in one run gets a shorter answer than the first, because the list is
+      the memory
 - [ ] both stacks do the same thing
-- [ ] you ran `MODEL=phi4-mini:3.8b THINK=on` and saw the 400
-- [ ] you can say what breaks if you delete the `buffer` line (TS) or `ResponseHeadersRead` (C#)
+- [ ] you ran `MODEL=phi4-mini:3.8b` with `Think = true` and saw the 400
+- [ ] you can say what breaks if you delete `ResponseHeadersRead` (C#) or the `buffer` line (TS)
