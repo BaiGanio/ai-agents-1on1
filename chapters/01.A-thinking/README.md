@@ -1,8 +1,9 @@
 # Chapter 01.A — Thinking
 
 **Video:** about 12 minutes. Two videos: one TypeScript, one C#.
-**Code:** the chapter 01 code, plus about 30 new lines.
+**Code:** the chapter 01 code, plus 44 new lines of C#.
 **Files:** [`code/ts/src/main.ts`](code/ts/src/main.ts) ·
+[`code/csharp/ChatProtocol.cs`](code/csharp/ChatProtocol.cs) ·
 [`code/csharp/Helper.cs`](code/csharp/Helper.cs) ·
 [`code/csharp/Program.cs`](code/csharp/Program.cs)
 **Scripts:** [`SCRIPT-ts.md`](SCRIPT-ts.md) · [`SCRIPT-csharp.md`](SCRIPT-csharp.md)
@@ -31,9 +32,11 @@ Thinking on. The grey notes stream first, then the answer. The end of a real run
 ```bash
 cd chapters/01.A-thinking/code/csharp && dotnet run
 # You: In five words, what is an AI agent?
-# ... 6.  **Final Polish (5 words):** "Perceives, reasons, acts to achieve goals."
+# gemma4:e2b: 1.  **Analyze the Request:** The user wants a five-word definition ...
+# ... 7.  **Select the most accurate and standard description:** Option C best captures
+#     the functional loop.
 #
-# Perceives, reasons, acts to achieve goals.
+# Perceives, reasons, acts, achieves goals.
 ```
 
 Thinking off — one word changed in [`code/csharp/Helper.cs`](code/csharp/Helper.cs):
@@ -45,11 +48,11 @@ public static readonly bool? Think = false;
 ```bash
 cd chapters/01.A-thinking/code/csharp && dotnet run
 # You: In five words, what is an AI agent?
-# Autonomous program interacting with environment.
+# gemma4:e2b: Autonomous decision-making intelligent software.
 ```
 
-Measured on this machine: **7.1 s** with thinking, **1.45 s** without, both including the half
-second `dotnet run` costs. Same model, same question. Thinking cost five times the wait for an
+Measured on this machine: **6.2 s** with thinking, **1.5 s** without, both including the half
+second `dotnet run` costs. Same model, same question. Thinking cost four times the wait for an
 answer that is no better.
 
 `Think = null` sends nothing at all, and the model does what it ships with. `gemma4:e2b` ships
@@ -150,10 +153,17 @@ Two things in the file are not obvious:
 
 ## C#
 
-Two files, as in chapter 01. [`Helper.cs`](code/csharp/Helper.cs) is the plumbing and gains
-two things: the `Think` switch, and the two colour codes.
-[`Program.cs`](code/csharp/Program.cs) is the conversation, and its one `PostAsJsonAsync` call
-becomes a stream it reads a line at a time.
+**Three files now, not two.** The conversation barely changes. The plumbing does the new work.
+
+| File | What is in it | What this chapter does to it |
+|---|---|---|
+| [`ChatProtocol.cs`](code/csharp/ChatProtocol.cs) | the three records, and nothing else | **new file.** The records move out of `Helper.cs`, and two of them gain a field. |
+| [`Helper.cs`](code/csharp/Helper.cs) | the plumbing | gains the `Think` switch, two colour codes, and two methods: `HandleStream` and `HandleResponseError` |
+| [`Program.cs`](code/csharp/Program.cs) | the conversation, and nothing else | one `PostAsJsonAsync` call becomes a stream, then two calls into `Helper` |
+
+The split is the reason `Program.cs` is still 53 lines and still reads top to bottom: send,
+check, stream, remember. Chapter 04 adds tools on top of that, and it has room because reading
+a stream is not in the way.
 
 ```bash
 cd chapters/01.A-thinking/code/csharp
@@ -175,7 +185,8 @@ Three things in the files are not obvious:
 - **`DefaultIgnoreCondition = WhenWritingNull`.** This is what makes `Think = null` mean
   "not on the wire" instead of `"think": null`.
 - **Two `StringBuilder`s, not one.** You print each piece as it arrives, but the message list
-  needs the finished message. Printing and remembering are two jobs.
+  needs the finished message. Printing and remembering are two jobs. `HandleStream` takes both
+  builders from the caller for the same reason: it prints, the caller remembers.
 
 ## What differs between the two
 
@@ -223,3 +234,4 @@ point — you now own the switch, so you can ask.
 - [ ] both stacks do the same thing
 - [ ] you ran `MODEL=phi4-mini:3.8b` with `Think = true` and saw the 400
 - [ ] you can say what breaks if you delete `ResponseHeadersRead` (C#) or the `buffer` line (TS)
+- [ ] you can say why `ChatProtocol.cs` is its own file and not the bottom of `Helper.cs`

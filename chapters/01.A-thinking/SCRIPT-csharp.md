@@ -5,16 +5,20 @@ every command and every line of code is here.
 
 Every step is **Say / Type / Proof**, and some add a **Note** — the one sentence you must not
 forget. **Type** is exactly what goes on air. The finished files are
+[`code/csharp/ChatProtocol.cs`](code/csharp/ChatProtocol.cs),
 [`code/csharp/Helper.cs`](code/csharp/Helper.cs) and
 [`code/csharp/Program.cs`](code/csharp/Program.cs), and each code step says which lines of them
 you are typing, so a bad take is one paste away.
 
-This chapter starts as a copy of chapter 01's code. Some blocks below are already on screen
-when you start — they are marked **Already there**. Do not type those. They are printed so the
-two files read whole, in order, on this page.
+This chapter starts as a copy of chapter 01's code: two files, `Helper.cs` and `Program.cs`.
+Some blocks below are already on screen when you start — they are marked **Already there**. Do
+not type those. They are printed so all three files read whole, in order, on this page.
 
-Both files grow. `Helper.cs` gets the thinking switch and two colour codes. `Program.cs` swaps
-one call for a stream and reads it a line at a time.
+The shape of the chapter: **the conversation barely changes, the plumbing does the new work.**
+A third file appears, `ChatProtocol.cs`, and the records move into it. `Helper.cs` gets the
+thinking switch, two colour codes, and two methods — one that reads the stream, one that reads
+an error. `Program.cs` swaps one call for a stream and then calls those two methods. That is
+why `Program.cs` ends at 53 lines and still reads top to bottom.
 
 The TypeScript video is [`SCRIPT-ts.md`](SCRIPT-ts.md). Steps 1, 2, 3 and 4 are shared with it
 word for word, so a TypeScript viewer never has to watch this one.
@@ -23,9 +27,10 @@ word for word, so a TypeScript viewer never has to watch this one.
 |---|---|---|
 | 0 — the six seconds | 1 | 0:00–1:30 |
 | 1 — the thinking is already there, by curl | 2–4 | 1:30–4:00 |
-| 2 — Helper.cs, the switch and the colours | 5–9 | 4:00–6:00 |
-| 3 — Program.cs, read the stream | 10–15 | 6:00–10:00 |
-| 4 — break it, and hand off | 16–19 | 10:00–12:00 |
+| 2 — ChatProtocol.cs, the wire gets its own file | 5–6 | 4:00–5:00 |
+| 3 — Helper.cs, the switch, the colours, the reader | 7–13 | 5:00–9:00 |
+| 4 — Program.cs, four lines of difference | 14–21 | 9:00–10:30 |
+| 5 — break it, and hand off | 22–25 | 10:30–12:00 |
 
 ---
 
@@ -39,7 +44,7 @@ ollama serve
 ```
 
 ```bash
-# P2. both models are pulled. You need phi4-mini for step 17.
+# P2. both models are pulled. You need phi4-mini for step 23.
 ollama pull gemma4:e2b
 ollama pull phi4-mini:3.8b
 ```
@@ -63,7 +68,7 @@ dotnet build
 
 ```bash
 # P6. keep the finished code, then put chapter 01's code in its place so you can type the
-#     difference on air
+#     difference on air. Chapter 01 has no ChatProtocol.cs — you create it on camera.
 cd /Users/lk/Projects/BaiGanio/ai-agents-1on1
 mkdir -p /tmp/take-01A && cp -R chapters/01.A-thinking/code/csharp /tmp/take-01A/
 rm -rf chapters/01.A-thinking/code/csharp
@@ -164,18 +169,86 @@ That third state is why the code below is a `bool?` and not a `bool`.
 
 ---
 
-## Act 2 — Helper.cs, the switch and the colours · 4:00–6:00
+## Act 2 — ChatProtocol.cs, the wire gets its own file · 4:00–5:00
 
-### 5. Already there — where the model lives · Helper.cs lines 1-13
+### 5. Delete the records off the bottom of Helper.cs · Helper.cs, old lines 33-35
+
+**Say.** "Three records sat at the bottom of `Helper.cs` in chapter 01. Two of them change this
+chapter, and both of them are about the wire, not about plumbing. So they get their own file."
+
+**Type.** In `Helper.cs`, select these three lines and delete them.
+
+```csharp
+record Message(string Role, string Content);
+record ChatRequest(string Model, List<Message> Messages, bool Stream);
+record ChatResponse(Message Message);
+```
+
+**Note.** Say why out loud, once, so it is not housekeeping: `Helper.cs` is **how** we reach the
+model and `ChatProtocol.cs` is **what** goes down the wire. Every chapter from here changes the
+wire, and this is the file you will open each time.
+
+**Proof.** The build breaks. Say that it will, and that the next step fixes it.
+
+### 6. The new file · ChatProtocol.cs lines 1-13
+
+**Say.** "New file. Three records, and two of them grow by one field."
+
+**Type.** Create `ChatProtocol.cs` and type all of it.
+
+```csharp
+// The wire format, and nothing else. Helper.cs is the plumbing. Program.cs is the conversation.
+
+// Thinking has a default, so every `new Message("user", prompt)` from chapter 01 still compiles.
+public record Message(string Role, string Content, string? Thinking = null);
+
+public record ChatRequest(
+    string Model,
+    List<Message> Messages,
+    bool Stream = false,
+    bool? Think = false
+);
+
+public record ChatResponse(Message Message);
+```
+
+**Note.** Two things, and say both.
+
+One: `string? Thinking = null` has a default, so the `new Message("user", prompt)` already in
+`Program.cs` keeps working with no edit. Point at that line in the other file — it is why the
+build goes green again without you touching it.
+
+Two: `bool? Think` is the three states from step 4, written down. A `bool` has two states and
+the wire has three, so the question mark is the lesson, not a style choice.
+
+**Proof.** The build is clean again. `ChatProtocol.cs` is 13 lines.
+
+---
+
+## Act 3 — Helper.cs, the switch, the colours, the reader · 5:00–9:00
+
+### 7. One new `using` · Helper.cs lines 1-3
+
+**Say.** "One new line at the top. `System.Text` is for `StringBuilder`, which arrives in four
+minutes."
+
+**Type.** Line 1 is new. The two under it are already there.
+
+```csharp
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+```
+
+**Proof.** Still builds.
+
+### 8. Already there — where the model lives · Helper.cs lines 5-14
 
 **Say.** "This is chapter 01's plumbing, untouched. Ten seconds, then we add to it."
 
 **Already there.** Do not type it.
 
 ```csharp
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
 // Everything needed to reach the model, in one place, so Program.cs is only the conversation.
 public static class Helper
 {
@@ -188,12 +261,12 @@ public static class Helper
         Environment.GetEnvironmentVariable("OLLAMA_URL") ?? "http://localhost:11434";
 ```
 
-**Proof.** The file is on screen, unchanged from last chapter.
+**Proof.** The block is on screen, unchanged from last chapter.
 
-### 6. The thinking switch, and two colours · Helper.cs lines 15-21
+### 9. The thinking switch, and two colours · Helper.cs lines 16-22
 
-**Say.** "One line for the switch. It is `bool?`, not `bool`, because of the three states we
-just saw."
+**Say.** "One line for the switch. It is a line you flip, not a setting you pass in. You decide
+this once for your project, not once per run."
 
 **Type.**
 
@@ -207,14 +280,12 @@ just saw."
     public static readonly string Reset = "\x1b[0m";
 ```
 
-**Note.** Say both things. One: a `bool` has two states and the wire has three, so the question
-mark is the lesson, not a style choice. Two: those two strings are not a package. `\x1b[90m`
-tells the terminal "grey from here", `\x1b[0m` tells it "back to normal". Every terminal has
-understood them for forty years.
+**Note.** Say that those two strings are not a package. `\x1b[90m` tells the terminal "grey from
+here", `\x1b[0m` tells it "back to normal". Every terminal has understood them for forty years.
 
 **Proof.** The file builds, and nothing has changed in the output yet.
 
-### 7. Already there — one HttpClient · Helper.cs lines 23-30
+### 10. Already there — one HttpClient · Helper.cs lines 24-31
 
 **Say.** "Untouched. One client, five-minute timeout."
 
@@ -233,7 +304,7 @@ understood them for forty years.
 
 **Proof.** —
 
-### 8. The JSON options get a second reason to exist · Helper.cs lines 32-41
+### 11. The JSON options get a second reason to exist · Helper.cs lines 33-41
 
 **Say.** "This block was already here. One line in it now carries the whole three-state idea,
 so add the comment and say why."
@@ -251,7 +322,6 @@ there.
             // "no thinking", which is a different answer.
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
-}
 ```
 
 **Note.** This is the step to slow down on. **Delete `DefaultIgnoreCondition` on camera.** Set
@@ -260,36 +330,99 @@ there.
 Measured by curl on this machine: no field gives 714 characters of thinking, `"think": null`
 gives none at all.
 
-**Proof.** The class closes. `Helper.cs` is 41 lines so far.
+**Proof.** Still builds.
 
-### 9. The records grow by one field each · Helper.cs lines 43-45
+### 12. Move the error throw out of Program.cs · Helper.cs lines 43-50
 
-**Say.** "Two of the three records change. `Message` can carry thinking. `ChatRequest` can ask
-for it."
+**Say.** "Chapter 01 threw this error inline, in the middle of the conversation. It is plumbing.
+Cut it from `Program.cs` and paste it here, as a method."
 
-**Type.** Replace chapter 01's three records with these.
+**Type.** Cut the four lines out of `Program.cs`'s `if` block, then type this in `Helper.cs`.
 
 ```csharp
-record Message(string Role, string Content, string? Thinking = null);
-record ChatRequest(string Model, List<Message> Messages, bool Stream, bool? Think);
-record ChatResponse(Message Message);
+    // Ollama puts the real reason in the body — an unknown model, a model that cannot think.
+    // Without this you get a bare 400 and no idea which of the two it was.
+    public static async Task HandleResponseError(HttpResponseMessage response)
+    {
+        var body = await response.Content.ReadAsStringAsync();
+        throw new HttpRequestException(
+            $"{(int)response.StatusCode} {response.ReasonPhrase}: {body}");
+    }
 ```
 
-**Note.** `string? Thinking = null` has a default, so every `new Message("user", prompt)` in
-`Program.cs` keeps working with no edit. Point at that — it is why the file still builds.
+**Note.** The comment changed by one word — chapter 01 said "a bad field", this says "a model
+that cannot think". That is step 23 arriving early. Say it, then move on.
 
-**Proof.** `Helper.cs` is 45 lines and the build is clean.
+**Proof.** `Program.cs` is shorter and still builds.
+
+### 13. The stream reader · Helper.cs lines 52-84
+
+**Say.** "This is the body of the chapter, and it lives in the helper, because reading a stream
+is plumbing. Four small pieces. Run after each one."
+
+**Type.** First the signature and the reader:
+
+```csharp
+    // Prints each piece the moment it arrives, and fills the caller's two builders. Printing and
+    // remembering are two jobs, so the caller owns what it wants to keep.
+    public static async Task HandleStream(
+        HttpResponseMessage response,
+        StringBuilder content,
+        StringBuilder thinking)
+    {
+        // A stream is one JSON object per line. ReadLineAsync waits for a whole line, so a
+        // network chunk that stops mid-line is not our problem here.
+        using var reader = new StreamReader(await response.Content.ReadAsStreamAsync());
+        while (await reader.ReadLineAsync() is { } line)
+        {
+            if (line.Length == 0) continue;
+
+            Message part =
+                JsonSerializer.Deserialize<ChatResponse>(line, AgentJsonOptions)!.Message;
+
+            if (!string.IsNullOrEmpty(part.Thinking))
+            {
+                Console.Write(Grey + part.Thinking + Reset);
+                thinking.Append(part.Thinking);
+            }
+
+            if (!string.IsNullOrEmpty(part.Content))
+            {
+                // The first word of the answer needs a gap after the grey, or they run together.
+                if (content.Length == 0 && thinking.Length > 0) Console.Write("\n\n");
+                Console.Write(part.Content);
+                content.Append(part.Content);
+            }
+        }
+    }
+}
+```
+
+**Note.** Three things to say here, in this order.
+
+One: the free thing C# gets, because the TypeScript video spends three lines on it.
+`ReadLineAsync` waits for a whole line, so a network chunk that stops mid-line is not your
+problem. In TypeScript it is.
+
+Two: why the method takes two `StringBuilder`s instead of returning a string. You print each
+piece the moment it arrives, but the caller's **list** needs the finished message. Printing and
+remembering are two jobs, and the caller is the one that remembers.
+
+Three: `is { } line` means "not null, and call it `line`". `ReadLineAsync` returns null at the
+end of the stream, so that one pattern is also how the loop ends.
+
+**Proof.** `Helper.cs` is 84 lines and the build is clean.
 
 ---
 
-## Act 3 — Program.cs, read the stream · 6:00–10:00
+## Act 4 — Program.cs, four lines of difference · 9:00–10:30
 
-### 10. The header and the set-up · Program.cs lines 1-15
+### 14. The header and two `using` lines · Program.cs lines 1-8
 
-**Say.** "New title, and two new `using` lines. Everything under them is chapter 01's."
+**Say.** "New title. And `System.Text.Json` leaves — `JsonSerializer` lives in the helper now.
+`System.Text` arrives, for the two builders."
 
-**Type.** The top comment and the two new `using` lines are new. The four lines after them are
-already there.
+**Type.** The top comment is new. Replace chapter 01's one `using` line with these two.
 
 ```csharp
 // Chapter 01.A — thinking.
@@ -300,8 +433,17 @@ already there.
 
 using System.Net.Http.Json;
 using System.Text;
-using System.Text.Json;
+```
 
+**Proof.** It still builds.
+
+### 15. Already there — the set-up · Program.cs lines 10-14
+
+**Say.** "Untouched."
+
+**Already there.** Do not type it.
+
+```csharp
 List<Message> messages = [];
 
 HttpClient http = Helper.OllamaHttpClient;
@@ -309,12 +451,9 @@ HttpClient http = Helper.OllamaHttpClient;
 Console.WriteLine("Type a question. An empty line stops the app.");
 ```
 
-**Note.** `System.Text` is for `StringBuilder`, `System.Text.Json` for `JsonSerializer`. Name
-them now so they are not a mystery in four minutes.
+**Proof.** —
 
-**Proof.** It still builds.
-
-### 11. Already there — the loop and the question · Program.cs lines 17-25
+### 16. Already there — the loop and the question · Program.cs lines 16-24
 
 **Say.** "Untouched. You talk to it, it reads a line, an empty line stops it."
 
@@ -334,7 +473,7 @@ while (true)
 
 **Proof.** —
 
-### 12. Two words on the request · Program.cs line 27
+### 17. Two words on the request · Program.cs line 26
 
 **Say.** "`Stream: false` becomes `Stream: true`, and we pass the switch."
 
@@ -346,12 +485,12 @@ while (true)
 
 **Note.** Run it now, before you touch anything else. `PostAsJsonAsync` and
 `ReadFromJsonAsync` choke: the body is 330 JSON objects glued together, and
-`ReadFromJsonAsync` wants one. **Show the error and do not fix it.** The next two steps are the
+`ReadFromJsonAsync` wants one. **Show the error and do not fix it.** The next steps are the
 fix, and the viewer should want them.
 
 **Proof.** A parse error on screen, caused by one word.
 
-### 13. Send it by hand so you can read the body yourself · Program.cs lines 29-38
+### 18. Send it by hand so you can read the body yourself · Program.cs lines 28-37
 
 **Say.** "`PostAsJsonAsync` is a convenience that reads the whole body for you. We cannot use a
 convenience that waits, so we build the request ourselves."
@@ -378,70 +517,49 @@ one word to `ResponseHeadersRead` and run again. Now it drips. Give that its own
 
 **Proof.** Nothing visible yet — it still cannot parse. Say so, so nobody thinks it is broken.
 
-### 14. Already there — the status check · Program.cs lines 40-47
+### 19. The error check is two lines now · Program.cs lines 39-40
 
-**Say.** "Untouched, but the reason it exists just got better. Watch step 17."
+**Say.** "Same check. The four lines that did the work moved into the helper in step 12."
 
-**Already there.** Do not type it. The comment is reworded, nothing else.
+**Type.**
 
 ```csharp
     if (!response.IsSuccessStatusCode)
-    {
-        // Ollama puts the real reason in the body — an unknown model, a model that cannot think.
-        // Without this line you get a bare 400 and no idea which of the two it was.
-        var body = await response.Content.ReadAsStringAsync();
-        throw new HttpRequestException(
-            $"{(int)response.StatusCode} {response.ReasonPhrase}: {body}");
-    }
+        await Helper.HandleResponseError(response);
 ```
 
-**Proof.** —
+**Note.** Point at what `Program.cs` reads like now: send, check, stream, remember. Four verbs,
+no plumbing. That is what moving the two methods out bought.
 
-### 15. Read it a line at a time, and colour it · Program.cs lines 49-81
+**Proof.** The `if` block is one line long.
 
-**Say.** "This replaces the two lines that read the reply in chapter 01. It is the body of the
-chapter."
+### 20. Two builders, a label, and one call · Program.cs lines 42-47
 
-**Type.** Delete chapter 01's `ReadFromJsonAsync`, `Console.WriteLine` and `messages.Add` lines.
-Type this in their place, and run after each of the four pieces.
+**Say.** "Two `StringBuilder`s, because printing and remembering are two jobs. Then one call."
 
-First, somewhere to collect the two halves:
+**Type.** Delete chapter 01's `ReadFromJsonAsync` and `Console.WriteLine` lines. Type this in
+their place.
 
 ```csharp
-    var content = new StringBuilder();
-    var thinking = new StringBuilder();
+    StringBuilder content = new();
+    StringBuilder thinking = new();
+
+    Console.Write($"{Helper.Model}: ");
+
+    await Helper.HandleStream(response, content, thinking);
 ```
 
-Then the reader:
+**Note.** Say what the label buys. On screen you now get `You:` and then `gemma4:e2b:`, so the
+viewer can always tell who is talking — and the model name is right there when you swap it in
+step 23.
 
-```csharp
-    // A stream is one JSON object per line. ReadLineAsync waits for a whole line, so a network
-    // chunk that stops mid-line is not our problem here.
-    using var reader = new StreamReader(await response.Content.ReadAsStreamAsync());
-    while (await reader.ReadLineAsync() is { } line)
-    {
-        if (line.Length == 0) continue;
+**Proof.** Grey text, then an answer. The chapter works from here.
 
-        Message part =
-            JsonSerializer.Deserialize<ChatResponse>(line, Helper.AgentJsonOptions)!.Message;
+### 21. Close the turn · Program.cs lines 49-53
 
-        if (!string.IsNullOrEmpty(part.Thinking))
-        {
-            Console.Write(Helper.Grey + part.Thinking + Helper.Reset);
-            thinking.Append(part.Thinking);
-        }
+**Say.** "The reply goes back into the list. Both halves of it."
 
-        if (!string.IsNullOrEmpty(part.Content))
-        {
-            // The first word of the answer needs a gap after the grey, or the two run together.
-            if (content.Length == 0 && thinking.Length > 0) Console.Write("\n\n");
-            Console.Write(part.Content);
-            content.Append(part.Content);
-        }
-    }
-```
-
-Last, close the turn:
+**Type.** Replace chapter 01's `messages.Add(reply.Message)` with these.
 
 ```csharp
     Console.WriteLine();
@@ -451,16 +569,13 @@ Last, close the turn:
 }
 ```
 
-**Note.** Say the free thing C# gets here, because the TypeScript video spends three lines on
-it: `ReadLineAsync` waits for a whole line, so a network chunk that stops mid-line is not your
-problem. In TypeScript it is.
+**Proof.** `Program.cs` is 53 lines and the build is clean.
 
-Then say why there are two `StringBuilder`s and not one. You print each piece the moment it
-arrives, but the **list** needs the finished message. Printing and remembering are two jobs.
+---
 
-**Proof.** `Program.cs` is 81 lines and the build is clean.
+## Act 5 — Break it, and hand off · 10:30–12:00
 
-### 16. Run it, two turns
+### 22. Run it, two turns
 
 **Say.** "Grey first, then the answer. And turn two still sees turn one."
 
@@ -478,18 +593,15 @@ In five words, what is an AI agent?
 And in three?
 ```
 
-**Note.** Measured on this machine, `gemma4:e2b`: those two turns took **8.3 s** including
-`dotnet run`, and the answers were `Perceives, reasons, takes actions.` then
-`Sense, think, act.` Point at the second one — the thinking out loud quotes the first answer,
-on screen, in grey. The list is the memory, and you can read it happening.
+**Note.** Measured on this machine, `gemma4:e2b`: those two turns took **11.8 s** including
+`dotnet run`, and the answers were `Perceives, reasons, acts, achieves goals.` then
+`Senses, plans, acts.` Point at the grey on turn two — it says, out loud, *"The previous answer
+was 'Perceives, reasons, acts, achieves goals'."* The list is the memory, and you can read it
+happening on screen.
 
 **Proof.** Grey text scrolling, a blank line, an answer, twice.
 
----
-
-## Act 4 — Break it, and hand off · 10:00–12:00
-
-### 17. Flip the switch off
+### 23. Flip the switch off
 
 **Say.** "One line. That is the whole flag."
 
@@ -505,16 +617,16 @@ Then run and ask the same question:
 dotnet run
 ```
 
-**Note.** Measured on this machine: **1.45 s** with thinking off against **8.3 s** for two
-thinking turns, and the answer was `Autonomous program interacting with environment.` — no
-worse than the slow one. Say that plainly. Thinking is not free and it is not always better.
-You now own the choice.
+**Note.** Measured on this machine, same question: **6.2 s** with thinking on, **1.5 s** with it
+off, and the fast answer was `Autonomous decision-making intelligent software.` — no worse than
+the slow one. Say that plainly. Thinking is not free and it is not always better. You now own
+the choice.
 
 Put the line back to `true` before the next step.
 
-**Proof.** No grey. An answer, fast.
+**Proof.** No grey. An answer, four times faster.
 
-### 18. Break it on a model that cannot think
+### 24. Break it on a model that cannot think
 
 **Say.** "The first thing anyone does is swap the model. Here is the error you will get."
 
@@ -534,11 +646,14 @@ Unhandled exception. System.Net.Http.HttpRequestException: 400 Bad Request:
 ```
 
 Say it once: **this is why `null` is a state.** With `Think = null` the field never goes on the
-wire, and the same model answers. That is the payoff for step 8.
+wire, and the same model answers. That is the payoff for step 11.
+
+If you have ten spare seconds, run `MODEL=nope:1b dotnet run` too. It gives
+`404 Not Found: {"error":"model 'nope:1b' not found"}` — the same helper, a different mistake.
 
 **Proof.** The 400, then the same model answering.
 
-### 19. Hand off
+### 25. Hand off
 
 **Say.** "It streams, and you choose whether it thinks. But it still has no idea who it is or
 what it is for. Next video we tell it, in one block of text."
@@ -550,6 +665,7 @@ what it is for. Next video we tell it, in one block of text."
 ## After the take
 
 1. Run **P7** above to restore the code.
-2. Check `Helper.cs` really is back to `Think = true` — steps 8, 17 and 18 all change that line.
-3. Write the real run numbers and the machine into [`docs/PROGRESS.md`](../../docs/PROGRESS.md).
-4. Tick the boxes in the chapter [`README.md`](README.md) "Done when" list.
+2. Check `Helper.cs` really is back to `Think = true` — steps 11, 23 and 24 all change that line.
+3. Check `ChatProtocol.cs` exists and the three files build clean.
+4. Write the real run numbers and the machine into [`docs/PROGRESS.md`](../../docs/PROGRESS.md).
+5. Tick the boxes in the chapter [`README.md`](README.md) "Done when" list.

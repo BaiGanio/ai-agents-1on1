@@ -6,7 +6,6 @@
 
 using System.Net.Http.Json;
 using System.Text;
-using System.Text.Json;
 
 List<Message> messages = [];
 
@@ -38,41 +37,14 @@ while (true)
         await http.SendAsync(message, HttpCompletionOption.ResponseHeadersRead);
 
     if (!response.IsSuccessStatusCode)
-    {
-        // Ollama puts the real reason in the body — an unknown model, a model that cannot think.
-        // Without this line you get a bare 400 and no idea which of the two it was.
-        var body = await response.Content.ReadAsStringAsync();
-        throw new HttpRequestException(
-            $"{(int)response.StatusCode} {response.ReasonPhrase}: {body}");
-    }
+        await Helper.HandleResponseError(response);
 
-    var content = new StringBuilder();
-    var thinking = new StringBuilder();
+    StringBuilder content = new();
+    StringBuilder thinking = new();
 
-    // A stream is one JSON object per line. ReadLineAsync waits for a whole line, so a network
-    // chunk that stops mid-line is not our problem here.
-    using var reader = new StreamReader(await response.Content.ReadAsStreamAsync());
-    while (await reader.ReadLineAsync() is { } line)
-    {
-        if (line.Length == 0) continue;
+    Console.Write($"{Helper.Model}: ");
 
-        Message part =
-            JsonSerializer.Deserialize<ChatResponse>(line, Helper.AgentJsonOptions)!.Message;
-
-        if (!string.IsNullOrEmpty(part.Thinking))
-        {
-            Console.Write(Helper.Grey + part.Thinking + Helper.Reset);
-            thinking.Append(part.Thinking);
-        }
-
-        if (!string.IsNullOrEmpty(part.Content))
-        {
-            // The first word of the answer needs a gap after the grey, or the two run together.
-            if (content.Length == 0 && thinking.Length > 0) Console.Write("\n\n");
-            Console.Write(part.Content);
-            content.Append(part.Content);
-        }
-    }
+    await Helper.HandleStream(response, content, thinking);
 
     Console.WriteLine();
 

@@ -10,7 +10,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 |---|---|---|---|---|---|---|---|
 | 00 | the agent we build | — | n/a | n/a | — | — | — |
 | 01 | the model | ✅ | ✅ | ✅ | ✅ | — | — *(old tag `ch01-model` is out of date)* |
-| 01.A | thinking | ✅ | ✅ | ✅ | ✅ *(C# is a runbook, TS is still prose)* | — | — |
+| 01.A | thinking | ✅ | ✅ *(out of step — reads THINK from the environment)* | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
 | 02 | the prompt | ✅ | ✅ | ✅ | ✅ | — | — |
 | 04 | tools by hand | — | — | — | — | — | — |
 | 05 | the loop | — | — | — | — | — | — |
@@ -132,8 +132,42 @@ on any number above.
   checked by script. No line in either file is over 100 columns.
 - Not rerun: `scripts/check.sh`, and the TypeScript side, which is untouched.
 
-**2026-10-27, same machine. Chapter 01.A's C# reworked in the `lk-csharp` shape (decisions 33
-and 36).** Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401.
+**2026-10-27, same machine. Chapter 01.A's C# split into three files (decision 37).**
+Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run below it.
+
+- `ChatProtocol.cs` 13 lines, `Helper.cs` 84 lines, `Program.cs` 53 lines. `dotnet build` clean,
+  0 warnings, 1.5 s. No line in any of the three is over 100 columns — including the
+  `HandleStream` signature, which is 118 columns in `lk-csharp` and is wrapped here.
+- **91 code lines** (blank and comment lines not counted): 8 in `ChatProtocol.cs`, 55 in
+  `Helper.cs`, 28 in `Program.cs`. Chapter 01's C# is 47, so chapter 01.A adds **44** against
+  the ~30 guide in `PLAN.md`. Fine under decision 34. The split itself costs about 15 of those
+  44 — method signatures and braces — and buys a `Program.cs` that chapter 04 can grow into.
+- `diff -r` against `chapters/01-the-model/code/csharp` shows three differences: the two `.cs`
+  files, and `ChatProtocol.cs` existing only in 01.A. `RepoLibrarian.csproj` is byte identical.
+- Two turns piped in, `Think = true`: "In five words, what is an AI agent?" then "And in three?".
+  **11.8 s** for both including `dotnet run`. It printed `Perceives, reasons, acts, achieves
+  goals.` then `Senses, plans, acts.` Turn two's grey thinking says, out loud, *"The previous
+  answer was 'Perceives, reasons, acts, achieves goals'."* — so the `messages.Add` line is
+  visible as it happens, in the model's own words.
+- One turn, same question. `Think = true`: **6.2 s**, `Perceives, reasons, acts, achieves goals.`
+  `Think = false`: **1.5 s**, `Autonomous decision-making intelligent software.` Both include
+  about half a second of `dotnet run`. Four times the wait, and no better an answer.
+- `MODEL=phi4-mini:3.8b` with `Think = true` →
+  `System.Net.Http.HttpRequestException: 400 Bad Request: {"error":"\"phi4-mini:3.8b\" does not
+  support thinking"}`. `MODEL=nope:1b` → `404 Not Found: {"error":"model 'nope:1b' not found"}`.
+  Both now come out of `Helper.HandleResponseError`, not out of `Program.cs`.
+- `Program.cs` also prints `$"{Helper.Model}: "` before the stream, which the two-file version
+  did not. Chapter 01 already labels the speaker, so this puts 01.A back in step with it, and
+  it shows the model name on screen when you swap models in step 24.
+- The 18 C# blocks in `SCRIPT-csharp.md` rebuild all three files **byte for byte**, checked by
+  script (decision 32). One block is chapter 01's three deleted records and one is the
+  `Think = false` demo line, so 16 of the 18 are file content.
+- Not rerun: `scripts/check.sh`, and the TypeScript side, which is untouched and still out of
+  step — see To do.
+
+**2026-10-27, same machine. Chapter 01.A's C# reworked in the `lk-csharp` shape, two files
+(decisions 33 and 36). Superseded by the three-file run above.** Ollama 0.40.6, `gemma4:e2b`,
+.NET 10.0.401.
 
 - `Helper.cs` 45 lines, `Program.cs` 81 lines. `dotnet build` clean, 0 warnings. No line in
   either file is over 100 columns.
@@ -200,18 +234,24 @@ and 36).** Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401.
 
 | 36 | Chapter 01.A's thinking switch is `public static readonly bool? Think` in `Helper.cs`, a line you flip, not a `THINK` environment variable. The three states stay: `true`, `false`, and `null` for "do not send the field". Follows `chapters/01.A-thinking/code/lk-csharp/`, but keeps the course default model (`gemma4:e2b`, not the author's `Qwen3.5:4b`), the `MODEL` and `OLLAMA_URL` environment reads, and the 5-minute `Timeout`. The C# side is done. **TypeScript still reads `THINK` and is out of step** until the TypeScript pass. | 2026-10-27 | the author's own file is the one he can record from without hesitating, and the switch is a once-per-project choice, not a once-per-run one. The three states are the lesson and they survive: `null` is why the field is a `bool?` and why `WhenWritingNull` is in the JSON options. The three keeps are not style — `scripts/check.sh` runs `MODEL=nope:1b`, `docs/MODELS.md` swaps models by environment, and a cold model can pass the 100-second default and fail as a fake network error. |
 
+| 37 | Chapter 01.A's C# is **three** files, following `chapters/01.A-thinking/code/lk-csharp/`: `ChatProtocol.cs` (the records only, `public`, with defaults on `ChatRequest`), `Helper.cs` (the config, the one `HttpClient`, the JSON options, and the static methods `HandleResponseError` and `HandleStream`), and `Program.cs` (the conversation, and nothing else). The four course keeps from decision 36 survive: the `MODEL` and `OLLAMA_URL` environment reads, `gemma4:e2b` as the default, `Think = true` as the default, and the 5-minute `Timeout`. `lk-csharp`'s 118-column `HandleStream` signature is wrapped to fit `STYLE.md`. **Chapter 01 stays at two files** — it has no `ChatProtocol.cs`, so 01.A's video creates one on camera. | 2026-10-27 | the author's own file is the one he can record from without hesitating. Three reasons it is not only style. One, `Program.cs` stays at 53 lines and reads as four verbs — send, check, stream, remember — so chapter 04 has room to add tools without a 200-line file (decision 34). Two, every chapter from 04 on changes the wire format, and `ChatProtocol.cs` is the one small file those edits land in. Three, chapter 01 keeping two files makes the split a beat in the 01.A video instead of invisible homework: the records move out, and the viewer sees why. |
+
 ## To do
 
 - Chapter 01 is not `ready` under decision 19. Its docs and scripts match its own code now,
   but nothing after chapter 02 exists to check them against.
-- Runbooks under decision 31: chapter 01 both scripts, and chapter 01.A's `SCRIPT-csharp.md`.
-  Still prose in the old Goal / Why / Do / Proof shape: chapter 01.A's `SCRIPT-ts.md`, and both
-  of chapter 02's. Rewrite them before any recording, or the chapters do not read alike.
-- **Decision 33 is carried to chapter 01.A, not past it.** Chapter 01.A's C# code, README,
-  `BASICS.md`, `QA.md` and `SCRIPT-csharp.md` are reworked and run. Still describing the old
-  one-shot code with `dotnet run -- "..."`: `docs/SETUP.md` lines 246-261 and 309-325,
-  `CLAUDE.md` line 26, and chapter `02`'s README, `BASICS.md` and `SCRIPT-csharp.md`.
+- Runbooks under decision 31: chapter 01 both scripts, and chapter 01.A's `SCRIPT-csharp.md`
+  (reworked for the three-file shape, decision 37, and re-verified). Still prose in the old
+  Goal / Why / Do / Proof shape: chapter 01.A's `SCRIPT-ts.md`, and both of chapter 02's.
+  Rewrite them before any recording, or the chapters do not read alike.
+- **Decisions 33, 36 and 37 are carried to chapter 01.A, not past it.** Chapter 01.A's C# code,
+  README, `BASICS.md`, `QA.md` and `SCRIPT-csharp.md` are reworked, run and verified. Still
+  describing the old one-shot code with `dotnet run -- "..."`: `docs/SETUP.md` lines 246-261 and
+  309-325, `CLAUDE.md` line 26, and chapter `02`'s README, `BASICS.md` and `SCRIPT-csharp.md`.
   Chapter 02's C# video loses its second half and needs a new one.
+- **Chapter 02's C# is still the old one-file shape**: `code/csharp/Program.cs`, 131 lines, with
+  its own copy of the read-loop and a `THINK` environment read. It has to become a copy of
+  01.A's three files plus the prompt file. That is the next job.
 - **Chapter 01.A's two stacks now behave differently, and that is a broken rule.** C# flips
   `Helper.Think` in the file (decision 36). TypeScript still reads `THINK=on|off` from the
   environment. The README says so out loud in a block quote, which is honest but not finished.
@@ -234,9 +274,11 @@ and 36).** Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401.
   not from a server.
 - **File size is the limit that bites (decision 34).** Longest files today:
   `chapters/02-the-prompt/code/csharp/Program.cs` 131 lines,
-  `chapters/02-the-prompt/code/ts/src/main.ts` 97. Chapter 04 copies chapter 02's `code/` and
-  adds about 70 lines, so pull the plumbing into `Helper.cs` and `helper.ts` first — chapter 01's
-  C# already has that shape (decision 33), and this job carries it to 01.A, 02 and TypeScript.
+  `chapters/02-the-prompt/code/ts/src/main.ts` 97, and
+  `chapters/01.A-thinking/code/csharp/Helper.cs` 84. Chapter 04 copies chapter 02's `code/` and
+  adds about 70 lines, so pull the plumbing into `Helper.cs` and `helper.ts` first — chapters 01
+  and 01.A already have that shape (decisions 33 and 37), and this job carries it to 02 and to
+  TypeScript.
 - Finish the `gemma4:26b` row in `docs/MODELS.md` (64K, 128K) and test tools on 26b, qwen3.5:4b
   and Ornith. Needed by chapter 10.
 

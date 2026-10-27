@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -38,8 +39,46 @@ public static class Helper
             // "no thinking", which is a different answer.
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
-}
 
-record Message(string Role, string Content, string? Thinking = null);
-record ChatRequest(string Model, List<Message> Messages, bool Stream, bool? Think);
-record ChatResponse(Message Message);
+    // Ollama puts the real reason in the body — an unknown model, a model that cannot think.
+    // Without this you get a bare 400 and no idea which of the two it was.
+    public static async Task HandleResponseError(HttpResponseMessage response)
+    {
+        var body = await response.Content.ReadAsStringAsync();
+        throw new HttpRequestException(
+            $"{(int)response.StatusCode} {response.ReasonPhrase}: {body}");
+    }
+
+    // Prints each piece the moment it arrives, and fills the caller's two builders. Printing and
+    // remembering are two jobs, so the caller owns what it wants to keep.
+    public static async Task HandleStream(
+        HttpResponseMessage response,
+        StringBuilder content,
+        StringBuilder thinking)
+    {
+        // A stream is one JSON object per line. ReadLineAsync waits for a whole line, so a
+        // network chunk that stops mid-line is not our problem here.
+        using var reader = new StreamReader(await response.Content.ReadAsStreamAsync());
+        while (await reader.ReadLineAsync() is { } line)
+        {
+            if (line.Length == 0) continue;
+
+            Message part =
+                JsonSerializer.Deserialize<ChatResponse>(line, AgentJsonOptions)!.Message;
+
+            if (!string.IsNullOrEmpty(part.Thinking))
+            {
+                Console.Write(Grey + part.Thinking + Reset);
+                thinking.Append(part.Thinking);
+            }
+
+            if (!string.IsNullOrEmpty(part.Content))
+            {
+                // The first word of the answer needs a gap after the grey, or they run together.
+                if (content.Length == 0 && thinking.Length > 0) Console.Write("\n\n");
+                Console.Write(part.Content);
+                content.Append(part.Content);
+            }
+        }
+    }
+}

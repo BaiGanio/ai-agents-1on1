@@ -1,6 +1,6 @@
 # Chapter 01.A — basics: three states, and streams
 
-Two things this chapter needs. Nothing else.
+Three things this chapter needs. Nothing else.
 
 New words are in [`GLOSSARY.md`](../../docs/GLOSSARY.md).
 

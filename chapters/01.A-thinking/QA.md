@@ -69,3 +69,19 @@ and the answer was no better. For a question with steps in it, it often is bette
 have a flag, so you can test instead of guess.
 
 </details>
+
+**Q7.** The C# code is three files now. What goes in each one, and why is that worth a file?
+
+<details><summary>A</summary>
+
+`ChatProtocol.cs` is **what** goes down the wire: the three records, and nothing else.
+`Helper.cs` is **how** we reach the model: the config, the one `HttpClient`, the JSON options,
+and the two methods that read a reply. `Program.cs` is the conversation, and nothing else —
+send, check, stream, remember.
+
+It is worth a file because every chapter from here changes the wire. Chapter 04 adds a tool
+call to `Message`, chapter 05 adds a `tools` field to `ChatRequest`. Those edits all land in
+one small file you can read in ten seconds. And it keeps `Program.cs` at 53 lines, so the
+conversation stays the thing you see when you open the project.
+
+</details>
