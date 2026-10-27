@@ -201,11 +201,17 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
 | 28 | Chapter 03's no-argument path starts the server. Chapter 02's `you>` terminal loop is deleted. A question in the arguments still answers once and exits. | 2026-10-27 | the page replaces the loop, and that is the chapter. Keeping both would put three modes in one file. Decision 25 still holds, so every command printed in 01, 01.A and 02 keeps working. |
 | 29 | `chat` / `ChatAsync` takes a `send` callback instead of printing. Two callers: `toTerminal` and the one that writes a JSON line into the response. | 2026-10-27 | one function, two windows. It is four lines, and it means chapter 05's loop does not have to touch `chat` at all. |
 | 30 | The `POST /chat` handler wraps the model call in a `try`, writes `{"error": "..."}` into the stream, and pops the unanswered question. | 2026-10-27 | measured: without it, Ollama being down kills the server and the browser gets nothing. Chapters 04-08 all live in this process, so it must not die on one bad request. |
+| 31 | A camera script is a numbered runbook, not prose. Every step is **Say / Type / Proof**, plus **Note** for a must-say line. Shell commands are written out in full and copy-paste ready, including the scaffold (`npm init`, `dotnet new console`) and an off-camera **Before you record** block. Code steps give a line range in the chapter's finished file, never a pasted code block. Amends decision 21. Chapter 01 is rewritten in this shape — 01.A, 02 and 03 still have to follow. | 2026-10-27 | the author stopped mid-take to look up commands. A script must be readable top to bottom while recording, with nothing else open. Line ranges, not pasted code, because a pasted block drifts the moment the code changes and the finished file is one click away. |
 
 ## To do
 
 - Chapter 01 is not `ready` under decision 19. Its docs and scripts match its own code now,
   but nothing after chapter 02 exists to check them against.
+- Chapter 01's two scripts are runbooks under decision 31. `01.A`, `02` and `03` are still
+  prose in the old Goal / Why / Do / Proof shape. Rewrite them before any recording, or
+  the four chapters do not read alike.
+- Nobody has recorded a take against the chapter 01 runbook yet. The `Before you record`
+  commands P1-P6 (P1-P7 in C#) are written but unrun as a block.
 - Chapter 01.A is not `ready` under decision 19, for the same reason. Docs, code and both
   scripts agree with each other and were run on 2026-10-26.
 - Chapter 02 is over its ~20-line budget in `PLAN.md`: 38 lines in TypeScript, 37 in C#.
