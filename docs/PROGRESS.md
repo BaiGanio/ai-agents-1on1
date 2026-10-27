@@ -12,7 +12,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 01 | the model | ✅ | ✅ | ✅ | ✅ | — | — *(old tag `ch01-model` is out of date)* |
 | 01.A | thinking | ✅ | ✅ | ✅ | ✅ | — | — |
 | 02 | the prompt | ✅ | ✅ | ✅ | ✅ | — | — |
-| 03 | the chat page | ✅ | — | — | ✅ | — | — |
+| 03 | the chat page | ✅ | ✅ | ✅ | ✅ | — | — |
 | 04 | tools by hand | — | — | — | — | — | — |
 | 05 | the loop | — | — | — | — | — | — |
 | 06 | memory | — | — | — | — | — | — |
@@ -148,6 +148,24 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
   the JSON Lines parsing. **The page itself has not been opened in a browser yet** — the Chrome
   extension was not connected. See To do.
 
+**2026-10-27, same machine. Chapter 03 `code/`, written and run.**
+
+- `chapters/03-the-chat-page/code/` is a copy of 02's two stacks and `prompts/`, plus the new
+  `code/web/index.html`. `diff -r` against chapter 02 shows exactly three things: the two source
+  files differ, and `web` is new.
+- New code lines, counted the same way as chapter 02 (no blanks, no comment-only lines):
+  **41 in TypeScript, 65 in C#.** Over the ~40 in `PLAN.md` on the C# side, as decision 27 priced.
+- Both stacks, run from their own folder: the page serves at 200 with 3813 bytes,
+  `Transfer-Encoding: chunked` is present, `POST /chat` answers "I cannot see the files yet.",
+  and turn two answers "You asked which file starts the HTTP server."
+- One-shot in both: `node src/main.ts "Say READY and nothing else."` and the `dotnet run`
+  equivalent both print `READY` and exit.
+- With `OLLAMA_URL` pointed at a dead port, the page gets `{"error":"TypeError: fetch failed"}`
+  from TS and `{"error":"Connection refused (localhost:19999)"}` from C#, and **both servers
+  stay up** — port 3000 still answers 200 afterwards.
+- No line in either source file, or in `index.html`, is over 100 columns. `bin/` and `obj/` are
+  ignored by `.gitignore` lines 8 and 9, so the chapter adds 8 files to git.
+
 ## Decisions
 
 | # | Decision | Date | Why |
@@ -194,11 +212,10 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
   Decision 23 adds a prompt file **and** a terminal read-loop. The script splits it at 7:30 —
   steps 0-3 are the prompt, step 4 is the loop. If the video runs long, that is the cut line:
   `02` for the prompt file, `02.A` for the loop.
-- Chapter 02 is not `ready` under decision 19. Docs, code and both scripts agree with each
-  other and were run on 2026-10-26, but chapter 03 does not exist to check them against.
-- **Chapter 03's `code/` folder is not written.** The server exists only as a verified draft in
-  a scratch folder. Docs and both scripts are written from it. Waiting on the go-ahead
-  (`CLAUDE.md`: do not start a chapter's `code/` before the user says so).
+- Chapter 02 now has chapter 03 to check against, and it agrees: chapter 03's `code/` is
+  chapter 02's with the readline loop removed and the `send` parameter added, and the five files
+  03 does not touch (`prompts/`, `package.json`, `tsconfig.json`, the `.csproj`) are byte
+  identical. Still not `ready` under decision 19, because the chain stops at 03.
 - **The chat page has never been opened in a browser.** Its reader loop was proven in Node
   against the live server, but nobody has looked at the page. Do that before chapter 03 is
   `ready`.
@@ -207,9 +224,6 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
   mark a cut line after step 3 — `03` for the page and the endpoint, `03.A` for streaming and
   the error handling. If the C# video runs long, revisit decision 27 and price a minimal API.
 - Chapter 03 is not `ready` under decision 19. Chapter 04 does not exist to check it against.
-- Chapter 02's README says the chat page is one shared folder for both stacks. That is still
-  true, but the folder moved into the chapter (decision 26). Check the wording when 03's `code/`
-  lands.
 - Finish the `gemma4:26b` row in `docs/MODELS.md` (64K, 128K) and test tools on 26b, qwen3.5:4b
   and Ornith. Needed by chapter 10.
 

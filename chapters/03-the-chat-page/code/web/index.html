@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Repo Librarian</title>
+<style>
+  :root { color-scheme: light dark; --grey: #8a8a8a; --line: #8884; }
+  body { font: 16px/1.55 system-ui, sans-serif; max-width: 46rem; margin: 0 auto; padding: 1rem; }
+  h1 { font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem; }
+  .turn { border-top: 1px solid var(--line); padding: 0.9rem 0; }
+  .who { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.6; }
+  .text { white-space: pre-wrap; }
+  .thinking { white-space: pre-wrap; color: var(--grey); font-size: 0.9rem; margin-bottom: 0.6rem; }
+  form { display: flex; gap: 0.5rem; margin-top: 1rem; }
+  textarea { flex: 1; font: inherit; padding: 0.5rem; resize: vertical; min-height: 3rem;
+             border: 1px solid var(--line); border-radius: 6px; background: none; color: inherit; }
+  button { font: inherit; padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid var(--line);
+           background: none; color: inherit; cursor: pointer; }
+  button:disabled { opacity: 0.4; cursor: default; }
+</style>
+</head>
+<body>
+<h1>Repo Librarian</h1>
+<div id="log"></div>
+
+<form id="ask">
+  <textarea id="q" placeholder="Ask about the code. Enter sends, Shift+Enter is a new line."
+            autofocus></textarea>
+  <button id="send">Ask</button>
+</form>
+
+<script>
+const log = document.getElementById("log");
+const form = document.getElementById("ask");
+const box = document.getElementById("q");
+const send = document.getElementById("send");
+
+// Adds one turn to the page and gives back the two elements the stream writes into.
+function addTurn(who) {
+  const turn = document.createElement("div");
+  turn.className = "turn";
+  turn.innerHTML = '<div class="who"></div><div class="thinking"></div><div class="text"></div>';
+  turn.querySelector(".who").textContent = who;
+  log.append(turn);
+  return { thinking: turn.querySelector(".thinking"), text: turn.querySelector(".text") };
+}
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const question = box.value.trim();
+  if (!question) return;
+
+  addTurn("you").text.textContent = question;
+  box.value = "";
+  send.disabled = true;
+
+  const out = addTurn("librarian");
+
+  try {
+    const response = await fetch("/chat", { method: "POST", body: question });
+    if (!response.ok) throw new Error(response.status + " " + (await response.text()));
+
+    // The server writes one JSON object per line. A network chunk can stop mid-line, so the
+    // unfinished tail waits in `buffer` until the rest arrives. Same trick as the server uses.
+    const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+    let buffer = "";
+
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += value;
+      const lines = buffer.split("\n");
+      buffer = lines.pop();
+
+      for (const line of lines) {
+        if (!line) continue;
+        const part = JSON.parse(line);
+        if (part.thinking) out.thinking.textContent += part.thinking;
+        if (part.content) out.text.textContent += part.content;
+        // The server sends this instead of an answer when the model call failed.
+        if (part.error) out.text.textContent += part.error;
+        window.scrollTo(0, document.body.scrollHeight);
+      }
+    }
+  } catch (error) {
+    out.text.textContent = String(error);
+  } finally {
+    send.disabled = false;
+    box.focus();
+  }
+});
+
+// Enter sends. Shift+Enter is a new line, like every chat app the viewer already uses.
+box.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    form.requestSubmit();
+  }
+});
+</script>
+</body>
+</html>
