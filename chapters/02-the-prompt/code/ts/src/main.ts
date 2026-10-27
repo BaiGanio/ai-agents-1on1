@@ -81,7 +81,7 @@ if (question) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   // Not rl.prompt(). That one throws once stdin has closed, and stdin closes on the last
   // line when you pipe input in. A plain write cannot throw.
-  process.stdout.write("you> ");
+  process.stdout.write("You: ");
 
   // Ends when stdin closes, which is Ctrl-D. No `while (true)` and no word to quit on.
   for await (const line of rl) {
@@ -90,7 +90,7 @@ if (question) {
       // The list only ever grows. It has no limit until chapter 06 gives it one.
       messages.push(await chat(messages));
     }
-    process.stdout.write("you> ");
+    process.stdout.write("You: ");
   }
 
   process.stdout.write("\n");

@@ -70,7 +70,7 @@ because a renumber touches five folder names, every heading, every tag and every
 the docs and the code. The gap is cheaper than the churn.
 
 So the window onto the agent is the terminal. Every chapter from 04 on prints its tool calls
-there, in the same `you>` loop the viewer already knows from chapter 01.
+there, in the same `You:` loop the viewer already knows from chapter 01.
 
 Chapter 08 comes after guardrails on purpose. A workflow runs several model calls, so each one
 needs the step cap and timeout from 07. It reuses the Librarian's tools — no new domain.
