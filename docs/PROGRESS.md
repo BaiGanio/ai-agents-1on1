@@ -12,7 +12,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 01 | the model | ✅ | ✅ | ✅ | ✅ | — | — *(old tag `ch01-model` is out of date)* |
 | 01.A | thinking | ✅ | ✅ | ✅ | ✅ | — | — |
 | 02 | the prompt | ✅ | ✅ | ✅ | ✅ | — | — |
-| 03 | the chat page | — | — | — | — | — | — |
+| 03 | the chat page | ✅ | — | — | ✅ | — | — |
 | 04 | tools by hand | — | — | — | — | — | — |
 | 05 | the loop | — | — | — | — | — | — |
 | 06 | memory | — | — | — | — | — | — |
@@ -108,6 +108,46 @@ One row per chapter. Update it when a state changes. This is the first file to o
   in `STYLE.md`: the `HttpClient` initialiser and the `HttpRequestException` throw. Both are
   wrapped now in all three chapters. All three still build and answer.
 
+**2026-10-27, same machine. For the chapter 03 docs.** The server was drafted in a scratch
+folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0, .NET 10.0.401.
+
+- Both stacks serve the page on port 3000 and stream `POST /chat` as JSON Lines. The two
+  streams are **byte for byte identical**: `{"role":"assistant","content":"I"}`, then
+  `" cannot"`, `" see"`, `" the"`, `" files"`, `" yet"`, `"."`, `""`.
+- `Transfer-Encoding: chunked` in both, confirmed with `curl -D -`.
+- History holds across requests. Turn two, "What did I just ask you?" → "You asked which file
+  starts the HTTP server." Both stacks.
+- **What streaming is worth.** `THINK=on`, measured from the browser's own reader loop: first
+  words on the page at **204 ms** and **267 ms** on two runs. Answers finished at **6.2 s** and
+  **3.9 s**. 387 and 240 lines in the stream. So the page fills in a fifth of a second where a
+  non-streamed page would be blank for 4 to 6 seconds.
+- One-shot still works in both. TS 4.5 s cold, C# 1.6 s warm including `dotnet run`.
+- **Node and HttpListener do not bind the same address.** Node takes `[::]:3000`, HttpListener
+  takes `127.0.0.1:3000`. Both ran at once on port 3000 with no error. Two copies of the *same*
+  stack do collide: `EADDRINUSE` in Node, `HttpListenerException (48): Address already in use`
+  in C#.
+- **Concurrency differs, and it is a real bug in TS.** Two curls fired together asking for
+  `RED` and `BLUE`: the TypeScript server answered **`RED` to both**, because both handlers
+  pushed onto the shared list and both sent it. The C# `while` loop answered `RED` and `BLUE`.
+- **Bug found and fixed while writing the server.** With Ollama down, an uncaught throw in the
+  request handler **killed the process** in both stacks — TS `[TypeError: fetch failed]` with
+  `ECONNREFUSED` in `cause`, C# `HttpRequestException: Connection refused`. The browser got a
+  dead connection (TS) or a `200` with an empty body (C#). Fixed with a `try` that writes
+  `{"error": "..."}` into the stream and pops the unanswered question. Both now survive and
+  recover without a restart.
+- **Two C# claims were wrong until measured.** Removing `OutputStream.Flush()` does **not**
+  break the stream — 11 reads, first bytes at 0.18 s. And the trailing-slash error is
+  `ArgumentException: Only Uri prefixes ending in '/' are allowed. (Parameter 'uriPrefix')`,
+  thrown by `Prefixes.Add`, not by `Start()`. Both corrected in the docs.
+- `SendChunked = false` is the sharp C# trap: the response goes out as `Content-Length: 0`, and
+  the first write then throws `HttpListenerException: Unable to write data to the transport
+  connection: Broken pipe.`, killing the server.
+- Missing page file. TS: `ENOENT: no such file or directory, open '../web/index.html'`.
+  C#: `System.IO.FileNotFoundException`, with the full path it tried.
+- The page's reader loop was run as a standalone Node script against the live server, to prove
+  the JSON Lines parsing. **The page itself has not been opened in a browser yet** — the Chrome
+  extension was not connected. See To do.
+
 ## Decisions
 
 | # | Decision | Date | Why |
@@ -138,6 +178,12 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 24 | `chapters/NN/code/prompts/` is shared by both stacks. Each reads `../prompts/<name>.md`. Chapter 02 ships `librarian.md` and `pirate.md`, picked by a `PROMPT` environment variable. | 2026-10-26 | same rule as decision 9 for the chat page. One prompt, two languages, so "same behaviour in both" stays true by construction. |
 | 25 | Chapter 02 keeps the one-shot path. A question in the arguments gives one answer and exits. No question starts the loop. | 2026-10-26 | every command printed in chapters 01 and 01.A keeps working, and the README examples stay one line. |
 
+| 26 | The chat page lives in the chapter: `chapters/NN/code/web/index.html`, read by both stacks as `../web/index.html`. Amends decision 9, which put it at the repo root. | 2026-10-27 | decision 20 needs `diff -r` on two chapters' `code/` folders to show what a chapter adds. A page outside `code/` never appears in that diff, and a chapter folder would not stand on its own. Same shape as `code/prompts/` in decision 24. May move back to one shared `web/` once the chapters are written. |
+| 27 | Chapter 03's C# server is `HttpListener`, not a minimal API. The `.csproj` stays a plain console app — no NuGet, no `Microsoft.NET.Sdk.Web`. Closes open item 3. | 2026-10-27 | it mirrors Node's bare `node:http`, so both videos teach the same idea, and it keeps decision 1 (raw HTTP, no SDK) true. A minimal API would boot a web host and print its own logging into the terminal the model output goes to. It costs about 20 lines — see To do. |
+| 28 | Chapter 03's no-argument path starts the server. Chapter 02's `you>` terminal loop is deleted. A question in the arguments still answers once and exits. | 2026-10-27 | the page replaces the loop, and that is the chapter. Keeping both would put three modes in one file. Decision 25 still holds, so every command printed in 01, 01.A and 02 keeps working. |
+| 29 | `chat` / `ChatAsync` takes a `send` callback instead of printing. Two callers: `toTerminal` and the one that writes a JSON line into the response. | 2026-10-27 | one function, two windows. It is four lines, and it means chapter 05's loop does not have to touch `chat` at all. |
+| 30 | The `POST /chat` handler wraps the model call in a `try`, writes `{"error": "..."}` into the stream, and pops the unanswered question. | 2026-10-27 | measured: without it, Ollama being down kills the server and the browser gets nothing. Chapters 04-08 all live in this process, so it must not die on one bad request. |
+
 ## To do
 
 - Chapter 01 is not `ready` under decision 19. Its docs and scripts match its own code now,
@@ -150,6 +196,20 @@ One row per chapter. Update it when a state changes. This is the first file to o
   `02` for the prompt file, `02.A` for the loop.
 - Chapter 02 is not `ready` under decision 19. Docs, code and both scripts agree with each
   other and were run on 2026-10-26, but chapter 03 does not exist to check them against.
+- **Chapter 03's `code/` folder is not written.** The server exists only as a verified draft in
+  a scratch folder. Docs and both scripts are written from it. Waiting on the go-ahead
+  (`CLAUDE.md`: do not start a chapter's `code/` before the user says so).
+- **The chat page has never been opened in a browser.** Its reader loop was proven in Node
+  against the live server, but nobody has looked at the page. Do that before chapter 03 is
+  `ready`.
+- Chapter 03 is over its ~40-line budget in `PLAN.md` on the C# side: 41 new code lines in
+  TypeScript, **65 in C#**. `HttpListener` is the whole difference (decision 27). Both scripts
+  mark a cut line after step 3 — `03` for the page and the endpoint, `03.A` for streaming and
+  the error handling. If the C# video runs long, revisit decision 27 and price a minimal API.
+- Chapter 03 is not `ready` under decision 19. Chapter 04 does not exist to check it against.
+- Chapter 02's README says the chat page is one shared folder for both stacks. That is still
+  true, but the folder moved into the chapter (decision 26). Check the wording when 03's `code/`
+  lands.
 - Finish the `gemma4:26b` row in `docs/MODELS.md` (64K, 128K) and test tools on 26b, qwen3.5:4b
   and Ornith. Needed by chapter 10.
 
@@ -157,5 +217,4 @@ One row per chapter. Update it when a state changes. This is the first file to o
 
 1. ~~Code layout~~ — closed by decision 20.
 2. Whether chapter 12 (frameworks) exists at all.
-3. C# server for chapter 03: `HttpListener` (no project change) or a minimal API
-   (`Microsoft.NET.Sdk.Web`, still no NuGet). Decided when we write the chapter.
+3. ~~C# server for chapter 03~~ — closed by decision 27. `HttpListener`, no project change.

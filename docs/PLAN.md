@@ -68,6 +68,10 @@ small at that point (model + prompt), so the server is small too. From 04 on, ev
 shows up in the page. The page is not a seventh part of an agent. It is a window onto the loop.
 The HTML is given, not typed on camera. The server is typed, because that is the lesson.
 
+The page lives in the chapter, at `code/web/index.html`, next to `code/prompts/` (decision 26).
+Both stacks read `../web/index.html`, so a chapter folder stands on its own and `diff -r` shows
+what a chapter added.
+
 Chapter 08 comes after guardrails on purpose. A workflow runs several model calls, so each one
 needs the step cap and timeout from 07. It reuses the Librarian's tools — no new domain.
 
@@ -119,7 +123,7 @@ ai-agents-1on1/
     code/ts/                  the TypeScript code at the end of this chapter
     code/csharp/              the C# code at the end of this chapter
     code/prompts/             the system prompts. Both stacks read this one folder.
-  web/index.html              the chat page. One file, no framework. Both stacks serve it.
+    code/web/index.html       the chat page, from chapter 03. Both stacks serve this one file.
   sample-repo/                the folder the Librarian reads
   scripts/                    check.sh, measure.ts, ollama.sh, llama.sh
 ```

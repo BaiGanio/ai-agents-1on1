@@ -7,16 +7,19 @@ If a word is missing, add it here before you use it in a chapter.
 |---|---|
 | <a id="agent"></a>**agent** | a model, a prompt, some tools and a loop. The model picks the next step. |
 | <a id="agentic-workflow"></a>**agentic workflow** | several model calls wired together by your code. See [workflow](#workflow). |
+| <a id="chunked"></a>**chunked** | a reply sent in pieces, with no length up front. The browser reads piece one before the last exists. |
 | <a id="context-window"></a>**context window** | how much text the model can read in one call. Past it, the oldest text falls out. |
 | <a id="endpoint"></a>**endpoint** | one URL on a server that does one job, like `POST /api/chat` |
 | <a id="environment-variable"></a>**environment variable** | a setting you put in front of a command: `THINK=off node main.ts`. It lives for that one run. |
 | <a id="gguf"></a>**GGUF** | a file format for a model, so one file holds the whole model. llama.cpp reads it. |
 | <a id="guardrail"></a>**guardrail** | a rule in *your* code that stops the agent: a step cap, a timeout, an allow-list |
 | <a id="hallucination"></a>**hallucination** | the model says something false, and sounds sure. It guesses instead of looks. |
+| <a id="http"></a>**HTTP** | the rules two programs use to ask and answer over a network. A method, a path, a body. |
 | <a id="json"></a>**JSON** | text that holds data: `{"name": "value"}`. See [chapter 01 basics](../chapters/01-the-model/BASICS.md). |
-| <a id="json-lines"></a>**JSON Lines** | many small JSON objects, one per line, instead of one big one. How Ollama streams. |
+| <a id="json-lines"></a>**JSON Lines** | many small JSON objects, one per line, instead of one big one. How Ollama streams. Also written NDJSON. |
 | <a id="llama-cpp"></a>**llama.cpp** | a runner with more knobs than Ollama. Chapter 09. |
 | <a id="local-model"></a>**local model** | a model that runs on your computer, not in the cloud. No key, no bill. |
+| <a id="localhost"></a>**localhost** | this machine. `http://localhost:3000` means a program on your own computer. |
 | <a id="loop"></a>**the loop** | your code: send, run the tool the model asked for, send the result back, repeat |
 | <a id="memory"></a>**memory** | short: the message list in this run. Long: notes saved to a file. |
 | <a id="message"></a>**message** | one turn of talk: a `role` and some `content` |
@@ -25,6 +28,7 @@ If a word is missing, add it here before you use it in a chapter.
 | <a id="ollama"></a>**Ollama** | a runner. It loads a model and gives it an HTTP endpoint on port 11434. |
 | <a id="parameters"></a>**parameters** | the numbers a model learned. "4B" means 4 billion. More is smarter and slower. |
 | <a id="persona"></a>**persona** | who the agent acts like. One [system prompt](#system-prompt) file per persona. Chapter 02. |
+| <a id="port"></a>**port** | a door number on a machine, 1 to 65535. Ollama uses 11434. Our chat page uses 3000. |
 | <a id="prompt"></a>**prompt** | the text you send the model |
 | <a id="quantisation"></a>**quantisation** | making a model smaller by storing its numbers with less detail. Faster, a bit less clever. |
 | <a id="role"></a>**role** | who wrote a message: `system`, `user`, `assistant`, or `tool` |
