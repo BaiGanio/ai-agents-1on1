@@ -1,19 +1,22 @@
 # Chapter 04 — Tools by hand
 
-> **Docs written, code not written yet.** The lesson, the examples and the errors below all
-> come from real runs on a real machine — by `curl`, and by two throwaway files for the parse
-> errors. The `code/` folder does not exist, so the file links in **Files** are dead until it
-> does. The two language sections describe the code that gets typed, in order.
+> **C# is written and run. TypeScript is not.** `code/csharp/` builds, and every C# number and
+> every line of output on this page comes from a real run on a real machine. `code/ts/` does
+> not exist yet, so the TypeScript section describes the code that gets typed and its file
+> links are dead. Both camera scripts are missing.
 >
-> The examples run against `chapters/02-the-prompt/code/` as a **stand-in folder**, because
-> [`sample-repo/`](../../sample-repo/) is still empty. Every example on this page gets rerun
-> against `sample-repo/` once it exists, and the numbers replaced.
+> **The folder the tools read is a stand-in.** [`sample-repo/`](../../sample-repo/) holds one
+> file, so the runs below point `REPO` at this repo's own `docs/` folder — six Markdown files,
+> real text, no build output. Every example gets rerun against `sample-repo/` once it exists.
 
 **Video:** about 15 minutes. Two videos: one TypeScript, one C#.
 **Code at the end of this chapter:** `chapters/04-tools-by-hand/code/`
-**Files:** `code/ts/src/main.ts` · `code/ts/src/tools.ts` ·
-`code/csharp/Program.cs` · `code/csharp/Tools.cs` · `code/prompts/librarian.md`
-**Scripts:** `SCRIPT-ts.md` · `SCRIPT-csharp.md`
+**Files:** [`code/csharp/Tools.cs`](code/csharp/Tools.cs) ·
+[`code/csharp/Program.cs`](code/csharp/Program.cs) ·
+[`code/csharp/Helper.cs`](code/csharp/Helper.cs) ·
+[`code/csharp/ChatProtocol.cs`](code/csharp/ChatProtocol.cs) ·
+[`code/prompts/librarian.md`](code/prompts/librarian.md) · `code/ts/` *(not written)*
+**Scripts:** `SCRIPT-ts.md` · `SCRIPT-csharp.md` *(neither written)*
 **New words:** [tool](../../docs/GLOSSARY.md#tool) ·
 [tool call](../../docs/GLOSSARY.md#tool-call) ·
 [tool result](../../docs/GLOSSARY.md#tool-result) ·
@@ -42,50 +45,60 @@ that does some of this for you — and you will see it is the same trick in a ni
 
 ## Simple example
 
-Ask the question. Watch the model answer with JSON instead of prose.
+One question, and one real run. The grey thinking is left out here.
 
 ```bash
-curl -s http://localhost:11434/api/chat -d '{
-  "model": "gemma4:e2b", "stream": false, "think": false,
-  "messages": [
-    {"role":"system","content":"... the three tools, and reply with only JSON ..."},
-    {"role":"user","content":"What files are in this folder?"}
-  ]
-}'
+cd chapters/04-tools-by-hand/code/csharp
+REPO=../../../../docs dotnet run
 ```
-
-The whole of `message.content`, from a real run:
-
-```json
-{"tool": "list_files", "path": "."}
-```
-
-No prose. No apology. No fence. Thirty-five characters, and every one of them is for your code,
-not for a human. Nothing has run yet — the model has **asked**.
-
-Now your code runs `list_files(".")`, gets nine file names, and sends them back as one more
-message. The model answers the original question:
 
 ```text
-There are several files in this folder, including C# files, a .csproj file, and TypeScript
-files. The folder also contains prompts in a prompts directory.
+Reading /Users/lk/Projects/BaiGanio/ai-agents-1on1/docs
+Type a question. An empty line stops the app.
+You: What files are in this folder?
+gemma4:e2b: {"tool": "list_files", "path": "."}
+
+[list_files]
+GLOSSARY.md
+MODELS.md
+PLAN.md
+PROGRESS.md
+SETUP.md
+STYLE.md
+
+gemma4:e2b: The files in this folder are GLOSSARY.md, MODELS.md, PLAN.md, PROGRESS.md,
+SETUP.md, and STYLE.md. These files seem to cover various aspects, likely relating to
+documentation, planning, models, progress tracking, setup procedures, and style guides.
 ```
+
+9.58 seconds, including `dotnet run`. Read the three blocks in order, because that order is
+the chapter.
+
+The model's **whole reply** was `{"tool": "list_files", "path": "."}`. No prose, no apology, no
+fence. Thirty-five characters, all of them for your code and none for a human. Nothing had run
+yet — the model had **asked**.
+
+`[list_files]` is your code, telling you it decided to believe that text and call a function.
+
+Then the six file names went back as one more message, and the model answered the question it
+was asked in the first place.
 
 Two [round trips](../../docs/GLOSSARY.md#round-trip). One function call, written by you, in
 between.
 
-The model picks the right tool for the right question, too:
+The model picks the right tool for the right question, too. All four from real runs:
 
 | You ask | The model replies with |
 |---|---|
 | `What files are in this folder?` | `{"tool": "list_files", "path": "."}` |
-| `What is in Helper.cs?` | `{"tool": "read_file", "path": "Helper.cs"}` |
-| `Find every line that contains the word Timeout.` | `{"tool": "search_text", "query": "Timeout"}` |
+| `What is in STYLE.md?` | `{"tool": "read_file", "path": "STYLE.md"}` |
+| `Find every line that contains the word quantisation.` | `{"tool": "search_text", "query": "quantisation"}` |
 | `Which file sets the HTTP timeout?` | `{"tool": "list_files", "path": "."}` |
 
 Look at the last row. It is the interesting one. Asked *which file*, the model did not search —
 it asked to **look around first**. Nobody told it to. That is the agent loop trying to start,
-one chapter early, and chapter 05 is where we let it.
+one chapter early, and chapter 05 is where we let it. This chapter runs one tool and stops, so
+the model gets a listing and has to answer from that.
 
 ## Everyday picture
 
@@ -160,8 +173,9 @@ works. Say that out loud, be uncomfortable about it, and go to chapter 07.
 
 ## TypeScript
 
-Two files. [`src/tools.ts`](code/ts/src/tools.ts) holds the three functions and the dispatch.
-[`src/main.ts`](code/ts/src/main.ts) keeps the conversation.
+**Not written yet.** This is the plan. Two files: `src/tools.ts` holds the three functions and
+the dispatch, `src/main.ts` keeps the conversation. `main.ts` has to be split into
+`helper.ts` + `main.ts` first, the way chapter 01.A split the C# side.
 
 ```bash
 cd chapters/04-tools-by-hand/code/ts
@@ -181,27 +195,44 @@ Three things worth stopping on:
 
 ## C#
 
-Three files carried over, plus one new. [`Tools.cs`](code/csharp/Tools.cs) holds the three
-methods and the dispatch. [`Program.cs`](code/csharp/Program.cs) keeps the conversation.
-`Helper.cs` and `ChatProtocol.cs` change very little.
+Four files. Three come from chapter 02 and one is new.
+
+| File | Lines | What this chapter does to it |
+|---|---|---|
+| [`Tools.cs`](code/csharp/Tools.cs) | 69 | **new.** The three functions and the dispatch. |
+| [`Program.cs`](code/csharp/Program.cs) | 59 | the parse, the dispatch call, the second round trip |
+| [`Helper.cs`](code/csharp/Helper.cs) | 123 | gains `RepoRoot` and `Ask` |
+| [`ChatProtocol.cs`](code/csharp/ChatProtocol.cs) | 19 | gains the `Call` record |
 
 ```bash
 cd chapters/04-tools-by-hand/code/csharp
-dotnet run
+dotnet run                                  # reads ../../../../sample-repo
+REPO=../../../../docs dotnet run            # reads any folder you point it at
 ```
 
-Three things worth stopping on:
+**71 new code lines**, against the ~70 guide in [`PLAN.md`](../../docs/PLAN.md). Five things
+worth stopping on:
 
+- **The send moved into `Helper.Ask`.** This chapter sends twice per question, and that block
+  was eighteen lines sitting in the middle of `Program.cs`. `Ask` does **not** touch the
+  history — the caller appends, so `Program.cs` still shows the memory being built. Chapter 05
+  wraps `Ask` in a `while`, and that is the loop.
 - **`JsonSerializer.Deserialize` in a `try`, catching `JsonException`.** Catch that type, not
-  `Exception`. A `JsonException` means "the model wrote prose". Anything else is your bug, and
-  you want it to crash loudly.
-- **A `record Call(string Tool, string? Path, string? Query)`, and both are nullable.**
-  `list_files` sends `path` and no `query`. `search_text` sends the other. One record covers
-  all three tools because the unused one arrives as `null`.
-- **`Directory.GetFiles`, `File.ReadAllTextAsync`, and `File.ReadLines`.** All in the base
-  class library. No NuGet package, same as every chapter.
+  `Exception`. A `JsonException` means "the model wrote prose". Anything else is a bug in
+  `Tools.cs`, and you want it to crash loudly.
+- **`record Call(string? Tool, string? Path, string? Query)`, and all three are nullable.**
+  `list_files` sends `path` and no `query`. `search_text` sends the other. A model that answers
+  `{}` sends neither. One record covers all three tools because the key that was not sent
+  arrives as `null`, and `if (call?.Tool is null) continue;` is the only check you need.
+- **It is in `ChatProtocol.cs`, with the other records.** `Call` is a wire format too. It is
+  just one we invented in a text file instead of one Ollama published.
+- **`Directory.EnumerateFiles`, `File.ReadAllText`, `File.ReadLines`.** All base class library.
+  No NuGet package, same as every chapter. `Path.GetRelativePath` is why the model gets back
+  names it can hand straight to `read_file`.
 
 ## What differs between the two
+
+The C# column is from the code. The TypeScript column is the plan, until `code/ts/` exists.
 
 | | TypeScript | C# |
 |---|---|---|
@@ -209,7 +240,7 @@ Three things worth stopping on:
 | what failure looks like | throws `SyntaxError` | throws `JsonException` |
 | a missing key | the property is `undefined` | the property is `null` |
 | an extra key you never defined | it is just there on the object | ignored, unless you ask for strict handling |
-| list a folder | `await readdir(path)` | `Directory.GetFiles(path)` |
+| list a folder | `await readdir(path, { recursive: true })` | `Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)` |
 | dispatch | `switch (call.tool)` | `switch (call.Tool)` |
 
 One real difference, and it is the third row. TypeScript hands you an object shaped however the
@@ -225,8 +256,11 @@ a typed `Call` and a `null`, which you can check in one place. Neither one check
 | `System.Text.Json.JsonException: 'I' is an invalid start of a value. Path: $ \| LineNumber: 0 \| BytePositionInLine: 0.` | the same thing, in C# | the same thing: catch `JsonException` and print the text |
 | `SyntaxError: Unexpected token`, naming a backtick as the first bad character | the model wrapped the JSON in a markdown code fence | strip the fence lines before you parse, or go to chapter 05. [`BASICS.md`](BASICS.md) has the full error. |
 | `System.Text.Json.JsonException`, naming a backtick as an invalid start of a value | the fence, in C# | the same fix |
-| the tool runs, then the model answers about the wrong folder | your tool ran, your path was relative to the working directory, not to the repo | print the resolved path inside the tool while you debug |
-| the model asks for a tool that does not exist | it invented a name, or you renamed one and not the prompt | return the string `no such tool: <name>` and let it try again |
+| `no such folder: .` on every question | `REPO` points at a folder that is not there. `Program.cs` prints the resolved path on the first line — read it. | fix `REPO`, or `cd` to `code/csharp/` first |
+| the listing is 36 names and most are `bin/Debug/net10.0/...` | your tools walk every file, and the folder has build output in it. The model then answers about DLLs. | point `REPO` at a folder with no build output, or filter `bin` and `obj` in `ListFiles` |
+| `no such file: server.ts` in the tool result, and the agent copes | working as designed. A missing file is a sentence, not a throw. | nothing. This is the row to be pleased about. |
+| one question takes 20 seconds instead of 10 | `read_file` sent a whole large file into the prompt. A 42 KB file measured 19.92 s against 9.58 s for a listing. | cap the size in `read_file`, or ask for a search instead. Chapter 07. |
+| the model asks for a tool that does not exist | it invented a name, or you renamed one and not the prompt | nothing to fix. The dispatch returns `no such tool: <name>` and the model reads it. |
 | the second answer ignores the tool result | you sent the result but not the model's own JSON before it | the list needs both: the `assistant` message that asked, then the result |
 
 ## Try it yourself
@@ -251,5 +285,6 @@ Number 4 is the chapter's real lesson, and it is not in this repo.
 - [ ] your code ran a function because of text a model wrote
 - [ ] all three tools have each been picked by the model at least once
 - [ ] you said hello, the parse threw, and the agent answered anyway
+- [ ] you asked for a file that is not there, and the agent said so instead of crashing
 - [ ] you can say why `read_file("/etc/passwd")` works right now, and what chapter fixes it
 - [ ] you can say what the model runs when it calls a tool. The answer is nothing.

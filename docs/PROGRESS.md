@@ -12,7 +12,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 01 | the model | ✅ | ✅ | ✅ | ✅ | — | — *(old tag `ch01-model` is out of date)* |
 | 01.A | thinking | ✅ | ✅ *(out of step — reads THINK from the environment)* | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
 | 02 | the prompt | ✅ | ✅ | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
-| 04 | tools by hand | ✅ *(code not written yet — see the note at the top of its README)* | — | — | — | — | — |
+| 04 | tools by hand | ✅ | — | ✅ *(four files, run against a stand-in folder)* | — | — | — |
 | 05 | the loop | — | — | — | — | — | — |
 | 06 | memory | — | — | — | — | — | — |
 | 07 | guardrails | — | — | — | — | — | — |
@@ -307,6 +307,69 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
   `docs/GLOSSARY.md`: dispatch, parse, round trip, tool result, tool schema. One
   `flowchart TD`, no `;` in any line.
 
+**2026-10-27, M1 Pro, 32 GB, macOS 27.0.1. Chapter 04's C# code, written and run.** Ollama
+0.40.6, `gemma4:e2b`, .NET 10.0.401. **TypeScript not written.**
+
+- `chapters/04-tools-by-hand/code/csharp/` is a copy of chapter 02's three files plus one new
+  one. `Tools.cs` **69** lines (new), `Program.cs` **59**, `Helper.cs` **123**,
+  `ChatProtocol.cs` **19**. `dotnet build` clean, 0 warnings, 0.74 s. No line in any of the
+  four is over 100 columns. All four are well under the 200-line limit.
+- **165 code lines** (blank and comment lines not counted): 46 + 33 + 77 + 9. Chapter 02's C#
+  is 94, so chapter 04 adds **71** against the ~70 guide in `PLAN.md`. The closest a chapter
+  has come to its guide yet.
+- `diff -r` against chapter 02's `code/`: `Tools.cs` is new, `ChatProtocol.cs` gains the `Call`
+  record, `Helper.cs` gains `RepoRoot` and `Ask`, `Program.cs` is rewritten below the prompt
+  read. `RepoLibrarian.csproj` byte identical. No NuGet package (decision 1).
+- **The send moved out of `Program.cs` into `Helper.Ask`.** The chapter sends twice per
+  question, and that block was 18 lines in the middle of the loop. `Ask` returns a `Message`
+  and does **not** touch the history, so `Program.cs` still shows `messages.Add` four times and
+  the memory stays visible. Chapter 05 wraps `Ask` in a `while`.
+- `Call` lives in `ChatProtocol.cs` with the other records, and all three of its properties are
+  nullable. `if (call?.Tool is null) continue;` is the whole guard: it catches prose that
+  parsed, `{}`, and `null`.
+- **No `tools` field anywhere** (decision 2). The tool list is prose in
+  `code/prompts/librarian.md`, which gained 14 lines.
+
+**The runs.** `sample-repo/` holds one file, so `REPO` points at this repo's own `docs/` folder
+— six Markdown files, real text, no build output. Every run below used it.
+
+- `What files are in this folder?` → the model's whole reply was
+  `{"tool": "list_files", "path": "."}`. The six names went back as a `user` message, and it
+  answered *"The files in this folder are GLOSSARY.md, MODELS.md, PLAN.md, PROGRESS.md,
+  SETUP.md, and STYLE.md..."* **9.58 s** including `dotnet run`.
+- `What is in STYLE.md?` → `{"tool": "read_file", "path": "STYLE.md"}`, then a correct
+  three-sentence summary of the real file: *"STYLE.md outlines strict writing rules for
+  documentation, emphasizing short sentences, active voice, and avoiding hype..."*
+- `Find every line that contains the word quantisation.` →
+  `{"tool": "search_text", "query": "quantisation"}`. Two real hits, in `GLOSSARY.md` and
+  `PLAN.md`, and the model named both files and quoted the glossary line correctly.
+- `Hello, who are you?` → prose, so `JsonSerializer.Deserialize` threw `JsonException`, the
+  `catch` did nothing, and `if (call?.Tool is null) continue;` sent it round the loop. The
+  answer was already on screen. **No crash, no second round trip.** That is the `catch` being
+  the ordinary path, proved.
+- `What is in server.ts?` → `{"tool": "read_file", "path": "server.ts"}`, and the tool returned
+  the sentence `no such file: server.ts`. The model read that and said the file was not found.
+  A sentence instead of a throw, proved.
+- `REPO=../../../../nope` → first line printed
+  `Reading /Users/lk/Projects/BaiGanio/ai-agents-1on1/nope`, then the tool returned
+  `no such folder: .`. No exception.
+- Default `REPO` (the real `sample-repo/`) → `list_files` returned `README.md`, one line. The
+  code is correct and the folder is empty.
+
+**Two findings worth a camera beat, both now rows in the chapter's "When it breaks".**
+
+- **Build output floods the listing.** Pointed at `chapters/02-the-prompt/code` the tools
+  walked 36 files, 5 of them in `csharp/bin/Debug/net10.0/`, and the model's answer began
+  *"There are many files in this folder. They include DLLs..."*. The tools have no filter. The
+  real `sample-repo/` will have no build output, so the chapter adds no code for it.
+- **`read_file` on a big file costs real time.** `PROGRESS.md`, 42 KB, went into the prompt
+  whole. The model summarised it correctly, in **19.92 s** against 9.58 s for a listing. No
+  crash and no context error on `gemma4:e2b`. Twice the wait for one `read_file`.
+
+**Not done, on purpose or not.** `code/ts/` does not exist. `SCRIPT-ts.md` and
+`SCRIPT-csharp.md` do not exist, so there is no by-script check to run for this chapter yet.
+`scripts/check.sh` not rerun.
+
 ## Decisions
 
 | # | Decision | Date | Why |
@@ -356,6 +419,8 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 | 38 | **A camera script carries only the code you type.** A code step prints the lines that go on air in that step, and nothing else. The "Already there — do not type it" blocks are dropped: the finished files are in `code/` and the script links to them. Amends decision 32, which asked for whole files. The byte-for-byte check changes with it — **the check is now by script**: every code block in the script appears verbatim in the finished file it names, in the same order, and the line range in the step heading is correct. Chapters 01 and 01.A keep their "Already there" blocks until those chapters are next touched. | 2026-10-27 | the author reads the script top to bottom while recording, and a block he must not type is a block he has to decide about mid-take. The whole-file version made chapter 01.A's script 671 lines, most of it code already on screen. The point of decision 32 survives: the blocks are still checked against the file, so the script cannot drift from the code. |
 
 | 39 | **The terminal prompt is `You: ` in both stacks.** Chapter 02's TypeScript changes from `you> `. `PLAN.md` says `You:` too. | 2026-10-27 | chapters 01 and 01.A are the two verified runbooks and both print `You: `, so this is the string that costs nothing to keep. Changing them instead would mean re-running two finished chapters and re-doing the by-script check on both. |
+
+| 40 | **Chapter 04's C# is four files, and the send moves into `Helper.Ask`.** `Tools.cs` is new and holds the three functions plus the dispatch `switch`. The `Call` record goes in `ChatProtocol.cs` with the other records. `Helper.cs` gains `Ask(List<Message>)`, which sends once and streams once and returns a `Message` **without** touching the history, and `RepoRoot`, read from a new `REPO` environment variable with `../../../../sample-repo` as the default. Chapter 04 uses **no** `tools` field — the tool list is prose in `prompts/librarian.md` (decision 2). | 2026-10-27 | the chapter sends twice per question, and copying eighteen lines of send into the middle of the loop twice would have pushed `Program.cs` past the point where it reads top to bottom. `Ask` not touching the history is the part that matters: `Program.cs` still shows `messages.Add` four times, so "the list is the memory" stays visible, and chapter 05's loop is then `while` around one call. `REPO` follows the `MODEL` / `PROMPT` pattern from decisions 33 and 23 — `Helper.cs` is the only file that reads the environment — and it is what let this chapter be run and measured honestly while `sample-repo/` is still empty. |
 
 ## To do
 
@@ -407,14 +472,18 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
   the `Helper.cs` shape now, so chapter 04 has room. **TypeScript still does not**: `main.ts`
   carries all the plumbing in one file, and chapter 04 adds about 70 lines to it. Split it into
   `helper.ts` + `main.ts` before chapter 04's TypeScript code.
-- **Chapter 04's `code/` is not written** (CLAUDE.md: ask first). Its docs describe the code
-  that gets typed: `tools.ts` / `Tools.cs` for the three functions and the dispatch, a `try`
-  around the parse, and a second round trip for the tool result. Both `SCRIPT-ts.md` and
-  `SCRIPT-csharp.md` are missing. The C# base is ready; the TypeScript base needs the
-  `helper.ts` split first.
-- **`sample-repo/` is still one README.** Chapter 04's three tools have nothing real to read,
-  and its examples use `chapters/02-the-prompt/code/` as a stand-in. This is step 3 in
-  `PLAN.md` "Order of work" and it blocks chapter 04's `code/` being run honestly.
+- **Chapter 04's C# is written and run. Its TypeScript is not, and neither script exists.**
+  `code/ts/` needs the `helper.ts` split first, the same blocker chapter 02's TypeScript has.
+  `SCRIPT-csharp.md` can be written now — the code is final and the runs are recorded above.
+- **Chapter 04's tools have no filter.** `ListFiles` and `SearchText` walk every file under
+  `REPO`, including `bin/` and `obj/`. Harmless once `sample-repo/` exists, measured and
+  recorded as a "When it breaks" row until then. Do not add the filter without deciding whether
+  it belongs here or in chapter 07.
+- **`sample-repo/` is still one README.** Chapter 04's tools work — they were run against this
+  repo's own `docs/` folder as a stand-in, with `REPO`. But the chapter's own folder is empty,
+  so `dotnet run` with no `REPO` lists exactly one file. This is step 3 in `PLAN.md` "Order of
+  work". Every example in chapter 04's README and in the run record above gets rerun against
+  `sample-repo/` once it exists.
 - Finish the `gemma4:26b` row in `docs/MODELS.md` (64K, 128K) and test tools on 26b, qwen3.5:4b
   and Ornith. Needed by chapter 10.
 
