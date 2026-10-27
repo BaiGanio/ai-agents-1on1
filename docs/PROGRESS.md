@@ -174,7 +174,8 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
   The second answer is shorter, so turn two saw turn one. That is the `messages.Add(reply.Message)`
   line doing its job, inside one run.
 - **47 code lines** (blank and comment lines not counted): 24 in `Helper.cs`, 23 in `Program.cs`.
-  Over the ~40 in `PLAN.md`. See To do.
+  Over the ~40 guide in `PLAN.md`, which decision 34 makes a guide and not a cap.
+  Both files are well under the 200-line limit.
 - The nine C# blocks in `SCRIPT-csharp.md` rebuild `Helper.cs` and `Program.cs` byte for byte,
   checked by script. No line in either file is over 100 columns.
 - Not rerun: `scripts/check.sh`, and the TypeScript side, which is untouched.
@@ -215,6 +216,7 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
 | 29 | `chat` / `ChatAsync` takes a `send` callback instead of printing. Two callers: `toTerminal` and the one that writes a JSON line into the response. | 2026-10-27 | one function, two windows. It is four lines, and it means chapter 05's loop does not have to touch `chat` at all. |
 | 30 | The `POST /chat` handler wraps the model call in a `try`, writes `{"error": "..."}` into the stream, and pops the unanswered question. | 2026-10-27 | measured: without it, Ollama being down kills the server and the browser gets nothing. Chapters 04-08 all live in this process, so it must not die on one bad request. |
 | 31 | A camera script is a numbered runbook, not prose. Every step is **Say / Type / Proof**, plus **Note** for a must-say line. Shell commands are written out in full and copy-paste ready, including the scaffold (`npm init`, `dotnet new console`) and an off-camera **Before you record** block. Code steps give a line range in the chapter's finished file, never a pasted code block. Amends decision 21. Chapter 01 is rewritten in this shape — 01.A, 02 and 03 still have to follow. | 2026-10-27 | the author stopped mid-take to look up commands. A script must be readable top to bottom while recording, with nothing else open. |
+| 34 | The "New code" numbers in `PLAN.md` are a guide, not a cap. A chapter may go well past them. The hard limit is **no source file over 200 lines**: past that, a part moves into its own file (`Helper.cs`, `helper.ts`) and the chapter stays whole. A chapter splits on minutes, never on lines. Replaces the budget rule in `CLAUDE.md` and the split rule in `PLAN.md`, and closes the three over-budget items for chapters 01, 02 and 03. | 2026-10-27 | the line counts were guesses made before any code existed, and three of four written chapters beat them. A viewer is not hurt by a longer chapter — they are hurt by a 200-line file they cannot hold in their head, and by a video that runs 25 minutes. So the limit moves to the thing that actually hurts. `chapters/03-the-chat-page/code/csharp/Program.cs` is already 193 lines and chapters 04-08 grow from it, so the next chapter needs the file split either way. |
 | 33 | Chapter 01's C# follows `chapters/01-the-model/code/lk-csharp/`: two files (`Helper.cs` for the plumbing, `Program.cs` for the conversation), and a `while (true)` terminal loop that reads `You:` until an empty line. No command-line arguments. The reply is appended to `messages`, so turn two sees turn one. Kept from the old code against `lk-csharp`: the `OLLAMA_URL` and `MODEL` environment reads, and the 5-minute `Timeout`. Amends decisions 23 and 25 for the C# side only — TypeScript is untouched and still one-shot. | 2026-10-27 | the author's own file is the one he can record from without hesitating, and `Program.cs` reading as nothing but the conversation is the clearer lesson. The two keeps are not style: `scripts/check.sh` runs `MODEL=nope:1b`, `docs/MODELS.md` swaps models by environment, and a cold model can pass the 100-second default and fail as a fake network error. |
 | 32 | A code step in a camera script carries the real code block, copied from the chapter's finished file, plus the line range it came from. `SCRIPT-csharp.md` is the first one. Amends decision 31, which asked for line ranges alone. | 2026-10-27 | a line range sends the author to a second file mid-take, which is the problem decision 31 set out to fix. The drift risk is real, so the blocks are checked against the file: the six C# blocks rebuild `Program.cs` byte for byte. Re-run that check whenever a chapter's code changes. |
 
@@ -231,9 +233,6 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
   `SCRIPT-csharp.md` (five `dotnet run -- "..."` commands), chapter `02`'s README, `BASICS.md`
   and `SCRIPT-csharp.md` (the loop it adds is already built), and chapter `03`'s README and
   `SCRIPT-csharp.md`. Chapter 02's C# video loses its second half and needs a new one.
-- Chapter 01's C# is **47 code lines** against the ~40 in `PLAN.md`. The split line, if the
-  video runs long, is after step 9: `01` for `Helper.cs` and one question, `01.A` for the loop.
-  Do not squeeze it — reprice the row in `PLAN.md` or split.
 - Decision 22 keeps `chapters/01-the-model/code/lk-csharp/` as the author's private copy. It is
   now nearly the same as `code/csharp/`. Ask whether it still earns a folder.
 - `SCRIPT-csharp.md` carries full code blocks under decision 32. `SCRIPT-ts.md` still has
@@ -244,10 +243,9 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
   commands P1-P6 (P1-P7 in C#) are written but unrun as a block.
 - Chapter 01.A is not `ready` under decision 19, for the same reason. Docs, code and both
   scripts agree with each other and were run on 2026-10-26.
-- Chapter 02 is over its ~20-line budget in `PLAN.md`: 38 lines in TypeScript, 37 in C#.
-  Decision 23 adds a prompt file **and** a terminal read-loop. The script splits it at 7:30 —
-  steps 0-3 are the prompt, step 4 is the loop. If the video runs long, that is the cut line:
-  `02` for the prompt file, `02.A` for the loop.
+- Chapter 02 runs 38 new code lines in TypeScript and 37 in C#, against the ~20 guide. Fine
+  under decision 34. The 7:30 cut line in both scripts stays, but it is now a **minutes** cut,
+  not a lines cut: use it only if the video runs long.
 - Chapter 02 now has chapter 03 to check against, and it agrees: chapter 03's `code/` is
   chapter 02's with the readline loop removed and the `send` parameter added, and the five files
   03 does not touch (`prompts/`, `package.json`, `tsconfig.json`, the `.csproj`) are byte
@@ -255,10 +253,14 @@ folder — `code/` is not written yet. Ollama 0.40.6, `gemma4:e2b`, Node 26.12.0
 - **The chat page has never been opened in a browser.** Its reader loop was proven in Node
   against the live server, but nobody has looked at the page. Do that before chapter 03 is
   `ready`.
-- Chapter 03 is over its ~40-line budget in `PLAN.md` on the C# side: 41 new code lines in
-  TypeScript, **65 in C#**. `HttpListener` is the whole difference (decision 27). Both scripts
-  mark a cut line after step 3 — `03` for the page and the endpoint, `03.A` for streaming and
-  the error handling. If the C# video runs long, revisit decision 27 and price a minimal API.
+- Chapter 03 runs 41 new code lines in TypeScript and 65 in C#, against the ~40 guide. Fine
+  under decision 34. The cut line after step 3 in both scripts stays as a **minutes** cut only.
+- **File size is now the limit that bites (decision 34).** Longest files today:
+  `chapters/03-the-chat-page/code/csharp/Program.cs` **193 lines**,
+  `chapters/03-the-chat-page/code/ts/src/main.ts` 132,
+  `chapters/02-the-prompt/code/csharp/Program.cs` 131. Chapter 04 copies chapter 03's `code/`
+  and adds about 70 lines, so the C# file crosses 200 on the next chapter. Pull the plumbing out
+  into `Helper.cs` and `helper.ts` first — chapter 01's C# already has that shape (decision 33).
 - Chapter 03 is not `ready` under decision 19. Chapter 04 does not exist to check it against.
 - Finish the `gemma4:26b` row in `docs/MODELS.md` (64K, 128K) and test tools on 26b, qwen3.5:4b
   and Ornith. Needed by chapter 10.

@@ -39,7 +39,10 @@ Every viewer has a folder of files. The tools are 10 lines each in both language
 Target: 12-15 minutes per chapter. Two of them may run to 20.
 Chapters 01-08 (and 01.A) are two videos each, one per language (see `STYLE.md`).
 Minutes below are per video.
-"New code" is the amount you type on camera. If a chapter grows past it, we split the chapter.
+"New code" is the amount you type on camera. It is a guide, not a cap: a chapter may go well
+past it. Two real limits sit on top of it. **No source file goes over 200 lines** — past that,
+pull a part out into its own file and keep the chapter whole. And a chapter splits on **minutes**,
+never on lines.
 
 | # | Chapter | What the viewer learns | New code | Minutes |
 |---|---|---|---|---|

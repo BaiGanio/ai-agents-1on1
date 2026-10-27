@@ -44,8 +44,10 @@ More in `docs/SETUP.md`.
   first, then ask.
 - **Git tags are not final** while the repo is a skeleton. Do not create, move or delete one
   unless asked.
-- **The budget is real.** "New code" in `PLAN.md` is what the viewer types on camera.
-  Past it, the chapter splits. Say so — do not squeeze.
+- **Minutes split a chapter. Lines split a file.** "New code" in `PLAN.md` is a guide, not a
+  cap — a chapter may go well past it. The hard rule is **no source file over 200 lines**. Past
+  that, pull a part out into its own file (`Helper.cs`, `helper.ts`) and keep the chapter whole.
+  Only the minute budget splits a chapter. Say the real number — do not squeeze.
 - **Code in `main` reads top to bottom** in the order the video types it.
 - **Comments say why, never what.** Max 100 columns.
 - **No invented numbers or output.** Every number and every "Simple example" comes from a real
