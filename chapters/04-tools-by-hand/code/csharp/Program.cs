@@ -5,6 +5,9 @@
 
 using System.Text.Json;
 
+// Read once, before anything else happens. Edit the file mid-session and nothing changes until
+// you restart. The path is relative to the working directory, which `dotnet run` sets to this
+// project folder. Run the binary out of bin/ instead and this throws.
 string system = await File.ReadAllTextAsync($"../prompts/{Helper.PromptName}.md");
 
 // The model remembers nothing between calls. Every turn sends the whole history back, so the

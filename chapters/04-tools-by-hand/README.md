@@ -3,7 +3,8 @@
 > **C# is written and run. TypeScript is not.** `code/csharp/` builds, and every C# number and
 > every line of output on this page comes from a real run on a real machine. `code/ts/` does
 > not exist yet, so the TypeScript section describes the code that gets typed and its file
-> links are dead. Both camera scripts are missing.
+> links are dead. [`SCRIPT-csharp.md`](SCRIPT-csharp.md) is a verified runbook. `SCRIPT-ts.md`
+> is missing.
 >
 > **The folder the tools read is a stand-in.** [`sample-repo/`](../../sample-repo/) holds one
 > file, so the runs below point `REPO` at this repo's own `docs/` folder — six Markdown files,
@@ -16,7 +17,7 @@
 [`code/csharp/Helper.cs`](code/csharp/Helper.cs) ·
 [`code/csharp/ChatProtocol.cs`](code/csharp/ChatProtocol.cs) ·
 [`code/prompts/librarian.md`](code/prompts/librarian.md) · `code/ts/` *(not written)*
-**Scripts:** `SCRIPT-ts.md` · `SCRIPT-csharp.md` *(neither written)*
+**Scripts:** [`SCRIPT-csharp.md`](SCRIPT-csharp.md) · `SCRIPT-ts.md` *(not written)*
 **New words:** [tool](../../docs/GLOSSARY.md#tool) ·
 [tool call](../../docs/GLOSSARY.md#tool-call) ·
 [tool result](../../docs/GLOSSARY.md#tool-result) ·
@@ -200,7 +201,7 @@ Four files. Three come from chapter 02 and one is new.
 | File | Lines | What this chapter does to it |
 |---|---|---|
 | [`Tools.cs`](code/csharp/Tools.cs) | 69 | **new.** The three functions and the dispatch. |
-| [`Program.cs`](code/csharp/Program.cs) | 59 | the parse, the dispatch call, the second round trip |
+| [`Program.cs`](code/csharp/Program.cs) | 62 | the parse, the dispatch call, the second round trip |
 | [`Helper.cs`](code/csharp/Helper.cs) | 123 | gains `RepoRoot` and `Ask` |
 | [`ChatProtocol.cs`](code/csharp/ChatProtocol.cs) | 19 | gains the `Call` record |
 

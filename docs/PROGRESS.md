@@ -12,7 +12,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 01 | the model | ✅ | ✅ | ✅ | ✅ | — | — *(old tag `ch01-model` is out of date)* |
 | 01.A | thinking | ✅ | ✅ *(out of step — reads THINK from the environment)* | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
 | 02 | the prompt | ✅ | ✅ | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
-| 04 | tools by hand | ✅ | — | ✅ *(four files, run against a stand-in folder)* | — | — | — |
+| 04 | tools by hand | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 05 | the loop | — | — | — | — | — | — |
 | 06 | memory | — | — | — | — | — | — |
 | 07 | guardrails | — | — | — | — | — | — |
@@ -311,7 +311,7 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 0.40.6, `gemma4:e2b`, .NET 10.0.401. **TypeScript not written.**
 
 - `chapters/04-tools-by-hand/code/csharp/` is a copy of chapter 02's three files plus one new
-  one. `Tools.cs` **69** lines (new), `Program.cs` **59**, `Helper.cs` **123**,
+  one. `Tools.cs` **69** lines (new), `Program.cs` **62**, `Helper.cs` **123**,
   `ChatProtocol.cs` **19**. `dotnet build` clean, 0 warnings, 0.74 s. No line in any of the
   four is over 100 columns. All four are well under the 200-line limit.
 - **165 code lines** (blank and comment lines not counted): 46 + 33 + 77 + 9. Chapter 02's C#
@@ -366,8 +366,32 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
   whole. The model summarised it correctly, in **19.92 s** against 9.58 s for a listing. No
   crash and no context error on `gemma4:e2b`. Twice the wait for one `read_file`.
 
-**Not done, on purpose or not.** `code/ts/` does not exist. `SCRIPT-ts.md` and
-`SCRIPT-csharp.md` do not exist, so there is no by-script check to run for this chapter yet.
+**2026-10-27, same machine. Chapter 04's `SCRIPT-csharp.md`, written and verified.**
+
+- A runbook under decisions 31 and 38: **26 steps in 8 acts**, Say / Type / Proof, a
+  **Before you record** block P1-P7 with absolute paths, and an **After the take** list. 15
+  minutes, which is `PLAN.md`'s budget for this chapter.
+- **The by-script check passes.** 45 fenced blocks, **19** of them claimed as file content, all
+  19 verbatim and in file order: `prompts/librarian.md` 5-9, 11-17 and 19-20;
+  `ChatProtocol.cs` 15-19; `Tools.cs` 1-10, 12-21, 23-36, 38-47 and 49-69; `Helper.cs` 1, 22-24
+  and 95-122; `Program.cs` 1-4, 6, 17, 30-33, 35-47, 49-53 and 55-61. Every line of new code in
+  the chapter is inside one of those ranges — the gaps are blank lines and chapter 02's code.
+  The other 26 blocks are shell commands, lines typed at the `You:` prompt, and real output.
+- The two curl commands in Act 1 were **run fresh** for their proofs, with the tool list
+  compressed to one line of inline JSON so the step is a single copy-paste.
+  Call one → the whole reply was `{"tool": "list_files", "path": "."}`.
+  Call two, with the model's own JSON back in as `assistant` and six file names after it as
+  `user` → *"There are six files in this folder: GLOSSARY.md, MODELS.md, PLAN.md, PROGRESS.md,
+  SETUP.md, and STYLE.md."* So Act 1 teaches the whole chapter before the editor opens.
+- **One drift found and fixed while writing the script.** `Program.cs` had silently dropped
+  chapter 02's three-line comment above the prompt read — the one about the working directory
+  and running the binary out of `bin/`. Chapter 04's file was worse than chapter 02's for no
+  reason. The comment is restored, `Program.cs` is **62** lines, and every `Program.cs` line
+  range in the script moved by three. Rebuilt and rerun: two turns piped in, `list_files` then
+  a `read_file` for a file that is not there, and the model answered *"I cannot read server.ts
+  because that file does not exist in this folder."*
+
+**Not done.** `code/ts/` does not exist, and `SCRIPT-ts.md` does not exist.
 `scripts/check.sh` not rerun.
 
 ## Decisions
