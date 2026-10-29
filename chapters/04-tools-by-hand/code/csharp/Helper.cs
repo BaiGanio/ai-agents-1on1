@@ -25,7 +25,7 @@ public static class Helper
 
     // Flip this to false to get the answer without the wait. A model that cannot think answers
     // Think: true with a 400, not with an answer, so leave it off on those.
-    public static readonly bool? Think = true;
+    public static readonly bool? Think = false;
 
     // The thinking is grey so your eye skips it. These are ANSI colour codes, not a library.
     public static readonly string Grey = "\x1b[90m";
