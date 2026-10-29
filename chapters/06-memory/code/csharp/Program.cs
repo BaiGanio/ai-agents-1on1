@@ -13,8 +13,8 @@ string system = await File.ReadAllTextAsync($"../prompts/{Helper.PromptName}.md"
 List<Message> messages = [new("system", system)];
 
 // Long memory. Every run starts knowing nothing, so last run's notes go back in as a second
-// system message. Measured: glued onto the end of the first one, the model ignored them four
-// times in five and said it had no record of your name. On their own, five in five.
+// system message. Measured with four tools: glued onto the end of the first one, the model
+// missed them three times in five and said it had no record of your name. Here, five in five.
 if (File.Exists(Helper.NotesPath))
 {
     string notes = await File.ReadAllTextAsync(Helper.NotesPath);

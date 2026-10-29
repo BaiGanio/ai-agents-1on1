@@ -3,8 +3,8 @@
 > **C# is written and run. TypeScript is not.** `code/csharp/` builds with no warnings, and
 > every number and every line of output on this page comes from a real run of it on a real
 > machine, or from a curl run that says so. `code/ts/` does not exist yet, so the TypeScript
-> section describes the code that gets typed and its file links are dead. Neither camera script
-> is written.
+> section describes the code that gets typed and its file links are dead. The C# camera script
+> is written and checked. The TypeScript one is not.
 >
 > **The folder the tools read is a stand-in.** [`sample-repo/`](../../sample-repo/) holds one
 > file, so the runs below point `REPO` at this repo's own `docs/` folder, the same as chapters
@@ -17,7 +17,7 @@
 [`code/csharp/Helper.cs`](code/csharp/Helper.cs) ·
 [`code/csharp/ChatProtocol.cs`](code/csharp/ChatProtocol.cs) ·
 [`code/prompts/librarian.md`](code/prompts/librarian.md) · `code/ts/` *(not written)*
-**Scripts:** `SCRIPT-csharp.md` · `SCRIPT-ts.md` — *both not written*
+**Scripts:** [`SCRIPT-csharp.md`](SCRIPT-csharp.md) · `SCRIPT-ts.md` *(not written)*
 **New words:** [memory](../../docs/GLOSSARY.md#memory) ·
 [stub](../../docs/GLOSSARY.md#stub) ·
 [notes file](../../docs/GLOSSARY.md#notes-file)
@@ -220,11 +220,19 @@ The note was in the request. Measured by curl, five runs each, all with the `too
 | at the top of the system message | 5 of 5 |
 | **as a second system message** | **5 of 5** |
 
-With no `tools` field at all, even the first row was 5 of 5. So the tool list, sent after the
-system text, pulls the model away from what was written last. We do not know more than that.
+With no `tools` field at all, even the first row was 5 of 5. The real code shows the same pull,
+five runs each:
 
-The code uses the last row. Long memory is then one more message, and you can see it in the
-list. The real code, run four times: four times *"Your name is Lyuben."*
+| Where the notes sit | 3 tools | 4 tools |
+|---|---|---|
+| at the end of the system message | 4 of 5 | 2 of 5 |
+| as a second system message | 5 of 5 | 5 of 5 |
+
+So the tool list, sent after the system text, pulls the model away from what was written last,
+and more tools pull harder. We do not know more than that.
+
+The code uses a second system message. Long memory is then one more message, and you can see it
+in the list.
 
 ## TypeScript
 

@@ -20,13 +20,6 @@ public record ChatRequest(
     bool? Think = false
 );
 
-// Ollama counts the whole prompt it read and puts the number on the last line of the stream.
-// Same trap as tool_calls: camelCase makes it promptEvalCount, which arrives as null.
-public record ChatResponse(
-    Message Message,
-    [property: JsonPropertyName("prompt_eval_count")] int? PromptEvalCount = null
-);
-
 // What we send: the tools the model is allowed to ask for. Chapter 04 wrote this list in
 // English in the system prompt and hoped. Now the runner reads it and holds the model to it.
 public record ToolProperty(string Type, string Description);
@@ -53,3 +46,10 @@ public record ToolCallFunction(string? Name, ToolArguments? Arguments);
 
 // Id is Ollama's, not ours. We never send it back, and nothing in this course needs it.
 public record ToolCall(string? Id, ToolCallFunction? Function);
+
+// One line of the stream. Ollama counts the whole prompt it read and puts the number on the last
+// line only. Same trap as tool_calls: camelCase makes it promptEvalCount, which arrives as null.
+public record ChatResponse(
+    Message Message,
+    [property: JsonPropertyName("prompt_eval_count")] int? PromptEvalCount = null
+);

@@ -14,7 +14,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 02 | the prompt | ✅ | ✅ | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
 | 04 | tools by hand | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 05 | the loop | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
-| 06 | memory | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(both scripts missing)* | — | — |
+| 06 | memory | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 07 | guardrails | — | — | — | — | — | — |
 | 08 | workflows | — | — | — | — | — | — |
 | 09 | llama.cpp | — | — | — | — | — | — |
@@ -23,6 +23,28 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 12 | frameworks *(optional)* | — | — | — | — | — | — |
 
 ## Verified on this machine
+
+**2026-10-29, same machine. Chapter 06's C# camera script, every proof run.**
+
+- `SCRIPT-csharp.md` is a runbook: 20 steps in 5 acts, P1-P9. `scripts/check-script.py` passes,
+  12 code blocks, all verbatim and in file order. Code blocks were filled from the finished
+  files by a generator, not by hand.
+- **`ChatResponse` moved to the bottom of `ChatProtocol.cs`** (decision 50). No line count
+  changed. Build clean.
+- Every proof came from a scratch copy of the code in the state that step leaves it: six
+  states, all built clean, the last one identical to `code/`. Act 0, chapter 05's code:
+  *"Hello Lyuben..."*, then after a restart *"I do not have access to your personal
+  information, so I do not know your name."* Act 1, a hand-written note, `What is my name?` →
+  *"Your name is Lyuben."* 1.91 s. Act 2, no prompt line → *"Understood. I will format any
+  diagrams..."*, 2.22 s, no file change. With it → `save_note We always write diagrams as
+  flowchart TD.` and an empty answer, 2.29 s. Act 3, two notes loaded: no drop → the second
+  question starts at **2291**; with the drop → **533** (that run read `STYLE.md`, not the
+  glossary). The re-read run read `GLOSSARY.md` again, then answered about "token" when asked
+  about "stub". Act 4, no attribute → *"Your name is Lyuben."*, no count, 2.36 s.
+- **Glued notes, real code, five runs each:** 4 of 5 with three tools, **2 of 5** with four.
+  Second system message: 5 of 5 both. So the script does not type the wrong version on air —
+  at that point the code has three tools and the wrong version usually works. The comment in
+  `Program.cs` and the README now carry the real-code numbers.
 
 **2026-10-29, M1 Pro, 32 GB, macOS 27.0.1. Chapter 06's C#, written and run.**
 Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401, `Think = false`, `REPO=../../../../docs`. Times
@@ -606,12 +628,13 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 | 47 | **Chapter 06's long memory is a fourth tool, `save_note(text)`, plus one prompt line.** `SaveNote` appends `- text` to `NOTES` (default `../notes.md`, next to `prompts/`, outside `REPO`). `chapters/*/code/notes.md` is in `.gitignore`. A `/remember` command that skips the model is "Try it yourself", not chapter code. | 2026-10-29 | measured: the prompt line takes `save_note` from 0 of 12 to 15 of 15. Outside `REPO`, so `list_files` and `search_text` never feed the notes back as repo content. The command would teach "code picks, or the model does", which is chapter 08's idea. |
 | 48 | **The notes go in as a second system message, not at the end of the first.** | 2026-10-29 | measured: with the `tools` field, notes at the end of the system message were used 0 of 5 times, as a second system message 5 of 5. |
 | 49 | **`HandleStream` prints `[N tokens in]` from `prompt_eval_count`.** `ChatResponse` gains `PromptEvalCount` with `JsonPropertyName`. | 2026-10-29 | the drop has to be seen to be taught. The count is honest on a cache hit (924 and 924). |
+| 50 | **Chapter 06's `ChatResponse` record sits at the bottom of `ChatProtocol.cs`**, with the other shapes that come back. The C# video teaches long memory first, then short memory. | 2026-10-29 | the by-script check wants each file typed top to bottom. `Program.cs` reads the notes near the top and drops tool results near the bottom, so long memory goes first. In `ChatProtocol.cs` the `Text` field is long memory and the count is short memory, so the count's record has to sit below `ToolArguments`. |
 
 ## To do
 
-- **Chapter 06's C# code and docs are done. Neither camera script exists.** `SCRIPT-csharp.md`
-  is a stub. Write it as a runbook (decision 31) and run `scripts/check-script.py` on it.
-  `code/ts/` is blocked behind the same `helper.ts` split as chapters 02, 04 and 05.
+- **Chapter 06's C# is done: code, docs and a verified runbook.** Its TypeScript is not, and
+  `SCRIPT-ts.md` does not exist. `code/ts/` is blocked behind the same `helper.ts` split as
+  chapters 02, 04 and 05.
 - **Chapter 06 reads the stand-in folder too.** Rerun its examples against `sample-repo/`.
 
 - **Chapter 05's C# is done: code, docs and a verified runbook.** Its TypeScript is not, and
