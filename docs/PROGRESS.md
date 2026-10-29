@@ -13,7 +13,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 01.A | thinking | ✅ | ✅ *(out of step — reads THINK from the environment)* | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
 | 02 | the prompt | ✅ | ✅ | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
 | 04 | tools by hand | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
-| 05 | the loop | — | — | — | — | — | — |
+| 05 | the loop | ✅ *(docs only — numbers from a scratch stand-in, not from `code/`)* | — | — | — | — | — |
 | 06 | memory | — | — | — | — | — | — |
 | 07 | guardrails | — | — | — | — | — | — |
 | 08 | workflows | — | — | — | — | — | — |
@@ -23,6 +23,50 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 12 | frameworks *(optional)* | — | — | — | — | — | — |
 
 ## Verified on this machine
+
+**2026-10-29, M1 Pro, 32 GB, macOS 27. Chapter 05 measured before any `code/` exists.**
+Ollama 0.40.6, `gemma4:e2b`, `think: false`, `REPO=docs` (six Markdown files). The thing that
+ran is a **70-line Python stand-in** in a scratch folder — same endpoint, same wire format, same
+tool bodies, no `code/` folder. Every number below is a real run of that stand-in. **Rerun all
+of them once `chapters/05-the-loop/code/` is written.**
+
+- The native `tools` field works on `gemma4:e2b`. `"What files are in this folder?"` with three
+  function schemas came back as `content: ""` plus
+  `tool_calls: [{id: "call_ldu1w03r", function: {name: "list_files", arguments: {"path": "."}}}]`.
+  `arguments` is an **object**, not a string of JSON. `eval_count` 14.
+- Cold: `total_duration` 4.00 s, of which `load_duration` 3.64 s. Warm, same call: 0.23 s,
+  `prompt_eval_cached_count` 186 of 187.
+- **`stream: true` with tools: the `tool_calls` array arrives whole, in one JSON Lines line.**
+  It is not split across chunks the way `content` is. So `HandleStream` keeps what it is given.
+- Four questions through the loop, warm:
+  `What files are in this folder?` → `list_files` → answer. **2 steps, 1.12 s.**
+  `Find every line that contains the word quantisation.` → `search_text` → answer.
+  **2 steps, 1.21 s.**
+  `Which file explains how we write diagrams, and what does it say about them?` →
+  `list_files` → `read_file STYLE.md` → answer. **3 steps, 1.91 s.** Rerun a minute later:
+  **6.20 s** and a different third sentence. Same input, different cost — that is the loop.
+  `Read every file in this folder and tell me what the whole repo is about.` →
+  `list_files` → `read_file` ×3 → answer. **5 steps, 11.84 s.**
+- **Message count, measured.** The 3-step run ended with **7 messages**:
+  `system, user, assistant, tool, assistant, tool, assistant`. Two to start, two per tool step,
+  one for the answer. This is the table in chapter 05's `BASICS.md`.
+- **One prompt line was worth more than the whole `tools` field.** With a prompt that named the
+  tools but not the root, `What files are in this folder?` called **nothing** and answered
+  `Please tell me the folder you are referring to.` in 0.33 s. Adding *"The folder you read is
+  the repo root. Its path is `.`. If the question names no folder or file, start at `.`."*
+  made the same question call `list_files {"path": "."}`. Nothing about the schemas changed.
+- **The loop is persistent, not clever.** `Which file sets the HTTP timeout?` →
+  `list_files` → `read_file SETUP.md` → answered about RAM loading times. **3 steps, 3.60 s.**
+  `search_text` was available and it did not use it. Chapter 04 hit the same question and had
+  to answer from a bare listing, so the loop changed the shape of the failure, not the answer.
+- **The "model does not support tools" error could not be produced.** All six models installed
+  here list `tools` under Capabilities: `gemma4:e2b`, `gemma4:e4b`, `gemma4:26b`,
+  `Qwen3.5:4b`, `phi4-mini:3.8b`, `qwen2.5:3b`. `ollama show gemma4:e2b | grep -i capabilities
+  -A 5` prints `completion vision audio tools thinking`. That row in chapter 05's
+  "When it breaks" is marked *(expected, not yet seen)*.
+- Not run: anything in `chapters/05-the-loop/code/`, because it does not exist. Not run:
+  `scripts/check.sh`.
+
 
 **2026-10-25, M1 Pro, 32 GB, macOS 27.**
 
@@ -445,9 +489,19 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 | 39 | **The terminal prompt is `You: ` in both stacks.** Chapter 02's TypeScript changes from `you> `. `PLAN.md` says `You:` too. | 2026-10-27 | chapters 01 and 01.A are the two verified runbooks and both print `You: `, so this is the string that costs nothing to keep. Changing them instead would mean re-running two finished chapters and re-doing the by-script check on both. |
 
 | 40 | **Chapter 04's C# is four files, and the send moves into `Helper.Ask`.** `Tools.cs` is new and holds the three functions plus the dispatch `switch`. The `Call` record goes in `ChatProtocol.cs` with the other records. `Helper.cs` gains `Ask(List<Message>)`, which sends once and streams once and returns a `Message` **without** touching the history, and `RepoRoot`, read from a new `REPO` environment variable with `../../../../sample-repo` as the default. Chapter 04 uses **no** `tools` field — the tool list is prose in `prompts/librarian.md` (decision 2). | 2026-10-27 | the chapter sends twice per question, and copying eighteen lines of send into the middle of the loop twice would have pushed `Program.cs` past the point where it reads top to bottom. `Ask` not touching the history is the part that matters: `Program.cs` still shows `messages.Add` four times, so "the list is the memory" stays visible, and chapter 05's loop is then `while` around one call. `REPO` follows the `MODEL` / `PROMPT` pattern from decisions 33 and 23 — `Helper.cs` is the only file that reads the environment — and it is what let this chapter be run and measured honestly while `sample-repo/` is still empty. |
+| 41 | **Chapter 05 ships no step cap.** The loop is `while (true)` around one `Helper.Ask`, and the only way out is a reply with no `tool_calls`. The README says out loud that nothing stops it, in a section called "Nothing stops this loop". The step cap, the timeout and the repeat check all land in chapter 07. | 2026-10-29 | the loop is this chapter's one idea, and a cap is the opposite idea — a rule in your code that overrules the model. Teaching both in one video teaches neither, and it spends chapter 07's first lesson early. Chapter 04 already set this pattern: `read_file("/etc/passwd")` works there, the README is uncomfortable about it out loud, and chapter 07 fixes it. The measured risk is small: the longest run on this machine is 5 steps and 11.84 s. |
+| 42 | **Chapter 05's `prompts/librarian.md` keeps a repo-root line, and the tool list leaves the prompt.** The tools move to the `tools` field, but the prompt gains *"The folder you read is the repo root. Its path is `.`. If the question names no folder or file, start at `.`."* | 2026-10-29 | measured. Without that line the model called no tool at all and asked the human which folder to look in, with a perfect tool schema in front of it. The chapter has a section on it, because "a better field does not replace the prompt" is a lesson a viewer will need in every chapter after this one. |
 
 ## To do
 
+- **Chapter 05 is docs only, and its numbers come from a scratch stand-in.** Nothing in
+  `chapters/05-the-loop/code/` exists. The README, `BASICS.md` and `QA.md` are written and
+  every number in them is from a real run — of a 70-line Python stand-in that is now gone.
+  Rerun all of it against the real `code/` and replace the block quote at the top of the README.
+  Neither script is written.
+- **Chapter 05's C# can start now. Its TypeScript cannot.** It copies chapter 04's `code/csharp/`
+  and changes three of the four files (decision 41). The TypeScript side is blocked behind the
+  same wall as chapters 02 and 04: `main.ts` must split into `helper.ts` + `main.ts` first.
 - Chapter 01 is not `ready` under decision 19. Its docs and scripts match its own code now,
   but nothing after chapter 02 exists to check them against.
 - Runbooks under decision 31: chapter 01 both scripts, and chapter 01.A's `SCRIPT-csharp.md`
