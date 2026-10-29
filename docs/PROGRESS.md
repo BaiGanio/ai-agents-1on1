@@ -13,7 +13,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 01.A | thinking | ✅ | ✅ *(out of step — reads THINK from the environment)* | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
 | 02 | the prompt | ✅ | ✅ | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
 | 04 | tools by hand | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
-| 05 | the loop | ✅ | — | ✅ *(four files, run against a stand-in folder)* | — | — | — |
+| 05 | the loop | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 06 | memory | — | — | — | — | — | — |
 | 07 | guardrails | — | — | — | — | — | — |
 | 08 | workflows | — | — | — | — | — | — |
@@ -71,8 +71,24 @@ Markdown files). Every time below includes about half a second of `dotnet run`.
   Ollama sends `tool_calls`, so without `[property: JsonPropertyName("tool_calls")]` the field
   is `null` on every reply, every reply looks like a plain answer, and the loop never runs once.
   No error, no warning.
+- **`SCRIPT-csharp.md` written, 27 steps in 7 acts, and checked by script.** All **19** code
+  blocks are verbatim in the file they name, at the lines the step heading claims, in file
+  order. The check found one real drift while writing it: step 13's range was 62-68 and the
+  block is 62-69, because it carries the opening brace. `scripts/check-script.py` also passes
+  on chapter 04's script.
+- **Act 0's proof is chapter 04 failing on camera, and it is better than planned.** Asked
+  `Which file sets the HTTP timeout?`, chapter 04's code lists the folder, hands over the six
+  names, and the model's **next reply is another tool call** —
+  `{"tool": "read_file", "path": "SETUP.md"}` — which chapter 04 prints as if it were prose and
+  then returns to the `You:` prompt. The ceiling is visible: the model's last words are a
+  request nobody answered. Real run, this machine.
+- The two curl commands in Act 1 were both run. The second one sends `role: "tool"` with no
+  `tool_name` and no `id` on the assistant's `tool_calls`, and the answer is correct — which is
+  what the `Id` comment in `ChatProtocol.cs` rests on. The model also said *"five files"* and
+  then listed six, which is now a line in the script.
+
 - Not run: `scripts/check.sh`, and anything in `chapters/05-the-loop/code/ts/`, which does not
-  exist. No camera script exists for this chapter, so no by-script check (decision 38) was done.
+  exist. Not run: the TypeScript side, which does not exist.
 
 **2026-10-29, M1 Pro, 32 GB, macOS 27. Chapter 05 measured before any `code/` exists.**
 **Superseded by the real C# run below it — kept because the two agree, which is the point.**
@@ -544,14 +560,19 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 | 42 | **Chapter 05's `prompts/librarian.md` keeps a repo-root line, and the tool list leaves the prompt.** The tools move to the `tools` field, but the prompt gains *"The folder you read is the repo root. Its path is `.`. If the question names no folder or file, start at `.`."* | 2026-10-29 | measured. Without that line the model called no tool at all and asked the human which folder to look in, with a perfect tool schema in front of it. The chapter has a section on it, because "a better field does not replace the prompt" is a lesson a viewer will need in every chapter after this one. |
 | 43 | **Chapter 05's tool list lives in `Tools.cs`, as `Tools.Schemas`, and `Helper.Ask` sends it on every request.** The `Tool`, `ToolFunction`, `ToolParameters` and `ToolProperty` records are in `ChatProtocol.cs` with the rest of the wire format. The tool descriptions leave `prompts/librarian.md` entirely; that file keeps only the persona, the repo-root line and the three-sentence rule. Chapter 05 stays at **four** files — no fifth file is added. | 2026-10-29 | the schema and the function are two halves of one tool, and chapter 04 kept them in two different folders where nothing checked one against the other. Side by side, a tool the model cannot see is a tool you forgot to list ten lines above its body, and "Try it yourself" number 1 is then two edits in one file instead of two edits in two. `Helper.cs` was the other candidate and it is the wrong one — that file is HTTP plumbing, not a description of what the agent can do. Measured cost: `Tools.cs` 107 lines, `Helper.cs` 137, both far from the 200-line limit (decision 34). |
 | 44 | **`Message` gains `ToolCalls` with `[property: JsonPropertyName("tool_calls")]`, and no `tool_name` field.** `Ask` returns the calls on the message it already returns, and sends `null` rather than an empty list so a plain answer carries no `tool_calls` key at all. The tool result goes back as `new Message("tool", result)`. | 2026-10-29 | the attribute is not style, it is the chapter's silent bug: the camelCase policy from decision 37 turns `ToolCalls` into `toolCalls`, Ollama sends `tool_calls`, so without it the field is `null` on every reply, every reply looks like a plain answer, and the loop never runs — with no error and no warning. It is now a "When it breaks" row and a `QA.md` question. `null` over an empty list is the same `WhenWritingNull` lesson chapter 01.A already taught with `think`. No `tool_name` because it was checked by curl and Ollama answers correctly without it, so `Message` stays at four fields. |
+| 45 | **The by-script check lives in `scripts/check-script.py`.** It takes a camera script path, finds every code block that follows a `**Lines A-B**` heading, and checks the block is verbatim in one of the chapter's `code/` files at exactly those lines, and that the blocks for one file run down it in order. It is listed in `scripts/README.md`. Closes the open item from decision 38. | 2026-10-29 | the check was done by hand once and by a scratch script twice, and the scratch script was lost in between — the To do item asking where it belongs had been open since 2026-10-27. It is not a test of behaviour, so decision 6 does not reach it: it checks the docs against the code, which is the one thing a human cannot do reliably. It earned its place the first time it ran, by catching a step whose line range was off by one because the block carried a closing brace. |
 
 ## To do
 
-- **Chapter 05's C# is written and run. Its TypeScript is not, and neither script exists.**
-  Every number in its README, `BASICS.md` and `QA.md` now comes from the real `code/csharp/`.
-  `code/ts/` is blocked behind the same wall as chapters 02 and 04: `main.ts` must split into
-  `helper.ts` + `main.ts` first, and chapter 04's TypeScript has to exist before 05 can copy it.
-  `SCRIPT-csharp.md` can be written now — the code is final and the runs are recorded above.
+- **Chapter 05's C# is done: code, docs and a verified runbook.** Its TypeScript is not, and
+  `SCRIPT-ts.md` does not exist. `code/ts/` is blocked behind the same wall as chapters 02 and
+  04: `main.ts` must split into `helper.ts` + `main.ts` first, and chapter 04's TypeScript has
+  to exist before 05 can copy it.
+- **Chapter 05 is the first chapter whose script was checked by `scripts/check-script.py`
+  (decision 45).** Run it on chapters 01, 01.A, 02 and 04 and fix what it finds. Chapter 04's
+  passes already. Chapters 01 and 01.A still carry "Already there — do not type it" blocks,
+  which decision 38 exempts — the script will flag nothing, because those blocks are verbatim
+  too, but their chapters are still in the old shape.
 - **Chapters 04 and 05 both read a stand-in folder.** Every example in both chapters points
   `REPO` at this repo's own `docs/`. Rerun them against `sample-repo/` once it exists, and drop
   the second paragraph of each chapter's opening block quote. This is step 3 in `PLAN.md`
@@ -561,9 +582,10 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
   whether the filter belongs there or in chapter 07.
 - Chapter 01 is not `ready` under decision 19. Its docs and scripts match its own code now,
   but nothing after chapter 02 exists to check them against.
-- Runbooks under decision 31: chapter 01 both scripts, and chapter 01.A's `SCRIPT-csharp.md`
-  (reworked for the three-file shape, decision 37, and re-verified). Still prose in the old
-  Goal / Why / Do / Proof shape: chapter 01.A's `SCRIPT-ts.md`, and both of chapter 02's.
+- Runbooks under decision 31: chapter 01 both scripts, chapter 01.A's `SCRIPT-csharp.md`
+  (reworked for the three-file shape, decision 37, and re-verified), and chapters 04 and 05's
+  `SCRIPT-csharp.md`. Still prose in the old Goal / Why / Do / Proof shape: chapter 01.A's
+  `SCRIPT-ts.md`, and both of chapter 02's.
   Rewrite them before any recording, or the chapters do not read alike.
 - **Decisions 33, 36 and 37 are carried to chapter 01.A, not past it.** Chapter 01.A's C# code,
   README, `BASICS.md`, `QA.md` and `SCRIPT-csharp.md` are reworked, run and verified. Still
@@ -576,11 +598,6 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
   constant, drop the `argv` path, then rewrite `SCRIPT-ts.md` as a runbook. The same pass
   closes chapter 01.A's TypeScript, which has the same two problems. Chapter 02's README names
   all three gaps in a second table, so the docs are honest until then.
-- **A by-script verifier (decision 38) has no home.** It is a 30-line Python script that takes
-  a script path plus `file:start-end` for each file-bearing block, and checks each block is
-  verbatim and in file order. It was used on chapter 02's `SCRIPT-csharp.md` and it passed, but
-  it lives in a scratch folder and will be gone next session. Ask whether it belongs in
-  `scripts/`.
 - **Chapter 01.A's two stacks now behave differently, and that is a broken rule.** C# flips
   `Helper.Think` in the file (decision 36). TypeScript still reads `THINK=on|off` from the
   environment. The README says so out loud in a block quote, which is honest but not finished.

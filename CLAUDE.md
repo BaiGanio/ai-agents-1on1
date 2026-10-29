@@ -64,6 +64,8 @@ More in `docs/SETUP.md`.
 1. Update the code in both stacks and run both.
 2. Fill the chapter's `README.md`, `BASICS.md`, `QA.md`, and one script per language,
    in the shape `STYLE.md` gives. Add new words to `docs/GLOSSARY.md`.
+   Then run `python3 scripts/check-script.py chapters/NN-name/SCRIPT-csharp.md` — a camera
+   script's code blocks must stay verbatim and at the lines they claim (decision 45).
 3. Update its row in `docs/PROGRESS.md`. Add a row to Decisions for any new choice.
 4. Prefer a letter (`01.A`) to renumbering. A renumber touches the folder, its headings, its
    tag, and every "chapter NN" in
