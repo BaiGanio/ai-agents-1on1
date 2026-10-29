@@ -27,6 +27,7 @@ If a word is missing, add it here before you use it in a chapter.
 | <a id="mlx"></a>**MLX** | Apple's engine for running models on a Mac. Ollama uses it for some models. |
 | <a id="model"></a>**model** | a program that reads text and writes the text most likely to come next |
 | <a id="native-tool-calling"></a>**native tool calling** | you send your tool list as a `tools` field and the call comes back in a `tool_calls` field. No prose, no parse. Needs a model that supports it. Chapter 05. |
+| <a id="notes-file"></a>**notes file** | a plain text file the agent adds a line to, and reads back at the next start. Long memory. Chapter 06. |
 | <a id="ollama"></a>**Ollama** | a runner. It loads a model and gives it an HTTP endpoint on port 11434. |
 | <a id="parameters"></a>**parameters** | the numbers a model learned. "4B" means 4 billion. More is smarter and slower. |
 | <a id="parse"></a>**parse** | turn text into data your code can use. `JSON.parse` in TypeScript, `JsonSerializer` in C#. It throws when the text is not JSON. |
@@ -39,6 +40,7 @@ If a word is missing, add it here before you use it in a chapter.
 | <a id="runner"></a>**runner** | the program that loads a model and answers HTTP calls. Ollama, llama.cpp. |
 | <a id="step"></a>**step** | one turn of [the loop](#loop): one send, and the tool that came back from it. The model decides how many a question takes. Chapter 05. |
 | <a id="streaming"></a>**streaming** | the reply comes word by word, not all at the end |
+| <a id="stub"></a>**stub** | a short line put where a long text was, so the list stays small and still says what was there. Chapter 06. |
 | <a id="system-prompt"></a>**system prompt** | the first message. It says who the agent is and what rules it follows. |
 | <a id="thinking"></a>**thinking** | notes the model writes to itself before it answers. Slower, often better. You can turn it off. Chapter 01.A. |
 | <a id="token"></a>**token** | a piece of a word. Models read and write tokens, not letters. |

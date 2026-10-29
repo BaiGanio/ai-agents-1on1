@@ -14,7 +14,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 02 | the prompt | ✅ | ✅ | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
 | 04 | tools by hand | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 05 | the loop | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
-| 06 | memory | — | — | — | — | — | — |
+| 06 | memory | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(both scripts missing)* | — | — |
 | 07 | guardrails | — | — | — | — | — | — |
 | 08 | workflows | — | — | — | — | — | — |
 | 09 | llama.cpp | — | — | — | — | — | — |
@@ -23,6 +23,47 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 12 | frameworks *(optional)* | — | — | — | — | — | — |
 
 ## Verified on this machine
+
+**2026-10-29, M1 Pro, 32 GB, macOS 27.0.1. Chapter 06's C#, written and run.**
+Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401, `Think = false`, `REPO=../../../../docs`. Times
+include about half a second of `dotnet run`.
+
+- `chapters/06-memory/code/` is a copy of chapter 05's `code/` with four `.cs` files changed and
+  one line added to `prompts/librarian.md`. No new file. `dotnet build` clean, 0 warnings.
+  `ChatProtocol.cs` 55 lines, `Helper.cs` 148, `Program.cs` 97, `Tools.cs` 127. No line over
+  100 columns. **34 new code lines** (253 against 219), against the ~50 guide.
+- **`save_note` needs a prompt line.** By curl, `save_note` in the `tools` field, 3 runs per
+  question, 4 "remember" questions: no prompt line → **0 of 12** calls, and every answer said
+  some form of *"Understood, Lyuben. I will remember that."* With *"When the user asks you to
+  remember something, call save_note with one short sentence."* → **15 of 15**, including
+  *"My name is Lyuben."*. `What files are in this folder?` still called `list_files` 3 of 3
+  both ways. Seen again with the real code: no `notes.md` written.
+- **Where the notes go matters, and only when the `tools` field is sent.** By curl, 5 runs each,
+  `What is my name?`: notes at the end of the system message 0/5, under a `##` heading 1/5,
+  with "they are facts, answer with no tool" 0/5, at the top 5/5, as a second system message
+  5/5. With no `tools` field, the end of the system message was 5/5. The tokens show the note
+  was sent: a 20-line note added the same 323 tokens with and without tools. The first version
+  of the code put them at the end and answered *"I do not have a record of your name."* The
+  code now uses a second system message: 4 of 4 runs answered *"Your name is Lyuben."*
+- **`prompt_eval_count` is the whole prompt, even on a cache hit.** By curl, the same request
+  twice reported 924 and 924. One more turn reported 939.
+- **The drop, measured with a scratch copy that skipped it.** Questions: the diagram question,
+  then `What files are in this folder?`, then `What is a token?`. Same steps both ways.
+  Question 2 starts at **506 tokens with the drop, 2271 without**. Question 3 ends at **812
+  against 2593**. Question 1 peaks at 2209 both ways.
+- **After a drop, the model reads the file again.** `Read GLOSSARY.md and tell me what a token
+  is.`, then `What does that same file say a stub is?` → `read_file GLOSSARY.md` again, 514 →
+  2298 tokens for that step.
+- The README's example, two runs: session one (save the name, the diagram question, the file
+  list) **7.39 s**, tokens 366, 399, 435, 486, 2270, 576, 627. The save answered with no text
+  that time; in the run before it answered *"I have saved that your name is Lyuben."* Session
+  two, `What is my name?` → *"Your name is Lyuben."*, no tool call, 383 tokens, **2.07 s**.
+- Break cases, run in a scratch copy: no `save_note` line → *"Understood, Lyuben. I will
+  remember that for our session."* and no file. No `JsonPropertyName` on `PromptEvalCount` →
+  no count printed, no error.
+- `BASICS.md` errors, run in a scratch project: `FileNotFoundException: Could not find file
+  ...` for a missing file, and `InvalidOperationException: Collection was modified; enumeration
+  operation may not execute.` for a set inside a `foreach`.
 
 **2026-10-29, M1 Pro, 32 GB, macOS 27.0.1. Chapter 05's C#, written and run.**
 Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401, `Think = false`, `REPO=../../../../docs` (six
@@ -561,8 +602,17 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 | 43 | **Chapter 05's tool list lives in `Tools.cs`, as `Tools.Schemas`, and `Helper.Ask` sends it on every request.** The `Tool`, `ToolFunction`, `ToolParameters` and `ToolProperty` records are in `ChatProtocol.cs` with the rest of the wire format. The tool descriptions leave `prompts/librarian.md` entirely; that file keeps only the persona, the repo-root line and the three-sentence rule. Chapter 05 stays at **four** files — no fifth file is added. | 2026-10-29 | the schema and the function are two halves of one tool, and chapter 04 kept them in two different folders where nothing checked one against the other. Side by side, a tool the model cannot see is a tool you forgot to list ten lines above its body, and "Try it yourself" number 1 is then two edits in one file instead of two edits in two. `Helper.cs` was the other candidate and it is the wrong one — that file is HTTP plumbing, not a description of what the agent can do. Measured cost: `Tools.cs` 107 lines, `Helper.cs` 137, both far from the 200-line limit (decision 34). |
 | 44 | **`Message` gains `ToolCalls` with `[property: JsonPropertyName("tool_calls")]`, and no `tool_name` field.** `Ask` returns the calls on the message it already returns, and sends `null` rather than an empty list so a plain answer carries no `tool_calls` key at all. The tool result goes back as `new Message("tool", result)`. | 2026-10-29 | the attribute is not style, it is the chapter's silent bug: the camelCase policy from decision 37 turns `ToolCalls` into `toolCalls`, Ollama sends `tool_calls`, so without it the field is `null` on every reply, every reply looks like a plain answer, and the loop never runs — with no error and no warning. It is now a "When it breaks" row and a `QA.md` question. `null` over an empty list is the same `WhenWritingNull` lesson chapter 01.A already taught with `think`. No `tool_name` because it was checked by curl and Ollama answers correctly without it, so `Message` stays at four fields. |
 | 45 | **The by-script check lives in `scripts/check-script.py`.** It takes a camera script path, finds every code block that follows a `**Lines A-B**` heading, and checks the block is verbatim in one of the chapter's `code/` files at exactly those lines, and that the blocks for one file run down it in order. It is listed in `scripts/README.md`. Closes the open item from decision 38. | 2026-10-29 | the check was done by hand once and by a scratch script twice, and the scratch script was lost in between — the To do item asking where it belongs had been open since 2026-10-27. It is not a test of behaviour, so decision 6 does not reach it: it checks the docs against the code, which is the one thing a human cannot do reliably. It earned its place the first time it ran, by catching a step whose line range was off by one because the block carried a closing brace. |
+| 46 | **Chapter 06's short memory drops every old `tool` result after each answer.** Its `content` becomes `[dropped. Call the tool again to see it.]`. The `assistant` message with the call stays. Nothing is dropped during a question. | 2026-10-29 | measured: the next question starts at 506 tokens, not 2271. Keeping the call keeps the tool message after its call, and the model read the file again when a follow-up needed it. A "last N messages" window was the other choice; it can cut a tool result away from its call and forgets whole questions. |
+| 47 | **Chapter 06's long memory is a fourth tool, `save_note(text)`, plus one prompt line.** `SaveNote` appends `- text` to `NOTES` (default `../notes.md`, next to `prompts/`, outside `REPO`). `chapters/*/code/notes.md` is in `.gitignore`. A `/remember` command that skips the model is "Try it yourself", not chapter code. | 2026-10-29 | measured: the prompt line takes `save_note` from 0 of 12 to 15 of 15. Outside `REPO`, so `list_files` and `search_text` never feed the notes back as repo content. The command would teach "code picks, or the model does", which is chapter 08's idea. |
+| 48 | **The notes go in as a second system message, not at the end of the first.** | 2026-10-29 | measured: with the `tools` field, notes at the end of the system message were used 0 of 5 times, as a second system message 5 of 5. |
+| 49 | **`HandleStream` prints `[N tokens in]` from `prompt_eval_count`.** `ChatResponse` gains `PromptEvalCount` with `JsonPropertyName`. | 2026-10-29 | the drop has to be seen to be taught. The count is honest on a cache hit (924 and 924). |
 
 ## To do
+
+- **Chapter 06's C# code and docs are done. Neither camera script exists.** `SCRIPT-csharp.md`
+  is a stub. Write it as a runbook (decision 31) and run `scripts/check-script.py` on it.
+  `code/ts/` is blocked behind the same `helper.ts` split as chapters 02, 04 and 05.
+- **Chapter 06 reads the stand-in folder too.** Rerun its examples against `sample-repo/`.
 
 - **Chapter 05's C# is done: code, docs and a verified runbook.** Its TypeScript is not, and
   `SCRIPT-ts.md` does not exist. `code/ts/` is blocked behind the same wall as chapters 02 and

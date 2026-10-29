@@ -13,3 +13,6 @@ obj/
 
 # local settings
 .env
+
+# Chapter 06 and later: the agent's own notes, written at run time
+chapters/*/code/notes.md
