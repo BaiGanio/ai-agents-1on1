@@ -115,12 +115,16 @@ for (const call of reply.tool_calls ?? []) {
 ```
 
 ```csharp
-foreach (ToolCall call in reply.ToolCalls ?? [])
+foreach (ToolCall call in reply.ToolCalls)
 {
     string result = Tools.Run(call);
     messages.Add(new("tool", result));
 }
 ```
+
+No `?? []` is needed in the C#, because the `break` above it already ran if the list was null
+or empty. That is the shape in [`Program.cs`](code/csharp/Program.cs) — read the check and the
+loop together.
 
 If you write `reply.tool_calls[0]` and ignore the rest, the day a model asks for two tools your
 agent answers half the question and you will not know why.
@@ -130,6 +134,10 @@ of JSON that you have to parse a second time. Ollama does not — the keys are a
 with the names you put in your [tool schema](../../docs/GLOSSARY.md#tool-schema). Checked on a
 real reply.
 
+In C# that means they arrive on a typed record, `ToolArguments(string? Path, string? Query)`,
+and every field is nullable for the same reason as chapter 04: `list_files` sends a path and no
+query, and `search_text` sends the other one.
+
 ---
 
 ## Check yourself
@@ -137,6 +145,7 @@ real reply.
 Before the video:
 
 - [ ] you can write a `while` that ends because of something the body returned, not a count
-- [ ] you can say how many messages a 2-step answer leaves in the list *(the answer is 5)*
+- [ ] you can say how many messages a 2-step answer leaves in the list *(the answer is 5, and
+      it was measured)*
 - [ ] you can say why the `assistant` message has to go in the list before the `tool` message
 - [ ] you can say what happens if a model asks for two tools and you only run the first

@@ -13,7 +13,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 01.A | thinking | ✅ | ✅ *(out of step — reads THINK from the environment)* | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
 | 02 | the prompt | ✅ | ✅ | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
 | 04 | tools by hand | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
-| 05 | the loop | ✅ *(docs only — numbers from a scratch stand-in, not from `code/`)* | — | — | — | — | — |
+| 05 | the loop | ✅ | — | ✅ *(four files, run against a stand-in folder)* | — | — | — |
 | 06 | memory | — | — | — | — | — | — |
 | 07 | guardrails | — | — | — | — | — | — |
 | 08 | workflows | — | — | — | — | — | — |
@@ -24,7 +24,58 @@ One row per chapter. Update it when a state changes. This is the first file to o
 
 ## Verified on this machine
 
+**2026-10-29, M1 Pro, 32 GB, macOS 27.0.1. Chapter 05's C#, written and run.**
+Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401, `Think = false`, `REPO=../../../../docs` (six
+Markdown files). Every time below includes about half a second of `dotnet run`.
+
+- `chapters/05-the-loop/code/` is a copy of chapter 04's `code/` with four `.cs` files changed
+  and `prompts/librarian.md` rewritten. No new file. `dotnet build` clean, 0 warnings, 1.67 s.
+- `ChatProtocol.cs` 49 lines, `Helper.cs` 137, `Program.cs` 80, `Tools.cs` 107. All well under
+  the 200-line limit. No line in any of the four is over 100 columns.
+- **54 new code lines** (blank and comment lines not counted): 219 against chapter 04's 165.
+  Against the ~60 guide in `PLAN.md` — under it, for the first time in this course.
+- **`Program.cs` is 33 code lines in both chapters.** The parse and its `catch` left, a `while`
+  and a `foreach` arrived. The chapter that makes this an agent does not make the file bigger.
+- Four questions, warm:
+  `What files are in this folder?` → `list_files .` → answer. **2 steps, 2.69 s, 5 messages.**
+  `Find every line that contains the word quantisation.` → `search_text quantisation` → answer.
+  **2 steps, 2.90 s.**
+  `Which file explains how we write diagrams, and what does it say about them?` →
+  `list_files .` → `read_file STYLE.md` → answer. **3 steps, 2.47 s and 2.76 s on two runs,
+  7 messages.** A third run opened `GLOSSARY.md` instead and answered from that.
+  `Read every file in this folder and tell me what the whole repo is about.` →
+  `list_files .` → `read_file` ×3 (`GLOSSARY.md`, `MODELS.md`, `PLAN.md`) → answer.
+  **5 steps, 13.30 s.**
+- **Message count, measured in the code with a temporary line, then removed.** 3 steps → **7
+  messages**: `system, user, assistant, tool, assistant, tool, assistant`. 2 steps → **5**.
+  Two to start, two per tool step, one for the answer. This is the table in `BASICS.md`, and
+  "Try it yourself" number 2 asks the viewer to add that line themselves.
+- **A `tool` message needs no `tool_name` field.** Checked by curl: `role: "tool"` plus
+  `content` alone, with the assistant's own `tool_calls` message in front of it, gets a correct
+  answer. So `Message` keeps four fields and does not grow a fifth.
+- **The prompt finding holds against the real code.** With a prompt that named no repo root,
+  `What files are in this folder?` called **nothing** and answered `Please tell me the folder
+  you are referring to.` in 1.47 s, three messages. Word for word what the Python stand-in got.
+  Adding the repo-root line made the same question call `list_files .`. Decision 42.
+- **The loop is persistent, not clever.** `Which file sets the HTTP timeout?` → `list_files .`
+  → `read_file STYLE.md` → *"The file `STYLE.md` discusses the writing style for the
+  documentation, but it does not specify the HTTP timeout. I do not see any other files that
+  seem relevant to network configurations."* **3 steps, 2.82 s.** `search_text` was available
+  and it did not use it. Better than the stand-in run, which answered confidently and wrongly
+  from `SETUP.md` — and better than chapter 04, which had to guess from a bare listing.
+- **Two real bugs, both now rows in "When it breaks".**
+  `error CS0136: A local or parameter named 'args' cannot be declared in this scope` — a
+  top-level program has an implicit `args`, so the local that holds the tool arguments is
+  called `sent`.
+  And the one that costs an afternoon: the camelCase policy turns `ToolCalls` into `toolCalls`,
+  Ollama sends `tool_calls`, so without `[property: JsonPropertyName("tool_calls")]` the field
+  is `null` on every reply, every reply looks like a plain answer, and the loop never runs once.
+  No error, no warning.
+- Not run: `scripts/check.sh`, and anything in `chapters/05-the-loop/code/ts/`, which does not
+  exist. No camera script exists for this chapter, so no by-script check (decision 38) was done.
+
 **2026-10-29, M1 Pro, 32 GB, macOS 27. Chapter 05 measured before any `code/` exists.**
+**Superseded by the real C# run below it — kept because the two agree, which is the point.**
 Ollama 0.40.6, `gemma4:e2b`, `think: false`, `REPO=docs` (six Markdown files). The thing that
 ran is a **70-line Python stand-in** in a scratch folder — same endpoint, same wire format, same
 tool bodies, no `code/` folder. Every number below is a real run of that stand-in. **Rerun all
@@ -491,17 +542,23 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 | 40 | **Chapter 04's C# is four files, and the send moves into `Helper.Ask`.** `Tools.cs` is new and holds the three functions plus the dispatch `switch`. The `Call` record goes in `ChatProtocol.cs` with the other records. `Helper.cs` gains `Ask(List<Message>)`, which sends once and streams once and returns a `Message` **without** touching the history, and `RepoRoot`, read from a new `REPO` environment variable with `../../../../sample-repo` as the default. Chapter 04 uses **no** `tools` field — the tool list is prose in `prompts/librarian.md` (decision 2). | 2026-10-27 | the chapter sends twice per question, and copying eighteen lines of send into the middle of the loop twice would have pushed `Program.cs` past the point where it reads top to bottom. `Ask` not touching the history is the part that matters: `Program.cs` still shows `messages.Add` four times, so "the list is the memory" stays visible, and chapter 05's loop is then `while` around one call. `REPO` follows the `MODEL` / `PROMPT` pattern from decisions 33 and 23 — `Helper.cs` is the only file that reads the environment — and it is what let this chapter be run and measured honestly while `sample-repo/` is still empty. |
 | 41 | **Chapter 05 ships no step cap.** The loop is `while (true)` around one `Helper.Ask`, and the only way out is a reply with no `tool_calls`. The README says out loud that nothing stops it, in a section called "Nothing stops this loop". The step cap, the timeout and the repeat check all land in chapter 07. | 2026-10-29 | the loop is this chapter's one idea, and a cap is the opposite idea — a rule in your code that overrules the model. Teaching both in one video teaches neither, and it spends chapter 07's first lesson early. Chapter 04 already set this pattern: `read_file("/etc/passwd")` works there, the README is uncomfortable about it out loud, and chapter 07 fixes it. The measured risk is small: the longest run on this machine is 5 steps and 11.84 s. |
 | 42 | **Chapter 05's `prompts/librarian.md` keeps a repo-root line, and the tool list leaves the prompt.** The tools move to the `tools` field, but the prompt gains *"The folder you read is the repo root. Its path is `.`. If the question names no folder or file, start at `.`."* | 2026-10-29 | measured. Without that line the model called no tool at all and asked the human which folder to look in, with a perfect tool schema in front of it. The chapter has a section on it, because "a better field does not replace the prompt" is a lesson a viewer will need in every chapter after this one. |
+| 43 | **Chapter 05's tool list lives in `Tools.cs`, as `Tools.Schemas`, and `Helper.Ask` sends it on every request.** The `Tool`, `ToolFunction`, `ToolParameters` and `ToolProperty` records are in `ChatProtocol.cs` with the rest of the wire format. The tool descriptions leave `prompts/librarian.md` entirely; that file keeps only the persona, the repo-root line and the three-sentence rule. Chapter 05 stays at **four** files — no fifth file is added. | 2026-10-29 | the schema and the function are two halves of one tool, and chapter 04 kept them in two different folders where nothing checked one against the other. Side by side, a tool the model cannot see is a tool you forgot to list ten lines above its body, and "Try it yourself" number 1 is then two edits in one file instead of two edits in two. `Helper.cs` was the other candidate and it is the wrong one — that file is HTTP plumbing, not a description of what the agent can do. Measured cost: `Tools.cs` 107 lines, `Helper.cs` 137, both far from the 200-line limit (decision 34). |
+| 44 | **`Message` gains `ToolCalls` with `[property: JsonPropertyName("tool_calls")]`, and no `tool_name` field.** `Ask` returns the calls on the message it already returns, and sends `null` rather than an empty list so a plain answer carries no `tool_calls` key at all. The tool result goes back as `new Message("tool", result)`. | 2026-10-29 | the attribute is not style, it is the chapter's silent bug: the camelCase policy from decision 37 turns `ToolCalls` into `toolCalls`, Ollama sends `tool_calls`, so without it the field is `null` on every reply, every reply looks like a plain answer, and the loop never runs — with no error and no warning. It is now a "When it breaks" row and a `QA.md` question. `null` over an empty list is the same `WhenWritingNull` lesson chapter 01.A already taught with `think`. No `tool_name` because it was checked by curl and Ollama answers correctly without it, so `Message` stays at four fields. |
 
 ## To do
 
-- **Chapter 05 is docs only, and its numbers come from a scratch stand-in.** Nothing in
-  `chapters/05-the-loop/code/` exists. The README, `BASICS.md` and `QA.md` are written and
-  every number in them is from a real run — of a 70-line Python stand-in that is now gone.
-  Rerun all of it against the real `code/` and replace the block quote at the top of the README.
-  Neither script is written.
-- **Chapter 05's C# can start now. Its TypeScript cannot.** It copies chapter 04's `code/csharp/`
-  and changes three of the four files (decision 41). The TypeScript side is blocked behind the
-  same wall as chapters 02 and 04: `main.ts` must split into `helper.ts` + `main.ts` first.
+- **Chapter 05's C# is written and run. Its TypeScript is not, and neither script exists.**
+  Every number in its README, `BASICS.md` and `QA.md` now comes from the real `code/csharp/`.
+  `code/ts/` is blocked behind the same wall as chapters 02 and 04: `main.ts` must split into
+  `helper.ts` + `main.ts` first, and chapter 04's TypeScript has to exist before 05 can copy it.
+  `SCRIPT-csharp.md` can be written now — the code is final and the runs are recorded above.
+- **Chapters 04 and 05 both read a stand-in folder.** Every example in both chapters points
+  `REPO` at this repo's own `docs/`. Rerun them against `sample-repo/` once it exists, and drop
+  the second paragraph of each chapter's opening block quote. This is step 3 in `PLAN.md`
+  "Order of work" and it is now blocking two chapters, not one.
+- **Chapter 05's tools still have no filter, same as chapter 04.** `ListFiles` and `SearchText`
+  walk every file under `REPO`, `bin/` and `obj/` included. Decide once, for both chapters,
+  whether the filter belongs there or in chapter 07.
 - Chapter 01 is not `ready` under decision 19. Its docs and scripts match its own code now,
   but nothing after chapter 02 exists to check them against.
 - Runbooks under decision 31: chapter 01 both scripts, and chapter 01.A's `SCRIPT-csharp.md`

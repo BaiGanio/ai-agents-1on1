@@ -24,9 +24,9 @@ lines.
 
 The model. Not you.
 
-`What files are in this folder?` took 2 steps. `Read every file in this folder and tell me what
-the whole repo is about.` took 5, and 11.84 seconds. Your code is identical in both. You wrote
-`while` — you did not write "two" or "five".
+`What files are in this folder?` took 2 steps and 2.69 s. `Read every file in this folder and
+tell me what the whole repo is about.` took 5 steps and 13.30 s. Your code is identical in both.
+You wrote `while` — you did not write "two" or "five".
 
 This is the thing that makes an agent feel different from a program, and it is also the thing
 that makes it hard to budget, hard to test and hard to bill for. Hold on to that feeling until
@@ -43,7 +43,8 @@ A parse, and the error path around it.
 Chapter 04 asked for JSON in prose, so the reply was text that you had to `JSON.parse` inside a
 `try`, with a `catch` for "that was prose, not a call" and a fence to strip when the model got
 helpful. Chapter 05 sends the tool list as data, and the call comes back in a `tool_calls`
-field. The `if` becomes `tool_calls.Count > 0`. The `try` is deleted.
+field. The `if` becomes `reply.ToolCalls is null or { Count: 0 }`. The `try` is deleted, and
+`Program.cs` is no bigger than it was: 33 code lines in both chapters.
 
 What it does **not** save you: checking that the values make sense. The runner guarantees the
 shape, never the content. A `path` of `../../../.ssh/id_rsa` is a perfectly valid string.
@@ -102,9 +103,9 @@ Whose fault is that?
 The prompt's. This really happened while the chapter was measured.
 
 The tool list was correct. The schema was correct. The model answered `Please tell me the
-folder you are referring to.` and called nothing, because no one had told it that the root is
-called `.`. One line in `prompts/librarian.md` fixed it, and the next run called
-`list_files {"path": "."}`.
+folder you are referring to.` in 1.47 s and called nothing, because no one had told it that the
+root is called `.`. Three messages in the list, zero tool calls. One line in
+`prompts/librarian.md` fixed it, and the next run called `list_files .`.
 
 The lesson: the `tools` field tells the model what it **may** do. The prompt tells it what it
 **should** do. A better field never replaces chapter 02.
@@ -155,27 +156,51 @@ That is why the by-hand chapter comes first. Not as a warm-up. As the version th
 
 <details><summary>A</summary>
 
-No. Asked `Which file sets the HTTP timeout?` it listed the folder, read `SETUP.md`, and
-answered about RAM. 3 steps, 3.60 s, all working as built.
+No. Asked `Which file sets the HTTP timeout?` it listed the folder, read `STYLE.md` — a file
+about writing style — and then said *"it does not specify the HTTP timeout"*. 3 steps, 2.82 s,
+all working as built.
 
 A loop makes an agent **persistent**, not clever. It gets more turns to look things up. It does
 not get better judgement about which file to open. More steps make a bad guess slower, not
 righter.
 
 What helps: a bigger model (`gemma4:e4b`), or a better prompt, or a tool that fits the question
-— `search_text` was right there and it did not use it.
+— `search_text` was right there and it did not use it. Give it credit for one thing, though:
+it did not invent an answer. Chapter 04, asked the same question, had six file names and had to
+guess from them.
 
 </details>
 
-**Q12.** `Tools.cs` did not change at all in this chapter. Why not?
+**Q12.** The three tool bodies did not change by one character. Why not?
 
 <details><summary>A</summary>
 
-Because nothing in it ever knew a model existed. It is three functions that take a string and
-return a string.
+Because none of them ever knew a model existed. `ListFiles`, `ReadFile` and `SearchText` take a
+string and return a string. The whole change in this chapter is *how the model asks*, which is
+wire format, so it lands in `ChatProtocol.cs`, `Helper.cs` and `Program.cs`.
 
-The whole change in this chapter is *how the model asks*. That is wire format, so it lands in
-`ChatProtocol.cs`, `Helper.cs` and `Program.cs`. A file that holds no model knowledge needs no
-edit when the model's manners change — which is the reason it is its own file.
+`Tools.cs` as a file does change, twice. The dispatch takes the new record. And the tool list —
+`Schemas` — moves **into** it, out of `prompts/librarian.md`.
+
+That second one is worth a minute. In chapter 04 a tool was described in one folder and
+implemented in another, so adding a fourth meant two edits that nothing checked against each
+other. Now both halves sit in one file. A tool the model cannot see is a tool you forgot to
+list, ten lines above the function.
+
+</details>
+
+**Q13.** Your agent compiles, runs, and never calls a tool. Where do you look first?
+
+<details><summary>A</summary>
+
+At the field name. In C# this is the bug you will actually hit.
+
+`Helper.cs` sets `PropertyNamingPolicy = JsonNamingPolicy.CamelCase`, which is right for every
+other field in this course. It turns `ToolCalls` into `toolCalls`. Ollama sends `tool_calls`.
+Nothing matches, so the property is `null` on every reply, every reply looks like a plain
+answer, and the loop never goes round once.
+
+The fix is `[property: JsonPropertyName("tool_calls")]` in `ChatProtocol.cs`. No error, no
+warning, no exception — which is exactly why it is worth knowing about before it happens.
 
 </details>
