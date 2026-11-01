@@ -58,7 +58,7 @@ never on lines.
 | 05 | `the-loop` | the native `tools` field, and the while-loop. Now it is an agent. | ~60 lines | 15 |
 | 06 | `memory` | short memory (the message list) and long memory (a notes file) | ~50 lines | 15 |
 | 06.A | `writing` | three tools that change files: write, append, delete. No guards yet. | ~40 lines | 12 |
-| 07 | `guardrails` | step cap, timeout, path allow-list, ask before you write or delete | ~60 lines | 15 |
+| 07 | `guardrails` | step cap, timeout, repeat check, path allow-list, ask before you write or delete | ~60 lines | 15 |
 | 08 | `workflows` | agentic workflows: chain, router, checker. Code picks the path, or the model does. | ~60 lines | 15 |
 | 09 | `llama-cpp` | swap the runner. Flags, quantisation, context size. | ~10 lines | 20 |
 | 10 | `choosing-a-model` | five models: file size, RAM per context, speed, vision. Pick one for your machine. | none | 15 |

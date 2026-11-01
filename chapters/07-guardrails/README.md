@@ -9,8 +9,10 @@
 
 ## What we solve
 
-A step cap, a timeout, a path allow-list, and a yes before anything risky. The risky things
-are the three tools from chapter 06.A: `write_file`, `append_file` and `delete_file`.
+Five guards (decision 54). A step cap, a timeout for one whole question, a repeat check, a
+path allow-list, and a yes before anything risky. The risky things are two tools from chapter
+06.A: `write_file` and `delete_file`. `append_file` runs with no ask, because it cannot lose
+text. A path must stay inside `REPO`, and must not be `REPO` itself.
 
 ## Simple example
 
