@@ -15,7 +15,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 04 | tools by hand | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 05 | the loop | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 06 | memory | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
-| 06.A | writing | ⚠️ *(skeleton)* | — | — | — | — | — |
+| 06.A | writing | ⚠️ *(skeleton)* | — | ✅ *(four files, run against a scratch copy of `docs/`)* | — | — | — |
 | 07 | guardrails | — | — | — | — | — | — |
 | 08 | workflows | — | — | — | — | — | — |
 | 09 | llama.cpp | — | — | — | — | — | — |
@@ -24,6 +24,31 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 12 | frameworks *(optional)* | — | — | — | — | — | — |
 
 ## Verified on this machine
+
+**2026-11-01, same machine. Chapter 06.A C# code, written and run.** `gemma4:e2b`, `REPO` set to
+a scratch copy of this repo's `docs/` (never the real one: these tools delete).
+
+- `chapters/06.A-writing/code/` is a copy of chapter 06's. Only `Tools.cs` grows: three
+  schemas, three dispatch arms, three bodies. `Program.cs` and `ChatProtocol.cs` change only in
+  comments. The prompt is unchanged: no prompt line was needed, the model picked the right tool
+  in every run below. Lines: `Tools.cs` **198**, `Helper.cs` 148, `Program.cs` 97,
+  `ChatProtocol.cs` 55. Build clean, no line over 100 columns.
+- Three questions in one run: `Create a file called TODO.md with three short things to do in
+  this repo.` → `[step 1] write_file TODO.md`. `Add the line "- Check the glossary" to the end
+  of TODO.md.` → `[step 1] append_file TODO.md`. `Delete TODO.md.` → `[step 1] delete_file
+  TODO.md`, *"The file `TODO.md` has been deleted."* Whole run 7.6 s. The model did not read
+  any file before it wrote the three to-dos. It made them up ("Implement feature X.").
+- **Bug found and fixed.** The model wrote `TODO.md` with no newline at the end, so the append
+  was glued on: `- Update documentation. - Check the glossary`. `AppendFile` now starts a new
+  line when the file does not end on one. Rerun: the line lands on its own line.
+- `This folder is a mess. Clean it up.` → no tool call. *"Could you please specify what you
+  mean by "clean it up"?"*
+- `Delete every file here except GLOSSARY.md.` → `list_files .`, then six `delete_file` calls,
+  **7 steps** and **3.5 s** for the whole run. Six files gone, no question asked. The longest
+  run in the course so far (chapter 05's was 5 steps).
+- A folder `old/` with `a.md` and `drafts/b.md`. `Delete the old folder.` → no tool call,
+  *"What folder would you like me to delete?"* `Delete the folder named old.` →
+  `[step 1] delete_file old`, and the whole tree is gone.
 
 **2026-10-29, same machine. Chapter 06's C# camera script, every proof run.**
 
@@ -634,9 +659,12 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 
 ## To do
 
-- **Chapter 06.A is a docs skeleton only.** Fill its README, `BASICS.md` and `QA.md` after the
-  code runs. Do not start `code/` until the author says so. Before any run that deletes, make
-  sure `sample-repo/` is committed, so `git restore sample-repo/` brings it back.
+- **`Tools.cs` is at 198 lines in chapter 06.A.** Chapter 07 adds its path check there, so it
+  must pull a part out first (decision 34). Decide where before chapter 07's code.
+- **Chapter 06.A's C# runs. Its TypeScript does not exist**, blocked like chapters 04-06.
+- **Chapter 06.A's docs are a skeleton.** The C# code runs, so fill its README, `BASICS.md`,
+  `QA.md` and `SCRIPT-csharp.md` from the runs above. Before any run that deletes, make sure
+  `sample-repo/` is committed, so `git restore sample-repo/` brings it back.
 
 - **Chapter 06's C# is done: code, docs and a verified runbook.** Its TypeScript is not, and
   `SCRIPT-ts.md` does not exist. `code/ts/` is blocked behind the same `helper.ts` split as
