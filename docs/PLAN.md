@@ -4,7 +4,7 @@ One decision per line. We follow this file. When something changes, we change th
 
 ## What the course is
 
-A YouTube series plus this repo. Thirteen chapters. Most build **one component** of an AI agent.
+A YouTube series plus this repo. Fourteen chapters. Most build **one component** of an AI agent.
 One (08) shows agentic workflows — the topic most job ads now name.
 One (10) puts the models side by side, so a viewer can pick one for their machine.
 Two stacks, same behaviour: **TypeScript** and **C#**. The model runs **on your machine**.
@@ -20,23 +20,28 @@ no database and no domain. Just the agent.
 
 ## The agent we build: Repo Librarian
 
-It reads a folder of code and answers questions about it.
+It reads a folder of code and answers questions about it. From chapter 06.A on, it also keeps
+the docs in that folder: it writes, appends and deletes (decision 51).
 
-Three tools, and that is all:
+Seven tools, and that is all. Each chapter adds the ones in its row:
 
-| Tool | What it does |
-|---|---|
-| `list_files(path)` | names the files in a folder |
-| `read_file(path)` | gives back the text of one file |
-| `search_text(query)` | finds the lines that contain some text |
+| Chapter | Tool | What it does |
+|---|---|---|
+| 04 | `list_files(path)` | names the files in a folder |
+| 04 | `read_file(path)` | gives back the text of one file |
+| 04 | `search_text(query)` | finds the lines that contain some text |
+| 06 | `save_note(text)` | adds one line to `notes.md`, outside the folder |
+| 06.A | `write_file(path, text)` | makes a file, or replaces all of its text |
+| 06.A | `append_file(path, text)` | adds text to the end of a file |
+| 06.A | `delete_file(path)` | deletes a file, or a folder and everything in it |
 
 Why this one. No API key. No network. No fake server. It works offline, like the model does.
 Every viewer has a folder of files. The tools are 10 lines each in both languages.
 
-## The thirteen chapters
+## The fourteen chapters
 
 Target: 12-15 minutes per chapter. Two of them may run to 20.
-Chapters 01-08 (and 01.A) are two videos each, one per language (see `STYLE.md`).
+Chapters 01-08 (and 01.A, 06.A) are two videos each, one per language (see `STYLE.md`).
 Minutes below are per video.
 "New code" is the amount you type on camera. It is a guide, not a cap: a chapter may go well
 past it. Two real limits sit on top of it. **No source file goes over 200 lines** — past that,
@@ -52,7 +57,8 @@ never on lines.
 | 04 | `tools-by-hand` | ask for JSON, parse it, run a function. Tool calling is just text. | ~70 lines | 15 |
 | 05 | `the-loop` | the native `tools` field, and the while-loop. Now it is an agent. | ~60 lines | 15 |
 | 06 | `memory` | short memory (the message list) and long memory (a notes file) | ~50 lines | 15 |
-| 07 | `guardrails` | step cap, timeout, path allow-list, ask before you write | ~60 lines | 15 |
+| 06.A | `writing` | three tools that change files: write, append, delete. No guards yet. | ~40 lines | 12 |
+| 07 | `guardrails` | step cap, timeout, path allow-list, ask before you write or delete | ~60 lines | 15 |
 | 08 | `workflows` | agentic workflows: chain, router, checker. Code picks the path, or the model does. | ~60 lines | 15 |
 | 09 | `llama-cpp` | swap the runner. Flags, quantisation, context size. | ~10 lines | 20 |
 | 10 | `choosing-a-model` | five models: file size, RAM per context, speed, vision. Pick one for your machine. | none | 15 |
@@ -71,6 +77,12 @@ the docs and the code. The gap is cheaper than the churn.
 
 So the window onto the agent is the terminal. Every chapter from 04 on prints its tool calls
 there, in the same `You:` loop the viewer already knows from chapter 01.
+
+Chapter 06.A comes right before guardrails on purpose. It gives the agent tools that can do
+damage, inside `REPO`, with nothing to stop them. The README says so out loud. Chapter 07 then
+has something real to guard: "ask before you write" needs a tool that writes. Chapter 04 set the
+same pattern with `read_file("/etc/passwd")`. It is 06.A, not 07, so the chapters after it keep
+their numbers.
 
 Chapter 08 comes after guardrails on purpose. A workflow runs several model calls, so each one
 needs the step cap and timeout from 07. It reuses the Librarian's tools — no new domain.

@@ -3,7 +3,7 @@
 Build an AI agent from nothing. No framework. No cloud. No API key.
 The model runs on your laptop. You write about 300 lines of code, in **TypeScript** and in **C#**.
 
-Thirteen chapters. Most build one part of the agent, in two short videos: one TypeScript, one
+Fourteen chapters. Most build one part of the agent, in two short videos: one TypeScript, one
 C#. Watch the language you use. One shows agentic workflows: when your code should pick the
 path, and when the model should.
 
@@ -31,7 +31,8 @@ when to use which.
 ## What we build: the Repo Librarian
 
 An agent that reads a folder of code and answers questions about it.
-Three tools: `list_files`, `read_file`, `search_text`.
+Three tools read: `list_files`, `read_file`, `search_text`. One saves a note: `save_note`.
+Three change files: `write_file`, `append_file`, `delete_file`.
 
 ```
 you  > Which file starts the HTTP server?
@@ -64,6 +65,7 @@ code is the one before it plus what the chapter adds.
 | 04 | [tools by hand](chapters/04-tools-by-hand/) | a tool call is just the model writing JSON |
 | 05 | [the loop](chapters/05-the-loop/) | the while-loop that makes it an agent |
 | 06 | [memory](chapters/06-memory/) | what to keep, what to drop, what to save |
+| 06.A | [writing](chapters/06.A-writing/) | the agent writes, appends and deletes. Nothing stops it yet. |
 | 07 | [guardrails](chapters/07-guardrails/) | stop it looping forever or doing damage |
 | 08 | [workflows](chapters/08-workflows/) | agentic workflows: chain, router, checker. Workflow or agent? |
 | 09 | [llama.cpp](chapters/09-llama-cpp/) | swap the runner and tune it |

@@ -9,7 +9,8 @@
 
 ## What we solve
 
-A step cap, a timeout, a path allow-list, and a yes before anything risky.
+A step cap, a timeout, a path allow-list, and a yes before anything risky. The risky things
+are the three tools from chapter 06.A: `write_file`, `append_file` and `delete_file`.
 
 ## Simple example
 

@@ -15,6 +15,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 04 | tools by hand | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 05 | the loop | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 06 | memory | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
+| 06.A | writing | ⚠️ *(skeleton)* | — | — | — | — | — |
 | 07 | guardrails | — | — | — | — | — | — |
 | 08 | workflows | — | — | — | — | — | — |
 | 09 | llama.cpp | — | — | — | — | — | — |
@@ -629,8 +630,13 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 | 48 | **The notes go in as a second system message, not at the end of the first.** | 2026-10-29 | measured: with the `tools` field, notes at the end of the system message were used 0 of 5 times, as a second system message 5 of 5. |
 | 49 | **`HandleStream` prints `[N tokens in]` from `prompt_eval_count`.** `ChatResponse` gains `PromptEvalCount` with `JsonPropertyName`. | 2026-10-29 | the drop has to be seen to be taught. The count is honest on a cache hit (924 and 924). |
 | 50 | **Chapter 06's `ChatResponse` record sits at the bottom of `ChatProtocol.cs`**, with the other shapes that come back. The C# video teaches long memory first, then short memory. | 2026-10-29 | the by-script check wants each file typed top to bottom. `Program.cs` reads the notes near the top and drops tool results near the bottom, so long memory goes first. In `ChatProtocol.cs` the `Text` field is long memory and the count is short memory, so the count's record has to sit below `ToolArguments`. |
+| 51 | **Chapter 06.A, `writing`, sits between memory and guardrails.** It adds three tools: `write_file(path, text)`, `append_file(path, text)` and `delete_file(path)`. They act inside `REPO`, the same folder the agent reads. `delete_file` deletes a file, or a folder and everything in it. 06.A has **no guards**. Chapter 07 adds them, and its "ask before you write" now covers delete too. The Librarian has seven tools, not three. A `recall_notes` tool was proposed and is **dropped for now**: chapter 06 already loads all of `notes.md` at start (decision 48). | 2026-11-01 | chapter 07 had nothing to guard. "Ask before you write" needs a tool that writes, and only `save_note` wrote, outside `REPO`. In 07 the new tools would make about eight ideas in one 15-minute video. In 08 they do not fit: that chapter is chain, router and checker. A letter, not a renumber, as `CLAUDE.md` asks. Inside `REPO` so the danger is real and seen; `git restore sample-repo/` undoes it. Whole-folder delete so chapter 07's guard has a real thing to stop. |
 
 ## To do
+
+- **Chapter 06.A is a docs skeleton only.** Fill its README, `BASICS.md` and `QA.md` after the
+  code runs. Do not start `code/` until the author says so. Before any run that deletes, make
+  sure `sample-repo/` is committed, so `git restore sample-repo/` brings it back.
 
 - **Chapter 06's C# is done: code, docs and a verified runbook.** Its TypeScript is not, and
   `SCRIPT-ts.md` does not exist. `code/ts/` is blocked behind the same `helper.ts` split as
