@@ -71,6 +71,7 @@ public static class Helper
         StringBuilder content,
         StringBuilder thinking,
         List<ToolCall> calls,
+        Func<Task> quiet,
         CancellationToken stop)
     {
         // A stream is one JSON object per line. ReadLineAsync waits for a whole line, so a
@@ -87,10 +88,14 @@ public static class Helper
             // Only the last line carries it. It is the size of everything we just sent, which
             // is the number that grows on every step, and the number this chapter cuts.
             if (chunk.PromptEvalCount is int tokens)
+            {
+                await quiet();
                 Console.Write($"{Grey} [{tokens} tokens in]{Reset}");
+            }
 
             if (!string.IsNullOrEmpty(part.Thinking))
             {
+                await quiet();
                 Console.Write(Grey + part.Thinking + Reset);
                 thinking.Append(part.Thinking);
             }
@@ -101,12 +106,31 @@ public static class Helper
 
             if (!string.IsNullOrEmpty(part.Content))
             {
+                await quiet();
                 // The first word of the answer needs a gap after the grey, or they run together.
                 if (content.Length == 0 && thinking.Length > 0) Console.Write("\n\n");
                 Console.Write(part.Content);
                 content.Append(part.Content);
             }
         }
+    }
+
+    // Grey dots until the first word. A big file can take the model a long time to read, and
+    // without these the screen sits still the whole while. \b moves the cursor back, so each
+    // frame draws over the last one.
+    static async Task Spin(CancellationToken stop)
+    {
+        try
+        {
+            for (int i = 0; ; i++)
+            {
+                Console.Write($"{Grey}{new string('.', i % 4),-3}{Reset}\b\b\b");
+                await Task.Delay(300, stop);
+            }
+        }
+        catch (OperationCanceledException) { }
+
+        Console.Write("   \b\b\b");
     }
 
     // One send, one streamed reply. It does not touch the history — the caller appends, so
@@ -119,26 +143,43 @@ public static class Helper
         // no registration step anywhere — the tools exist for exactly as long as one call.
         ChatRequest request = new(Model, history, Schemas.All, Stream: true, Think: Think);
 
-        using HttpRequestMessage message =
-            new(HttpMethod.Post, "/api/chat")
-            {
-                Content = JsonContent.Create(request, options: AgentJsonOptions),
-            };
-
-        // ResponseHeadersRead hands us the stream as it arrives. Without it HttpClient waits for
-        // the last byte, and the stream stops being a stream.
-        using var response =
-            await OllamaHttpClient.SendAsync(
-                message, HttpCompletionOption.ResponseHeadersRead, stop);
-
-        if (!response.IsSuccessStatusCode)
-            await HandleResponseError(response);
-
         StringBuilder content = new();
         StringBuilder thinking = new();
         List<ToolCall> calls = [];
 
-        await HandleStream(response, content, thinking, calls, stop);
+        // The dots run until the first thing is printed, or until anything goes wrong. Quiet is
+        // safe to call twice, so the finally can always call it.
+        using CancellationTokenSource dots = CancellationTokenSource.CreateLinkedTokenSource(stop);
+        Task spinner = Spin(dots.Token);
+        async Task Quiet()
+        {
+            dots.Cancel();
+            await spinner;
+        }
+
+        try
+        {
+            using HttpRequestMessage message =
+                new(HttpMethod.Post, "/api/chat")
+                {
+                    Content = JsonContent.Create(request, options: AgentJsonOptions),
+                };
+
+            // ResponseHeadersRead hands us the stream as it arrives. Without it HttpClient waits
+            // for the last byte, and the stream stops being a stream.
+            using var response =
+                await OllamaHttpClient.SendAsync(
+                    message, HttpCompletionOption.ResponseHeadersRead, stop);
+
+            if (!response.IsSuccessStatusCode)
+                await HandleResponseError(response);
+
+            await HandleStream(response, content, thinking, calls, Quiet, stop);
+        }
+        finally
+        {
+            await Quiet();
+        }
 
         // An empty list, not null, would be sent back as `"tool_calls": []`. Null is left out of
         // the JSON entirely by WhenWritingNull, which is what a plain answer should look like.
