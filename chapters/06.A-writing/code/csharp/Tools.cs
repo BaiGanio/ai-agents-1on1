@@ -171,14 +171,15 @@ public static class Tools
         return $"wrote {path}";
     }
 
-    // Append makes the file if it is missing, so a wrong path is a new file, not an error.
-    // The model writes files with no newline at the end. Measured: the appended line was glued
-    // onto the last one, so we start on a new line when the file does not end on one.
+    // Append makes the file and its folder if they are missing, so a wrong path is a new file,
+    // not an error. The model writes files with no newline at the end. Measured: the appended
+    // line was glued onto the last one, so we start a new line when the file does not end on one.
     static string AppendFile(string? path, string? text)
     {
         if (string.IsNullOrWhiteSpace(path)) return "append_file needs a path";
 
         string file = Under(path);
+        Directory.CreateDirectory(Path.GetDirectoryName(file)!);
         bool glued = File.Exists(file) && !File.ReadAllText(file).EndsWith('\n');
         File.AppendAllText(file, (glued ? "\n" : "") + text);
         return $"appended to {path}";

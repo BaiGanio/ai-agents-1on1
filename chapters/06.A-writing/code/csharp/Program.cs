@@ -1,7 +1,7 @@
 // Chapter 06.A — writing.
 //
-// Chapter 06's agent, with three tools that change files: write, append, delete. This file does
-// not change. The new tools live in Tools.cs, and the loop runs them like any other.
+// Chapter 06's agent, with three tools that change files: write, append, delete. Nothing below
+// this comment changes. The new tools live in Tools.cs, and the loop runs them like any other.
 
 // Read once, before anything else happens. Edit the file mid-session and nothing changes until
 // you restart. The path is relative to the working directory, which `dotnet run` sets to this

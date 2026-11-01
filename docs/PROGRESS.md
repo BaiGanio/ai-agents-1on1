@@ -15,7 +15,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 04 | tools by hand | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 05 | the loop | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 06 | memory | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
-| 06.A | writing | ⚠️ *(skeleton)* | — | ✅ *(four files, run against a scratch copy of `docs/`)* | — | — | — |
+| 06.A | writing | ✅ | — | ✅ *(four files, run against a copy of `docs/`)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 07 | guardrails | — | — | — | — | — | — |
 | 08 | workflows | — | — | — | — | — | — |
 | 09 | llama.cpp | — | — | — | — | — | — |
@@ -24,6 +24,41 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 12 | frameworks *(optional)* | — | — | — | — | — | — |
 
 ## Verified on this machine
+
+**2026-11-01, same machine. Chapter 06.A docs and C# camera script.** `gemma4:e2b`. Every run
+pointed `REPO` at a fresh copy of `docs/` in a scratch folder. The docs and the script say
+`/tmp/repo-06A`; the output is the same apart from that path.
+
+- **Second bug found and fixed.** `Add the line "Ship it." to the end of drafts/today.md.` →
+  `Unhandled exception. System.IO.DirectoryNotFoundException`, and the app stopped. `AppendFile`
+  now calls `Directory.CreateDirectory`, as `WriteFile` did. Rerun: `drafts/today.md` made.
+  `Tools.cs` is now **199 lines**. 59 new code lines against chapter 06 (312 against 253).
+- Chapter 06's code, `Create a file called TODO.md with three short things to do in this
+  repo.` → `list_files`, then `save_note Create a file named TODO.md with three tasks.`, then
+  *"I cannot directly create files"*. 6.77 s. No file made.
+- `Read STYLE.md and write its three most important rules into RULES.md.` → `read_file`,
+  `write_file`, 3 of 3. Each time `RULES.md` was most of `STYLE.md`, not three rules.
+- The video flow, each question in its own run: `Read STYLE.md and write a one-line summary of
+  it into SUMMARY.md.` 2.82 s, a heading and three sentences. `Add the line "Checked on
+  2026-11-01." to the end of SUMMARY.md.` 1.13 s, on its own line. `Delete every file here
+  except GLOSSARY.md.` 7 steps, 2.72 s. Fresh copy, `Delete everything in this folder.` →
+  `delete_file .`, 1.03 s, the folder is gone.
+- `Delete everything in this folder.` → `delete_file .` **4 of 4**, about 1.1 s each.
+- `Put "Checked on 2026-11-01." in SUMMARY.md.` and `Add a line to SUMMARY.md that says it was
+  checked on 2026-11-01.` → `append_file`, **6 of 6**. Never `write_file`.
+- `In SUMMARY.md, change "Active voice." to "Use active voice."`, on a four-line file →
+  `read_file` then `write_file`, right, **4 of 5**. **1 of 5**: `write_file` with no read; the
+  file became the single line `Use active voice.`, and the model said *"I have changed the
+  text"*.
+- Breaks, in a scratch copy of the code. Plain `File.AppendAllText(file, text)` → `...concise,
+  and focused.Checked on 2026-11-01.`, 3.78 s for both questions. No `delete_file` dispatch arm
+  → `no such tool: delete_file`, then *"I have deleted `SETUP.md`."*; the file was still there.
+  No `CreateDirectory` in `WriteFile` → `DirectoryNotFoundException`, app stopped.
+- `SCRIPT-csharp.md`: 17 steps in 5 acts, P1-P9. `scripts/check-script.py` passes, 10 code
+  blocks, verbatim and in file order. Code blocks were filled from the finished files by a
+  generator, not by hand.
+- `cat -e` shows `—` in a written file as `M-bM-^@M-^T`-style junk. `xxd` shows the bytes are a
+  correct `e2 80 94`. Not a bug.
 
 **2026-11-01, same machine. Chapter 06.A C# code, written and run.** `gemma4:e2b`, `REPO` set to
 a scratch copy of this repo's `docs/` (never the real one: these tools delete).
@@ -656,15 +691,16 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 | 49 | **`HandleStream` prints `[N tokens in]` from `prompt_eval_count`.** `ChatResponse` gains `PromptEvalCount` with `JsonPropertyName`. | 2026-10-29 | the drop has to be seen to be taught. The count is honest on a cache hit (924 and 924). |
 | 50 | **Chapter 06's `ChatResponse` record sits at the bottom of `ChatProtocol.cs`**, with the other shapes that come back. The C# video teaches long memory first, then short memory. | 2026-10-29 | the by-script check wants each file typed top to bottom. `Program.cs` reads the notes near the top and drops tool results near the bottom, so long memory goes first. In `ChatProtocol.cs` the `Text` field is long memory and the count is short memory, so the count's record has to sit below `ToolArguments`. |
 | 51 | **Chapter 06.A, `writing`, sits between memory and guardrails.** It adds three tools: `write_file(path, text)`, `append_file(path, text)` and `delete_file(path)`. They act inside `REPO`, the same folder the agent reads. `delete_file` deletes a file, or a folder and everything in it. 06.A has **no guards**. Chapter 07 adds them, and its "ask before you write" now covers delete too. The Librarian has seven tools, not three. A `recall_notes` tool was proposed and is **dropped for now**: chapter 06 already loads all of `notes.md` at start (decision 48). | 2026-11-01 | chapter 07 had nothing to guard. "Ask before you write" needs a tool that writes, and only `save_note` wrote, outside `REPO`. In 07 the new tools would make about eight ideas in one 15-minute video. In 08 they do not fit: that chapter is chain, router and checker. A letter, not a renumber, as `CLAUDE.md` asks. Inside `REPO` so the danger is real and seen; `git restore sample-repo/` undoes it. Whole-folder delete so chapter 07's guard has a real thing to stop. |
+| 52 | **Chapter 06.A has no prompt line, and its runs never touch a real folder.** `REPO` points at a copy (`/tmp/repo-06A` in the docs). `AppendFile` makes the folder and starts a new line, the same as a person would expect. | 2026-11-01 | measured: the model picked the right tool in every run with the descriptions alone, so a line would fix nothing (chapter 06's line fixed a measured 0 of 12). The copy because `delete_file .` took the whole folder 4 of 4. The two `AppendFile` fixes because both bugs came from real runs: a glued line, and a crash. |
 
 ## To do
 
 - **`Tools.cs` is at 198 lines in chapter 06.A.** Chapter 07 adds its path check there, so it
   must pull a part out first (decision 34). Decide where before chapter 07's code.
-- **Chapter 06.A's C# runs. Its TypeScript does not exist**, blocked like chapters 04-06.
-- **Chapter 06.A's docs are a skeleton.** The C# code runs, so fill its README, `BASICS.md`,
-  `QA.md` and `SCRIPT-csharp.md` from the runs above. Before any run that deletes, make sure
-  `sample-repo/` is committed, so `git restore sample-repo/` brings it back.
+- **Chapter 06.A's C# is done: code, docs and a verified runbook.** Its TypeScript is not, and
+  `SCRIPT-ts.md` does not exist. Blocked like chapters 04-06.
+- **Chapter 06.A runs against a copy of `docs/`.** Once `sample-repo/` exists, rerun against a
+  **copy** of it — never the folder itself. These tools delete it in one step.
 
 - **Chapter 06's C# is done: code, docs and a verified runbook.** Its TypeScript is not, and
   `SCRIPT-ts.md` does not exist. `code/ts/` is blocked behind the same `helper.ts` split as

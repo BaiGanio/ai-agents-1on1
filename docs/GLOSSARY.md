@@ -7,6 +7,7 @@ If a word is missing, add it here before you use it in a chapter.
 |---|---|
 | <a id="agent"></a>**agent** | a model, a prompt, some tools and a loop. The model picks the next step. |
 | <a id="agentic-workflow"></a>**agentic workflow** | several model calls wired together by your code. See [workflow](#workflow). |
+| <a id="append"></a>**append** | add text to the end of a file. What was there stays. Chapter 06.A. |
 | <a id="chunked"></a>**chunked** | a reply sent in pieces, with no length up front. Your code reads piece one before the last one exists. How Ollama streams. |
 | <a id="context-window"></a>**context window** | how much text the model can read in one call. Past it, the oldest text falls out. |
 | <a id="dispatch"></a>**dispatch** | picking which function to run from a name the model wrote. One `switch`. Chapter 04. |
@@ -29,12 +30,14 @@ If a word is missing, add it here before you use it in a chapter.
 | <a id="native-tool-calling"></a>**native tool calling** | you send your tool list as a `tools` field and the call comes back in a `tool_calls` field. No prose, no parse. Needs a model that supports it. Chapter 05. |
 | <a id="notes-file"></a>**notes file** | a plain text file the agent adds a line to, and reads back at the next start. Long memory. Chapter 06. |
 | <a id="ollama"></a>**Ollama** | a runner. It loads a model and gives it an HTTP endpoint on port 11434. |
+| <a id="overwrite"></a>**overwrite** | replace all the text of a file. What was there is gone. Chapter 06.A. |
 | <a id="parameters"></a>**parameters** | the numbers a model learned. "4B" means 4 billion. More is smarter and slower. |
 | <a id="parse"></a>**parse** | turn text into data your code can use. `JSON.parse` in TypeScript, `JsonSerializer` in C#. It throws when the text is not JSON. |
 | <a id="persona"></a>**persona** | who the agent acts like. One [system prompt](#system-prompt) file per persona. Chapter 02. |
 | <a id="port"></a>**port** | a door number on a machine, 1 to 65535. Ollama uses 11434. |
 | <a id="prompt"></a>**prompt** | the text you send the model |
 | <a id="quantisation"></a>**quantisation** | making a model smaller by storing its numbers with less detail. Faster, a bit less clever. |
+| <a id="recursive-delete"></a>**recursive delete** | delete a folder, every folder inside it, and every file in all of them. No recycle bin. Chapter 06.A. |
 | <a id="role"></a>**role** | who wrote a message: `system`, `user`, `assistant`, or `tool` |
 | <a id="round-trip"></a>**round trip** | one send to the model and one reply back. A tool by hand costs two: one to get the call, one to give the result. Chapter 04. |
 | <a id="runner"></a>**runner** | the program that loads a model and answers HTTP calls. Ollama, llama.cpp. |
