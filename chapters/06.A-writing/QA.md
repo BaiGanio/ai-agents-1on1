@@ -65,7 +65,22 @@ when the file does not end on one.
 
 </details>
 
-**Q7.** Why did this chapter need no prompt line, when chapter 06 did?
+**Q7.** The model asked for `drafts/today.md`, and there is no `drafts/` folder. Why does the
+code not make it?
+
+<details><summary>A</summary>
+
+Because the agent should change what is there, not grow new folders you did not ask for. A
+typo in a path would leave a new folder behind. So `write_file` sends back `no such folder for
+drafts/today.md`, and the model tells you. Measured 3 of 3. `append_file` does the same for a
+missing file.
+
+And not a throw: a throw ends the whole app. A sentence goes back as a tool result, and the app
+keeps running.
+
+</details>
+
+**Q8.** Why did this chapter need no prompt line, when chapter 06 did?
 
 <details><summary>A</summary>
 

@@ -14,7 +14,8 @@ There are two ways to put text in a file, and they do opposite things to what wa
 takes its place. If the file does not exist, write makes it.
 
 **[Append](../../docs/GLOSSARY.md#append)** adds to the end. The old text stays. If the file
-does not exist, append makes it too.
+does not exist, `AppendAllText` makes it too. This chapter's `append_file` checks first and
+refuses: a typo in the path should be an error, not a new file.
 
 ```ts
 import { writeFileSync, appendFileSync } from "node:fs";
@@ -52,15 +53,19 @@ Unhandled exception. System.IO.DirectoryNotFoundException: Could not find a part
 '.../drafts/today.md'.
 ```
 
-That ends the whole app, not only the tool call. So the code makes the folder first:
+That ends the whole app, not only the tool call. The agent must not make folders you did not
+ask for, so the code does not make one. It checks first, and sends a sentence back instead:
 
 ```csharp
-Directory.CreateDirectory(Path.GetDirectoryName(file)!);   // does nothing if it is there
+if (!Directory.Exists(Path.GetDirectoryName(file))) return $"no such folder for {path}";
 ```
 
 ```ts
-mkdirSync(dirname(file), { recursive: true });             // does nothing if it is there
+if (!existsSync(dirname(file))) return `no such folder for ${path}`;
 ```
+
+The model reads the sentence and tells you. The app keeps running. Chapter 04's `read_file` does
+the same with `no such file`.
 
 ---
 
@@ -96,6 +101,7 @@ Before the video:
 
 - [ ] you can say what is left in a file after a write, and after an append
 - [ ] you can say why an append can land on the end of the last line
-- [ ] you can say what happens when you write a file into a folder that does not exist
+- [ ] you can say what happens when you write a file into a folder that does not exist, and
+  what this chapter's code does instead
 - [ ] you can say what `delete_file .` deletes, and why
 - [ ] you have a copy of a folder to point `REPO` at, and you know how to make it again

@@ -30,9 +30,17 @@ pointed `REPO` at a fresh copy of `docs/` in a scratch folder. The docs and the 
 `/tmp/repo-06A`; the output is the same apart from that path.
 
 - **Second bug found and fixed.** `Add the line "Ship it." to the end of drafts/today.md.` →
-  `Unhandled exception. System.IO.DirectoryNotFoundException`, and the app stopped. `AppendFile`
-  now calls `Directory.CreateDirectory`, as `WriteFile` did. Rerun: `drafts/today.md` made.
-  `Tools.cs` is now **199 lines**. 59 new code lines against chapter 06 (312 against 253).
+  `Unhandled exception. System.IO.DirectoryNotFoundException`, and the app stopped. **The tools
+  make no folders, and `append_file` makes no files** (decision 53). `WriteFile` checks the
+  folder, `AppendFile` checks the file, and each sends a sentence back. Rerun, fresh copy:
+  `Add the line "Ship it." to the end of TODAY.md.` → `no such file: TODAY.md`, *"I was unable
+  to add the line because the file `TODAY.md` does not exist..."*, 3 of 3.
+  `Write "Ship it." into drafts/today.md.` → `no such folder for drafts/today.md`, the model
+  says the folder does not exist, 3 of 3. One of the three asked *"Would you like me to create
+  the folder first?"* No file or folder was made in any of the six. Write and append on
+  `SUMMARY.md` rerun after the change: same tools, same result.
+  `Tools.cs` is **199 lines** after two comments were made shorter (it hit 204). 59 new code
+  lines against chapter 06 (312 against 253).
 - Chapter 06's code, `Create a file called TODO.md with three short things to do in this
   repo.` → `list_files`, then `save_note Create a file named TODO.md with three tasks.`, then
   *"I cannot directly create files"*. 6.77 s. No file made.
@@ -53,7 +61,7 @@ pointed `REPO` at a fresh copy of `docs/` in a scratch folder. The docs and the 
 - Breaks, in a scratch copy of the code. Plain `File.AppendAllText(file, text)` → `...concise,
   and focused.Checked on 2026-11-01.`, 3.78 s for both questions. No `delete_file` dispatch arm
   → `no such tool: delete_file`, then *"I have deleted `SETUP.md`."*; the file was still there.
-  No `CreateDirectory` in `WriteFile` → `DirectoryNotFoundException`, app stopped.
+  No folder check in `WriteFile` → `DirectoryNotFoundException`, app stopped.
 - `SCRIPT-csharp.md`: 17 steps in 5 acts, P1-P9. `scripts/check-script.py` passes, 10 code
   blocks, verbatim and in file order. Code blocks were filled from the finished files by a
   generator, not by hand.
@@ -691,7 +699,8 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 | 49 | **`HandleStream` prints `[N tokens in]` from `prompt_eval_count`.** `ChatResponse` gains `PromptEvalCount` with `JsonPropertyName`. | 2026-10-29 | the drop has to be seen to be taught. The count is honest on a cache hit (924 and 924). |
 | 50 | **Chapter 06's `ChatResponse` record sits at the bottom of `ChatProtocol.cs`**, with the other shapes that come back. The C# video teaches long memory first, then short memory. | 2026-10-29 | the by-script check wants each file typed top to bottom. `Program.cs` reads the notes near the top and drops tool results near the bottom, so long memory goes first. In `ChatProtocol.cs` the `Text` field is long memory and the count is short memory, so the count's record has to sit below `ToolArguments`. |
 | 51 | **Chapter 06.A, `writing`, sits between memory and guardrails.** It adds three tools: `write_file(path, text)`, `append_file(path, text)` and `delete_file(path)`. They act inside `REPO`, the same folder the agent reads. `delete_file` deletes a file, or a folder and everything in it. 06.A has **no guards**. Chapter 07 adds them, and its "ask before you write" now covers delete too. The Librarian has seven tools, not three. A `recall_notes` tool was proposed and is **dropped for now**: chapter 06 already loads all of `notes.md` at start (decision 48). | 2026-11-01 | chapter 07 had nothing to guard. "Ask before you write" needs a tool that writes, and only `save_note` wrote, outside `REPO`. In 07 the new tools would make about eight ideas in one 15-minute video. In 08 they do not fit: that chapter is chain, router and checker. A letter, not a renumber, as `CLAUDE.md` asks. Inside `REPO` so the danger is real and seen; `git restore sample-repo/` undoes it. Whole-folder delete so chapter 07's guard has a real thing to stop. |
-| 52 | **Chapter 06.A has no prompt line, and its runs never touch a real folder.** `REPO` points at a copy (`/tmp/repo-06A` in the docs). `AppendFile` makes the folder and starts a new line, the same as a person would expect. | 2026-11-01 | measured: the model picked the right tool in every run with the descriptions alone, so a line would fix nothing (chapter 06's line fixed a measured 0 of 12). The copy because `delete_file .` took the whole folder 4 of 4. The two `AppendFile` fixes because both bugs came from real runs: a glued line, and a crash. |
+| 52 | **Chapter 06.A has no prompt line, and its runs never touch a real folder.** `REPO` points at a copy (`/tmp/repo-06A` in the docs). `AppendFile` starts a new line when the file does not end on one. | 2026-11-01 | measured: the model picked the right tool in every run with the descriptions alone, so a line would fix nothing (chapter 06's line fixed a measured 0 of 12). The copy because `delete_file .` took the whole folder 4 of 4. The newline fix because a real run glued two lines into one. |
+| 53 | **The writing tools change what is there and make nothing else.** `write_file` makes a new file only in a folder that exists. `append_file` adds only to a file that exists. Neither makes a folder. A missing one is a sentence back to the model (`no such folder for ...`, `no such file: ...`), not a throw. | 2026-11-01 | the author's rule: the agent must not grow files or folders you did not ask for. A typo in a path should be an error the model reads, not a new file. A sentence, not a throw, because a throw ends the whole app — measured with `DirectoryNotFoundException`. Measured after: 6 of 6 runs, the model read the sentence and told the user. |
 
 ## To do
 

@@ -141,8 +141,8 @@ REPO=/tmp/repo-06A node src/main.ts
 Three things worth stopping on:
 
 - **`rmSync(target, { recursive: true })` deletes a file or a folder.** One call. C# needs two.
-- **`mkdirSync(dirname(file), { recursive: true })`** before a write or an append, for the same
-  crash C# has without it.
+- **`existsSync` before a write or an append.** A missing folder throws in Node too, the same
+  crash C# has. A missing file is made by `appendFileSync`, so append checks for it too.
 - **All of it is in `node:fs` and `node:path`.** No package.
 
 ## C#
@@ -176,14 +176,26 @@ REPO=/tmp/repo-06A dotnet run
 - **`Tools.cs` is at 199 lines.** The limit is 200. Chapter 07 adds its checks here, so it moves
   a part out first.
 
+**The tools change what is there. They make nothing else.** `write_file` makes a new file, in
+a folder that exists. `append_file` adds to a file that exists. Neither makes a folder. A missing
+one is a sentence back to the model, not a throw, and the model tells you:
+
+| You asked | The tool said | The model said | Runs |
+|---|---|---|---|
+| `Add the line "Ship it." to the end of TODAY.md.` | `no such file: TODAY.md` | *"I was unable to add the line because the file `TODAY.md` does not exist..."* | 3 of 3 |
+| `Write "Ship it." into drafts/today.md.` | `no such folder for drafts/today.md` | *"I was unable to write to `drafts/today.md` because the folder does not exist."* | 3 of 3 |
+
+One of those three runs added *"Would you like me to create the folder first?"* It has no tool
+that can.
+
 Two bugs came out of the first runs, and both are fixed in the code:
 
 - **The appended line was glued on.** The model writes files with no newline at the end. A plain
   `File.AppendAllText` then put `Checked on 2026-11-01.` on the end of the last sentence.
   `AppendFile` now starts a new line when the file does not end on one.
-- **An append into a new folder crashed the app.** `Add the line "Ship it." to the end of
-  drafts/today.md.` threw `DirectoryNotFoundException`, and the whole app stopped.
-  `WriteFile` already made the folder. `AppendFile` now does the same.
+- **A missing folder crashed the app.** `Add the line "Ship it." to the end of
+  drafts/today.md.` threw `DirectoryNotFoundException`, and the whole app stopped. Both tools
+  now check first and send a sentence back.
 
 ## What differs between the two
 
@@ -192,10 +204,10 @@ The C# column is from the code. The TypeScript column is the plan, until `code/t
 | | TypeScript | C# |
 |---|---|---|
 | delete a file or a folder | `rmSync(target, { recursive: true })`, one call | `File.Delete` or `Directory.Delete(target, recursive: true)` |
-| make the folder | `mkdirSync(dir, { recursive: true })` | `Directory.CreateDirectory(dir)` |
+| is it there? | `existsSync(dirname(file))`, `existsSync(file)` | `Directory.Exists`, `File.Exists` |
 | write and append | `writeFileSync`, `appendFileSync` | `File.WriteAllText`, `File.AppendAllText` |
 
-Nothing else worth a sentence. Both sides throw on a missing folder, and both need the same fix.
+Nothing else worth a sentence. Both sides throw on a missing folder, and both need the same check.
 
 ## When it breaks
 
@@ -204,7 +216,7 @@ Each row is from a real run.
 | What you see | What it means | What to do |
 |---|---|---|
 | `...concise, and focused.Checked on 2026-11-01.` — two lines on one | the file had no newline at the end, and the append did not add one | the `glued` check in `AppendFile` |
-| `Unhandled exception. System.IO.DirectoryNotFoundException: Could not find a part of the path '.../drafts/today.md'.` | the model named a folder that does not exist. A throw ends the whole app. | `Directory.CreateDirectory` before the write or append |
+| `Unhandled exception. System.IO.DirectoryNotFoundException: Could not find a part of the path '.../drafts/today.md'.` | the model named a folder that does not exist. A throw ends the whole app. | the `Directory.Exists` check in `WriteFile`, the `File.Exists` check in `AppendFile` |
 | `no such tool: delete_file`, then *"I have deleted `SETUP.md`."* | the dispatch arm is missing. Nothing was deleted. The model said it was. | add the arm to `Run`. Check with `ls`, never with the answer. |
 | `[step 1] write_file SUMMARY.md` with no `read_file` before it, and the file is one line | the model wrote the whole file from memory. Once in five. | nothing in this chapter's code stops it. See "Try it yourself". |
 | `ls` on the repo copy says `No such file or directory` | `delete_file .` took the repo root | `cp -R ../../../../docs /tmp/repo-06A` again. Chapter 07 stops this. |
@@ -228,6 +240,7 @@ The answer is not in this repo.
 
 - [ ] chapter 06 said it cannot create files, and this chapter's code did
 - [ ] you watched `append_file` add a line, and the line was on its own line
+- [ ] you asked for a file in a missing folder, and the model told you, and the app kept running
 - [ ] you can say what `"."` means to `delete_file`, and you saw it take the whole folder
 - [ ] you can say why the model asks about *"clean it up"* and not about *"delete everything"*
 - [ ] you broke the dispatch and watched the model say it deleted a file that is still there

@@ -165,22 +165,23 @@ public static class Tools
     {
         if (string.IsNullOrWhiteSpace(path)) return "write_file needs a path";
 
+        // A new file, yes. A new folder, no — and a sentence, because the throw ends the app.
         string file = Under(path);
-        Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+        if (!Directory.Exists(Path.GetDirectoryName(file))) return $"no such folder for {path}";
         File.WriteAllText(file, text ?? "");
         return $"wrote {path}";
     }
 
-    // Append makes the file and its folder if they are missing, so a wrong path is a new file,
-    // not an error. The model writes files with no newline at the end. Measured: the appended
-    // line was glued onto the last one, so we start a new line when the file does not end on one.
+    // Only to a file that is there. AppendAllText would make a missing one, so a typo would be
+    // a new file, not an error the model reads. And the model ends files with no newline, so
+    // the appended line was glued onto the last one. Measured. We start a new line first.
     static string AppendFile(string? path, string? text)
     {
         if (string.IsNullOrWhiteSpace(path)) return "append_file needs a path";
 
         string file = Under(path);
-        Directory.CreateDirectory(Path.GetDirectoryName(file)!);
-        bool glued = File.Exists(file) && !File.ReadAllText(file).EndsWith('\n');
+        if (!File.Exists(file)) return $"no such file: {path}";
+        bool glued = !File.ReadAllText(file).EndsWith('\n');
         File.AppendAllText(file, (glued ? "\n" : "") + text);
         return $"appended to {path}";
     }
@@ -189,7 +190,6 @@ public static class Tools
     static string DeleteFile(string? path)
     {
         string target = Under(path);
-
         if (File.Exists(target)) File.Delete(target);
         else if (Directory.Exists(target)) Directory.Delete(target, recursive: true);
         else return $"no such file or folder: {path}";

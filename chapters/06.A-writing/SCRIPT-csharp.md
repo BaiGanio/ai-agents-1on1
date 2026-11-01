@@ -301,7 +301,7 @@ are telling the model, in plain English, that it may delete a whole folder. It w
 **Say.** "Now the bodies. Every tool so far could only read, or add a note to one file. From
 here, the model changes your files."
 
-**Type.** **Lines 162-172**, at the bottom of the class:
+**Type.** **Lines 162-173**, at the bottom of the class:
 
 ```csharp
     // From here on the model changes your files. Nothing below asks you, and nothing checks the
@@ -310,34 +310,37 @@ here, the model changes your files."
     {
         if (string.IsNullOrWhiteSpace(path)) return "write_file needs a path";
 
+        // A new file, yes. A new folder, no — and a sentence, because the throw ends the app.
         string file = Under(path);
-        Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+        if (!Directory.Exists(Path.GetDirectoryName(file))) return $"no such folder for {path}";
         File.WriteAllText(file, text ?? "");
         return $"wrote {path}";
     }
 ```
 
-**Note.** Point at `Directory.CreateDirectory`. Without it, `drafts/today.md` with no `drafts/`
-folder throws, and a throw ends the **whole app**, not the tool call. [`BASICS.md`](BASICS.md)
-has the exception.
+**Note.** Point at the `Directory.Exists` line. A new file, yes. A new **folder**, no. Without
+the check, `drafts/today.md` with no `drafts/` folder throws, and a throw ends the **whole app**,
+not the tool call. [`BASICS.md`](BASICS.md) has the exception. With it, the model gets one
+sentence, and tells you: *"I was unable to write to `drafts/today.md` because the folder does
+not exist."*
 
 **Proof.** One squiggle gone.
 
 ### 10. AppendFile
 
-**Type.** **Lines 174-186**:
+**Type.** **Lines 175-187**:
 
 ```csharp
-    // Append makes the file and its folder if they are missing, so a wrong path is a new file,
-    // not an error. The model writes files with no newline at the end. Measured: the appended
-    // line was glued onto the last one, so we start a new line when the file does not end on one.
+    // Only to a file that is there. AppendAllText would make a missing one, so a typo would be
+    // a new file, not an error the model reads. And the model ends files with no newline, so
+    // the appended line was glued onto the last one. Measured. We start a new line first.
     static string AppendFile(string? path, string? text)
     {
         if (string.IsNullOrWhiteSpace(path)) return "append_file needs a path";
 
         string file = Under(path);
-        Directory.CreateDirectory(Path.GetDirectoryName(file)!);
-        bool glued = File.Exists(file) && !File.ReadAllText(file).EndsWith('\n');
+        if (!File.Exists(file)) return $"no such file: {path}";
+        bool glued = !File.ReadAllText(file).EndsWith('\n');
         File.AppendAllText(file, (glued ? "\n" : "") + text);
         return $"appended to {path}";
     }
@@ -345,8 +348,9 @@ has the exception.
 
 **Note.** Two lines to stop on.
 
-`CreateDirectory` again. The first version of this function had no such line, and an append
-into a new folder **crashed the app**. Measured, not guessed.
+`File.Exists`. Append only adds to a file that is there. `AppendAllText` alone would make a
+missing file, so a typo in the path would become a new file. With the check, asked to add a line
+to `TODAY.md`, the model got `no such file: TODAY.md` and said so, 3 of 3.
 
 Then `glued`. Read the comment. The model writes files with **no newline at the end**. Append
 right after that, and your line joins the last one. Act 4 shows it.
@@ -355,14 +359,13 @@ right after that, and your line joins the last one. Act 4 shows it.
 
 ### 11. DeleteFile
 
-**Type.** **Lines 188-198**:
+**Type.** **Lines 189-198**:
 
 ```csharp
     // No recycle bin. A folder goes with everything in it, and "." is the whole repo.
     static string DeleteFile(string? path)
     {
         string target = Under(path);
-
         if (File.Exists(target)) File.Delete(target);
         else if (Directory.Exists(target)) Directory.Delete(target, recursive: true);
         else return $"no such file or folder: {path}";
@@ -570,7 +573,7 @@ rm -rf /tmp/repo-06A && cp -R /Users/lk/Projects/BaiGanio/ai-agents-1on1/docs /t
 
 **Say.** "Why the `glued` line? Take it out and see."
 
-**Type.** In `Tools.cs`, line 184. Replace it with a plain append:
+**Type.** In `Tools.cs`, line 185. Replace it with a plain append:
 
 ```text
         File.AppendAllText(file, text);
@@ -594,7 +597,7 @@ Quit, then `cat /tmp/repo-06A/SUMMARY.md`.
 append put your text right after the last character. Nothing failed. No error. You find it when
 you open the file.
 
-Put line 184 back, `dotnet build`, clean.
+Put line 185 back, `dotnet build`, clean.
 
 ### 17. The costs, and hand off
 
