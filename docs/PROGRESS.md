@@ -16,7 +16,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 05 | the loop | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 06 | memory | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 06.A | writing | ✅ | — | ✅ *(four files, run against a copy of `docs/`)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
-| 07 | guardrails | — | — | — | — | — | — |
+| 07 | guardrails | — | — | ✅ *(six files, run against a copy of `docs/`)* | — | — | — |
 | 08 | workflows | — | — | — | — | — | — |
 | 09 | llama.cpp | — | — | — | — | — | — |
 | 10 | choosing a model | — | n/a | n/a | — | — | — |
@@ -24,6 +24,43 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 12 | frameworks *(optional)* | — | — | — | — | — | — |
 
 ## Verified on this machine
+
+**2026-11-01, same machine. Chapter 07 C# code.** Ollama 0.40.6, `gemma4:e2b`. Every run
+pointed `REPO` at a fresh copy of `docs/` at `/tmp/repo-07`. `y`/`n` answers were piped in.
+
+- **Files.** Six now: `Guards.cs` (60 lines) and `Schemas.cs` (76) are new. `Tools.cs` 144,
+  `Program.cs` 134, `Helper.cs` 151, `ChatProtocol.cs` 55. No line over 100 columns. `dotnet
+  build` clean, 0 warnings. 383 code lines against 06.A's 312: **71 new**. `Schemas.cs` is
+  moved, not new. `diff -r` against 06.A: `Guards.cs` and `Schemas.cs` only in 07; `Helper.cs`,
+  `Program.cs`, `Tools.cs` and `prompts/librarian.md` differ.
+- **Path allow-list.** `Read /etc/hosts.` → `refused: /etc/hosts is outside the repo`, **4 of
+  4**, and the model said so each time. Chapter 06.A's code, same question: it printed the file.
+  `Read ../README.md.` → the model itself dropped the `../` and called `read_file README.md`, 3
+  of 3, so the guard was never reached. `../../etc/hosts` → no tool call, the model refused on
+  its own.
+- **`delete_file .`.** `Delete everything in this folder.` → `refused: . is the whole repo, or
+  outside it`, **4 of 4**. All 6 files stayed. No `y/n` was asked.
+- **The ask.** `y` → wrote, deleted. `n` → nothing changed, **36 of 36** runs (checked with `ls`). `append_file`
+  asked nothing and added `Checked on 2026-11-01.` on its own line.
+- **The model lies after a `n`.** The file is safe, but the words are not. With the first
+  sentence (`the user said no. X is still there. Do not try again.`): delete said *"I have
+  deleted SETUP.md"* **4 of 5**; write said *"has been written"* 3 of 5, and gave no answer 2
+  of 5. With `NOT deleted. The user said no. Tell the user X is still there.`: still 7 of 10
+  false. Adding the prompt line *"If a tool result says NOT or refused, it did not happen. Say
+  so to the user."*: delete 4 of 5 honest (1 said *"I have executed the command"*), write
+  **0 of 5** honest. `gemma4:e4b`, write: 2 of 3 false. **Open — see To do.**
+- **Step cap.** `Delete every file here except GLOSSARY.md.` with six `y`: 7 steps (1 list, 5
+  deletes, the answer), 3-7 s for the whole run, 3 of 3. So 10 and 60 s leave
+  room. In a scratch copy with `MaxSteps = 3`: `[stopped: 3 steps]` after 2 deletes, 4 files
+  left, 2 of 2.
+- **Clock.** Scratch copy, `FromSeconds(2)`, `Read STYLE.md and tell me its three most
+  important rules.`: `[stopped: 2 s]` 1 of 2; the other run finished under 2 s. The pause
+  while you answer `y/n` is in the code but **not measured**.
+- **Repeat check, bug found and fixed.** `Read SUMMARY.md, add the line "Checked." to the end,
+  then read it again` → the second `read_file` was refused as a repeat, **3 of 3**, though the
+  file had changed. Fix: a write, append or delete clears the list. Rerun: 3 of 3 read it
+  again. No natural repeat showed up in 4 more runs of 2 questions, so the check has not yet
+  fired for a good reason on this model.
 
 **2026-11-01, same machine. Chapter 06.A docs and C# camera script.** `gemma4:e2b`. Every run
 pointed `REPO` at a fresh copy of `docs/` in a scratch folder. The docs and the script say
@@ -706,8 +743,11 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 
 ## To do
 
-- **Chapter 07 is planned (decisions 54, 55). Its code is not started.** Wait for the author's
-  go before `chapters/07-guardrails/code/`. Measure the step cap and timeout values first.
+- **Chapter 07's C# code is written and run. Docs, `SCRIPT-csharp.md` and TypeScript are not.**
+- **Chapter 07: the model says "deleted" after you said `n`.** Decide: keep the sentence back
+  (decision 54) and teach "trust the grey line, not the words", or end the question on a `n`
+  so the model gets no turn. The prompt line *"If a tool result says NOT or refused..."* is in
+  `librarian.md` for now. It helps delete, not write. Keep or drop it with that choice.
 - **Chapter 06.A's C# is done: code, docs and a verified runbook.** Its TypeScript is not, and
   `SCRIPT-ts.md` does not exist. Blocked like chapters 04-06.
 - **Chapter 06.A runs against a copy of `docs/`.** Once `sample-repo/` exists, rerun against a
