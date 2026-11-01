@@ -10,9 +10,18 @@
 ## What we solve
 
 Job ads ask for "agentic workflows". The term means several model calls wired together. We
-build three with the Librarian's tools: a chain (one step feeds the next), a router (one call
-picks who answers), and a checker (one call grades another and asks for a retry). Then the
-question that matters: should your code pick the path, or should the model?
+build three with the Librarian's tools (decision 57):
+
+- **Router.** One short call reads your question and says one word: `look`, `change` or
+  `remember`. Your code gives the agent only that word's tools. A `look` question cannot delete
+  a file.
+- **Checker.** After the agent answers, one more call reads the tool results and the answer.
+  `PASS`, or `FAIL` and a reason, and the agent gets one retry. Chapter 07 left a lie on the
+  table: after a `n`, the model said "written". The checker is there to catch it.
+- **Chain.** `/overview`. Code lists the files. One call per file writes one line. One last
+  call joins them. The model picks no step.
+
+Then the question that matters: should your code pick the path, or should the model?
 
 ## Simple example
 
@@ -26,7 +35,11 @@ TODO: one picture from normal life that carries the idea.
 
 ```mermaid
 flowchart TD
-    TODO["TODO: what exists now"] --> TODO2["TODO: what this chapter adds"]
+    Q["Your question"] --> R["Router: one word, no tools"]
+    R --> A["Agent loop from chapter 07, with that word's tools only"]
+    A --> C["Checker: PASS or FAIL, no tools"]
+    C -->|FAIL, once| A
+    C -->|PASS| Out["Answer on screen"]
 ```
 
 ## TypeScript
