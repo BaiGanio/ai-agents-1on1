@@ -8,9 +8,6 @@ public static class Tools
     // the model should learn the rule, not go looking for another spelling of the same path.
     static string Outside(string? path) => $"refused: {path} is outside the repo";
 
-    // The write side has one more no: the repo root itself.
-    static string Locked(string? path) => $"refused: {path} is the whole repo, or outside it";
-
     // Dispatch: a name the model wrote, picking a function you wrote. People sell this as a
     // tool registry. An unknown name is not a crash — the model reads the sentence and retries.
     // The `tools` field makes an unknown name unlikely, not impossible, so the arm stays.
@@ -88,6 +85,9 @@ public static class Tools
         File.AppendAllText(Helper.NotesPath, $"- {text.Trim()}\n");
         return "saved";
     }
+
+    // The write side has one more no: the repo root itself.
+    static string Locked(string? path) => $"refused: {path} is the whole repo, or outside it";
 
     // Replaces a whole file, so it can lose text. The path check first, then the folder, then
     // you — so you are only asked about a write that would really happen.

@@ -16,7 +16,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 05 | the loop | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 06 | memory | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 06.A | writing | ✅ | — | ✅ *(four files, run against a copy of `docs/`)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
-| 07 | guardrails | — | — | ✅ *(six files, run against a copy of `docs/`)* | — | — | — |
+| 07 | guardrails | ✅ | — | ✅ *(six files, run against a copy of `docs/`)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 08 | workflows | — | — | — | — | — | — |
 | 09 | llama.cpp | — | — | — | — | — | — |
 | 10 | choosing a model | — | n/a | n/a | — | — | — |
@@ -25,42 +25,55 @@ One row per chapter. Update it when a state changes. This is the first file to o
 
 ## Verified on this machine
 
-**2026-11-01, same machine. Chapter 07 C# code.** Ollama 0.40.6, `gemma4:e2b`. Every run
-pointed `REPO` at a fresh copy of `docs/` at `/tmp/repo-07`. `y`/`n` answers were piped in.
+**2026-11-01, same machine. Chapter 07 C# code, docs and C# camera script.** Ollama 0.40.6,
+`gemma4:e2b`. Every run pointed `REPO` at a fresh copy of `docs/` at `/tmp/repo-07`. `y`/`n`
+answers were piped in, so the letter does not echo in the saved output. The docs and the script
+show it after `[y/N]`, where a terminal shows it.
 
-- **Files.** Six now: `Guards.cs` (60 lines) and `Schemas.cs` (76) are new. `Tools.cs` 144,
+- **Files.** Six: `Guards.cs` (63 lines) and `Schemas.cs` (76) are new. `Tools.cs` 144,
   `Program.cs` 134, `Helper.cs` 151, `ChatProtocol.cs` 55. No line over 100 columns. `dotnet
   build` clean, 0 warnings. 383 code lines against 06.A's 312: **71 new**. `Schemas.cs` is
   moved, not new. `diff -r` against 06.A: `Guards.cs` and `Schemas.cs` only in 07; `Helper.cs`,
-  `Program.cs`, `Tools.cs` and `prompts/librarian.md` differ.
-- **Path allow-list.** `Read /etc/hosts.` → `refused: /etc/hosts is outside the repo`, **4 of
-  4**, and the model said so each time. Chapter 06.A's code, same question: it printed the file.
+  `Program.cs` and `Tools.cs` differ. **The prompts are the same as 06.A's** (decision 56).
+- **Path allow-list.** `Read /etc/hosts.` → `read_file /etc/hosts`, `refused: /etc/hosts is
+  outside the repo`, **7 of 8**, about 2.1 s. 1 of 8 sent `etc/hosts`, which is inside the
+  repo, so `no such file: etc/hosts`. Chapter 06.A's code, same question: it printed the file.
   `Read ../README.md.` → the model itself dropped the `../` and called `read_file README.md`, 3
-  of 3, so the guard was never reached. `../../etc/hosts` → no tool call, the model refused on
-  its own.
+  of 3. `../../etc/hosts` → no tool call, the model refused on its own.
 - **`delete_file .`.** `Delete everything in this folder.` → `refused: . is the whole repo, or
-  outside it`, **4 of 4**. All 6 files stayed. No `y/n` was asked.
-- **The ask.** `y` → wrote, deleted. `n` → nothing changed, **36 of 36** runs (checked with `ls`). `append_file`
-  asked nothing and added `Checked on 2026-11-01.` on its own line.
-- **The model lies after a `n`.** The file is safe, but the words are not. With the first
-  sentence (`the user said no. X is still there. Do not try again.`): delete said *"I have
-  deleted SETUP.md"* **4 of 5**; write said *"has been written"* 3 of 5, and gave no answer 2
-  of 5. With `NOT deleted. The user said no. Tell the user X is still there.`: still 7 of 10
-  false. Adding the prompt line *"If a tool result says NOT or refused, it did not happen. Say
-  so to the user."*: delete 4 of 5 honest (1 said *"I have executed the command"*), write
-  **0 of 5** honest. `gemma4:e4b`, write: 2 of 3 false. **Open — see To do.**
-- **Step cap.** `Delete every file here except GLOSSARY.md.` with six `y`: 7 steps (1 list, 5
-  deletes, the answer), 3-7 s for the whole run, 3 of 3. So 10 and 60 s leave
-  room. In a scratch copy with `MaxSteps = 3`: `[stopped: 3 steps]` after 2 deletes, 4 files
-  left, 2 of 2.
+  outside it`, **5 of 5**, 2.82 s. All 6 files stayed. No `y/n` was asked.
+- **The ask.** `y` → wrote (5.53 s), deleted. `n` → nothing changed, **36 of 36** runs, checked
+  with `ls`. `append_file` asked nothing and added `Checked on 2026-11-01.` on its own line.
+- **The model's words after a `n`.** The file is safe. The words are not.
+  - First sentence (`the user said no. X is still there. Do not try again.`): delete said *"I
+    have deleted SETUP.md"* 4 of 5. Write said *"has been written"* 3 of 5, no answer 2 of 5.
+  - **The sentence the code keeps** (`NOT written. The user said no. Tell the user X was not
+    changed.`), no prompt line: **write false 7 of 8**. Delete false 3 of 11 (3 of 5 in one
+    batch, 0 of 6 in a later one; the same code — the model is not the same each run).
+  - With a prompt line, *"If a tool result says NOT or refused, it did not happen. Say so to
+    the user."*: delete 4 of 5 honest, write **0 of 5** honest. Dropped (decision 56).
+  - `gemma4:e4b`, write, with the line: 2 of 3 false.
+- **Step cap.** `Delete every file here except GLOSSARY.md.` with `y` each time: 7 steps (1
+  list, 5 deletes, the answer), 3-7 s for the whole run, 3 of 3. So 10 and 60 s leave room.
+  `MaxSteps = 3`: `[stopped: 3 steps]` after 2 deletes, 4 files left — 2 of 2 with the ask,
+  and 3 of 3 in the Act 2 state of the script (no ask yet), 2.0-2.5 s.
 - **Clock.** Scratch copy, `FromSeconds(2)`, `Read STYLE.md and tell me its three most
   important rules.`: `[stopped: 2 s]` 1 of 2; the other run finished under 2 s. The pause
   while you answer `y/n` is in the code but **not measured**.
 - **Repeat check, bug found and fixed.** `Read SUMMARY.md, add the line "Checked." to the end,
-  then read it again` → the second `read_file` was refused as a repeat, **3 of 3**, though the
-  file had changed. Fix: a write, append or delete clears the list. Rerun: 3 of 3 read it
-  again. No natural repeat showed up in 4 more runs of 2 questions, so the check has not yet
-  fired for a good reason on this model.
+  then read it again` → the second `read_file` was refused as a repeat, **3 of 3**, and 1 of 1
+  more for the script's Act 5, though the file had changed. The model then gave the new text from memory. Fix: a write, append or
+  delete clears the list. Rerun: 3 of 3 read it again. No natural repeat showed up in 4 more
+  runs of 2 questions, so the check has not yet fired for a good reason on this model.
+- **BASICS examples, run.** C# `Path.GetFullPath(Path.Combine("/tmp/repo-07",
+  "docs/../../etc/hosts"))` → `/tmp/etc/hosts`; with `"/etc/hosts"` → `/etc/hosts`. Node
+  `resolve` gives the same two. `fetch` with `AbortSignal.timeout(50)` against Ollama → error
+  name `TimeoutError`.
+- **`SCRIPT-csharp.md`.** 21 steps in 6 acts, P1-P9. `scripts/check-script.py` passes: 24 code
+  blocks, verbatim and in file order. The blocks were filled from the finished files by a
+  generator. The two in-between states (end of Act 2, end of Act 3) were built in a scratch
+  folder and run: both build clean, and their runs are the Proofs of steps 10 and 13.
+  `scripts/check-script.py` now lists `Guards.cs` and `Schemas.cs`.
 
 **2026-11-01, same machine. Chapter 06.A docs and C# camera script.** `gemma4:e2b`. Every run
 pointed `REPO` at a fresh copy of `docs/` in a scratch folder. The docs and the script say
@@ -740,14 +753,16 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 | 53 | **The writing tools change what is there and make nothing else.** `write_file` makes a new file only in a folder that exists. `append_file` adds only to a file that exists. Neither makes a folder. A missing one is a sentence back to the model (`no such folder for ...`, `no such file: ...`), not a throw. | 2026-11-01 | the author's rule: the agent must not grow files or folders you did not ask for. A typo in a path should be an error the model reads, not a new file. A sentence, not a throw, because a throw ends the whole app — measured with `DirectoryNotFoundException`. Measured after: 6 of 6 runs, the model read the sentence and told the user. |
 | 54 | **Chapter 07 has five guards.** A step cap, a timeout for one whole question (all its steps share one clock), a repeat check (the same tool call with the same arguments twice), a path allow-list, and a `y/n` ask. **Only `write_file` and `delete_file` ask.** `append_file` and `save_note` run free. The allow-list lets a path through only when it stays inside `REPO` **and is not `REPO` itself**, so `delete_file .` is refused before the ask. A refused path, a `n`, and a repeat go back to the model as a sentence (decision 53's shape). The step cap and the timeout end the question with a grey line. The `bin/`/`obj/` filter is **not** in 07. The cap and the timeout values come from real runs, not from this row. | 2026-11-01 | the author's choice. Five guards, not four, because decision 41 sent the repeat check here. Append asks nothing because it cannot lose text. `.` is refused because `delete_file .` took the whole folder 4 of 4 in 06.A. One clock per question catches a loop of many fast calls, which a per-call clock misses. The filter waits for `sample-repo/`, where it stops mattering. **Risk:** five ideas may run past 15 minutes. Say the real number (decision 34). |
 | 55 | **Chapter 07's C# gets two new files.** `Guards.cs` holds the path check and the `y/n` ask. `Schemas.cs` takes `Tools.Schemas` out of `Tools.cs`. | 2026-11-01 | `Tools.cs` was at 199 lines in 06.A, and the hard limit is 200 (decision 34). The guards sit in one file, so the viewer sees them in one place. The schemas move because they are about 80 lines that chapter 07 does not change. |
+| 56 | **After a `n`, the tool sends a sentence back and the model talks. Chapter 07 teaches "trust the grey line, not the words".** The sentence is `NOT written. The user said no. Tell the user X was not changed.` (and `NOT deleted...`). **No prompt line**: the prompts stay the same as 06.A's. `Guards.cs` holds the loop's rules first, then the tools' rules, and `Locked` sits just above `WriteFile`, so the camera script types each file top to bottom and builds at the end of every act. | 2026-11-01 | the author's choice, option A. Measured: after a `n`, write said "written" 7 of 8, and `gemma4:e4b` 2 of 3. The prompt line fixed delete and not write (0 of 5), so under decision 52 it does not earn its place. Ending the question on a `n` would hide the lie, not teach it. The order in `Guards.cs` because `Ask` uses `Clock`: typed the other way, the app does not build in Act 3. |
 
 ## To do
 
-- **Chapter 07's C# code is written and run. Docs, `SCRIPT-csharp.md` and TypeScript are not.**
-- **Chapter 07: the model says "deleted" after you said `n`.** Decide: keep the sentence back
-  (decision 54) and teach "trust the grey line, not the words", or end the question on a `n`
-  so the model gets no turn. The prompt line *"If a tool result says NOT or refused..."* is in
-  `librarian.md` for now. It helps delete, not write. Keep or drop it with that choice.
+- **Chapter 07's C# is done: code, docs and a verified runbook.** Its TypeScript is not, and
+  `SCRIPT-ts.md` does not exist. Blocked like chapters 04-06.A.
+- **Chapter 07's repeat check has never fired for a good reason.** Its one measured fire was
+  the bug. Watch for a real repeat in chapter 08, where more calls run per question.
+- **Chapter 07 runs against a copy of `docs/`.** Rerun against a copy of `sample-repo/` once it
+  exists.
 - **Chapter 06.A's C# is done: code, docs and a verified runbook.** Its TypeScript is not, and
   `SCRIPT-ts.md` does not exist. Blocked like chapters 04-06.
 - **Chapter 06.A runs against a copy of `docs/`.** Once `sample-repo/` exists, rerun against a

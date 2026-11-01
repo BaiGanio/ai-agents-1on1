@@ -1,7 +1,8 @@
 using System.Diagnostics;
 
 // The rules your code holds the model to. The model can ask for anything. Every line in this
-// file is a place where the answer is no, and the model has no way to argue with it.
+// file is a place where the answer is no, and the model has no way to argue with it. The loop's
+// rules come first, then the tools'.
 public static class Guards
 {
     // A real question takes a few steps. A model stuck asking for the same listing takes all of
@@ -22,6 +23,8 @@ public static class Guards
         return left > TimeSpan.Zero ? left : TimeSpan.Zero;
     }
 
+    // The tools' rules. Tools.cs calls these before it touches the disk.
+
     // The allow-list. The root and everything under it, and nothing else. GetFullPath folds
     // every "../" away first, so "docs/../../.ssh" is judged by where it lands, not how it
     // reads. A block-list of bad strings would miss the spelling you did not think of.
@@ -34,6 +37,9 @@ public static class Guards
         if (full == root || full.StartsWith(root + Path.DirectorySeparatorChar)) return full;
         return null;
     }
+
+    static string Root() =>
+        Path.TrimEndingDirectorySeparator(Path.GetFullPath(Helper.RepoRoot));
 
     // Stricter than reading: the root itself is off the list. In chapter 06.A "Delete
     // everything" became delete_file "." four times in four, and the whole folder went.
@@ -54,7 +60,4 @@ public static class Guards
 
         return answer?.Trim().ToLowerInvariant() == "y";
     }
-
-    static string Root() =>
-        Path.TrimEndingDirectorySeparator(Path.GetFullPath(Helper.RepoRoot));
 }

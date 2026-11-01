@@ -7,14 +7,18 @@ If a word is missing, add it here before you use it in a chapter.
 |---|---|
 | <a id="agent"></a>**agent** | a model, a prompt, some tools and a loop. The model picks the next step. |
 | <a id="agentic-workflow"></a>**agentic workflow** | several model calls wired together by your code. See [workflow](#workflow). |
+| <a id="allow-list"></a>**allow-list** | a list of what is allowed. Everything else is refused. Chapter 07 allows the repo folder and what is under it. |
 | <a id="append"></a>**append** | add text to the end of a file. What was there stays. Chapter 06.A. |
+| <a id="block-list"></a>**block-list** | a list of what is refused. Everything else is allowed. It misses the case you did not think of. Chapter 07. |
+| <a id="cancellation-token"></a>**cancellation token** | a C# value you pass to slow calls. When it fires, they stop and throw `OperationCanceledException`. Chapter 07. |
 | <a id="chunked"></a>**chunked** | a reply sent in pieces, with no length up front. Your code reads piece one before the last one exists. How Ollama streams. |
 | <a id="context-window"></a>**context window** | how much text the model can read in one call. Past it, the oldest text falls out. |
 | <a id="dispatch"></a>**dispatch** | picking which function to run from a name the model wrote. One `switch`. Chapter 04. |
 | <a id="endpoint"></a>**endpoint** | one URL on a server that does one job, like `POST /api/chat` |
 | <a id="environment-variable"></a>**environment variable** | a setting you put in front of a command: `MODEL=gemma4:e4b node src/main.ts`. It lives for that one run. |
+| <a id="full-path"></a>**full path** | a path with every `.` and `..` walked, from the top of the disk. `Path.GetFullPath` in C#, `path.resolve` in Node. Chapter 07. |
 | <a id="gguf"></a>**GGUF** | a file format for a model, so one file holds the whole model. llama.cpp reads it. |
-| <a id="guardrail"></a>**guardrail** | a rule in *your* code that stops the agent: a step cap, a timeout, an allow-list |
+| <a id="guardrail"></a>**guardrail** | a rule in *your* code that stops the agent: a step cap, a timeout, an allow-list. The model cannot argue with it. Chapter 07. |
 | <a id="hallucination"></a>**hallucination** | the model says something false, and sounds sure. It guesses instead of looks. |
 | <a id="http"></a>**HTTP** | the rules two programs use to ask and answer over a network. A method, a path, a body. |
 | <a id="json"></a>**JSON** | text that holds data: `{"name": "value"}`. See [chapter 01 basics](../chapters/01-the-model/BASICS.md). |
@@ -42,10 +46,12 @@ If a word is missing, add it here before you use it in a chapter.
 | <a id="round-trip"></a>**round trip** | one send to the model and one reply back. A tool by hand costs two: one to get the call, one to give the result. Chapter 04. |
 | <a id="runner"></a>**runner** | the program that loads a model and answers HTTP calls. Ollama, llama.cpp. |
 | <a id="step"></a>**step** | one turn of [the loop](#loop): one send, and the tool that came back from it. The model decides how many a question takes. Chapter 05. |
+| <a id="step-cap"></a>**step cap** | the most [steps](#step) one question may take. Past it, your code ends the question. Chapter 07. |
 | <a id="streaming"></a>**streaming** | the reply comes word by word, not all at the end |
 | <a id="stub"></a>**stub** | a short line put where a long text was, so the list stays small and still says what was there. Chapter 06. |
 | <a id="system-prompt"></a>**system prompt** | the first message. It says who the agent is and what rules it follows. |
 | <a id="thinking"></a>**thinking** | notes the model writes to itself before it answers. Slower, often better. You can turn it off. Chapter 01.A. |
+| <a id="timeout"></a>**timeout** | a time limit. Past it, your code stops waiting. Chapter 07 has one for each question. |
 | <a id="token"></a>**token** | a piece of a word. Models read and write tokens, not letters. |
 | <a id="tool"></a>**tool** | a function in *your* code that the model may ask you to run |
 | <a id="tool-call"></a>**tool call** | the model writes "run `list_files` with `path: .`". Your code runs it. The model runs nothing. |

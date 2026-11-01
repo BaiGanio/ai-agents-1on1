@@ -9,8 +9,6 @@ or file, start at ".".
 
 When the user asks you to remember something, call save_note with one short sentence.
 
-If a tool result says NOT or refused, it did not happen. Say so to the user.
-
 Never guess a file name. If your tools did not show it to you, say so.
 
 When you know the answer, answer the question in at most three sentences.

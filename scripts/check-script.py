@@ -19,8 +19,10 @@ import sys
 # The files a camera script may quote. A chapter that adds one goes here.
 CANDIDATES = [
     "code/csharp/ChatProtocol.cs",
+    "code/csharp/Guards.cs",
     "code/csharp/Helper.cs",
     "code/csharp/Program.cs",
+    "code/csharp/Schemas.cs",
     "code/csharp/Tools.cs",
     "code/ts/src/helper.ts",
     "code/ts/src/main.ts",
