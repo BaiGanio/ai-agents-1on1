@@ -17,13 +17,38 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 06 | memory | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 06.A | writing | ✅ | — | ✅ *(four files, run against a copy of `docs/`)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 07 | guardrails | ✅ | — | ✅ *(six files, run against a copy of `docs/`)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
-| 08 | workflows | — | — | — | — | — | — |
+| 08 | workflows | ✅ | — | ✅ *(eight files, run against a copy of `docs/`)* | — *(no script yet)* | — | — |
 | 09 | llama.cpp | — | — | — | — | — | — |
 | 10 | choosing a model | — | n/a | n/a | — | — | — |
 | 11 | side by side | — | — | — | — | — | — |
 | 12 | frameworks *(optional)* | — | — | — | — | — | — |
 
 ## Verified on this machine
+
+**2026-11-02, same machine. Chapter 08 C# code and docs.** Ollama 0.40.6, `gemma4:e2b`. Runs
+point `REPO` at a fresh copy of `docs/` at `/tmp/repo-08`.
+
+- **Files.** `Agent.cs` (75 lines) and `Workflows.cs` (67) are new. `Helper.cs` 194, `Program.cs`
+  78, `Schemas.cs` 86, `Guards.cs` 67, `Tools.cs` 144. `dotnet build` clean, 0 warnings, no line
+  over 100 columns. **514 code lines against 07's 416: 98 new.** Two new prompts: `router.md`,
+  `checker.md`.
+- **Router.** First prompt, 7 questions x 5 runs: **24 of 35** the right word (it said `list`,
+  `write`, `delete`, `diagrams`, `lyuben`). Prompt with "exactly one of these three words" and
+  one example each: **35 of 35**.
+- **Checker, lie** (`n` to a write, model says "written"). Evidence cut at 300 characters, with
+  a file read in it: **0 of 10** caught (curl, 10 runs). Cut at 60: **10 of 10**. In the app,
+  8 runs: `FAIL` **8 of 8**; after the retry 4 passed, 4 failed again.
+- **Checker, honest answer.** With the question in its input: `FAIL` **6 of 6**. Without it:
+  `PASS` 6 of 6 (also 10 of 10 at 60 characters). The code sends no question. One false `FAIL`
+  seen in the app, on a correct delete; the retry passed.
+- **Times, warm, with app start.** Remember + recall 2.45 s. Read + write with `y` 4.12 s.
+  Delete 5 files 6.51 s. `/overview` on 6 files 8.57 s.
+- **Not seen.** `Agent.Run` refusing a tool outside the router's list: the model never asked for
+  one. Not measured: the clock across router + agent + checker, and a `Guards.MaxSteps` hit.
+- **Not done.** TypeScript. `SCRIPT-csharp.md` (and `check-script.py` on it). Decision 57 said
+  the checker runs on every question: the author chose to **skip it when no tool ran**, and to
+  **show a second `FAIL` as a grey line under the answer**. `/overview` reads top-level files
+  only. These three choices are not in the Decisions table yet.
 
 **2026-11-01, same machine. Chapter 07 C# code, docs and C# camera script.** Ollama 0.40.6,
 `gemma4:e2b`. Every run pointed `REPO` at a fresh copy of `docs/` at `/tmp/repo-07`. `y`/`n`
@@ -756,6 +781,7 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 | 56 | **After a `n`, the tool sends a sentence back and the model talks. Chapter 07 teaches "trust the grey line, not the words".** The sentence is `NOT written. The user said no. Tell the user X was not changed.` (and `NOT deleted...`). **No prompt line**: the prompts stay the same as 06.A's. `Guards.cs` holds the loop's rules first, then the tools' rules, and `Locked` sits just above `WriteFile`, so the camera script types each file top to bottom and builds at the end of every act. | 2026-11-01 | the author's choice, option A. Measured: after a `n`, write said "written" 7 of 8, and `gemma4:e4b` 2 of 3. The prompt line fixed delete and not write (0 of 5), so under decision 52 it does not earn its place. Ending the question on a `n` would hide the lie, not teach it. The order in `Guards.cs` because `Ask` uses `Clock`: typed the other way, the app does not build in Act 3. |
 | 57 | **Chapter 08 has three workflows, on top of chapter 07's agent.** **Router:** one short model call, no tools, gives back one word: `look`, `change` or `remember`. Your code then hands the agent only that word's tools. `look` gets `list_files`, `read_file`, `search_text`. `change` gets those plus the three writing tools. `remember` gets `save_note`. Any other word counts as `look`, the read-only one. **Checker:** after the agent answers, one model call, no tools, reads this question's tool results and the answer. It says `PASS`, or `FAIL` and a reason. On `FAIL` the agent gets one retry with the reason. It runs before short memory drops the tool results. **Chain:** a `/overview` command. Code lists the files, one model call per file writes one line, one last call joins the lines. The model picks no step. Router and checker run on **every** question. No switch: chapter 07's code is the plain agent to compare with. The step cap and the clock cover the whole question, every call in it. | 2026-11-01 | the author's choices. The router picks tools, not prompts, so a `look` question cannot delete a file: it builds on chapter 07. The checker checks the answer against the tool results because decision 56 left a measured open problem: after a `n`, the model said "written" 7 of 8. A checker can catch that, and a junior sees why a second call earns its cost. The chain has no `y/n` and no write, so it shows "code picks every step" with nothing else in the way. Always on, because a switch is one more idea. **Risk:** two more calls per question, a few seconds each on `gemma4:e2b`. Measure it. |
 | 58 | **Chapter 08's C# moves the inner loop out of `Program.cs` into `Agent.cs`, as one function.** It is moved, not typed on camera, like `Schemas.cs` in 07. The three workflows go in a new `Workflows.cs`. `Helper.Ask` takes the tool list as a parameter, so the router and the checker can send none. `Program.cs` then reads top to bottom: router, agent, checker. | 2026-11-01 | the author's choice. Every workflow calls the loop, so it cannot stay inside `Program.cs`'s `while`. `Helper.cs` is at 192 lines, so it gets the parameter and nothing else. |
+| 59 | **Chapter 08 refines decision 57 in three ways.** The checker is **skipped when no tool ran** (nothing to check against). A second `FAIL` after the retry **prints the answer and a grey `[checker: FAIL again, ...]` line**; it does not hide the answer. `/overview` reads the **top-level files** of `REPO` only. The checker gets the tool results cut to 60 characters and **no question**. | 2026-11-02 | the author's choices, and two measured fixes. A long result or the question made the checker miss lies (0 of 10) or fail honest answers (6 of 6). See the 2026-11-02 entry. |
 
 ## To do
 

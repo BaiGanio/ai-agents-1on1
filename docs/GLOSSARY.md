@@ -11,6 +11,8 @@ If a word is missing, add it here before you use it in a chapter.
 | <a id="append"></a>**append** | add text to the end of a file. What was there stays. Chapter 06.A. |
 | <a id="block-list"></a>**block-list** | a list of what is refused. Everything else is allowed. It misses the case you did not think of. Chapter 07. |
 | <a id="cancellation-token"></a>**cancellation token** | a C# value you pass to slow calls. When it fires, they stop and throw `OperationCanceledException`. Chapter 07. |
+| <a id="chain"></a>**chain** | model calls in a fixed order, each one fed by the one before. Your code loops and joins. Chapter 08. |
+| <a id="checker"></a>**checker** | one model call, no tools, that reads the tool results and the answer. It says `PASS`, or `FAIL` and why. Chapter 08. |
 | <a id="chunked"></a>**chunked** | a reply sent in pieces, with no length up front. Your code reads piece one before the last one exists. How Ollama streams. |
 | <a id="context-window"></a>**context window** | how much text the model can read in one call. Past it, the oldest text falls out. |
 | <a id="dispatch"></a>**dispatch** | picking which function to run from a name the model wrote. One `switch`. Chapter 04. |
@@ -44,6 +46,7 @@ If a word is missing, add it here before you use it in a chapter.
 | <a id="recursive-delete"></a>**recursive delete** | delete a folder, every folder inside it, and every file in all of them. No recycle bin. Chapter 06.A. |
 | <a id="role"></a>**role** | who wrote a message: `system`, `user`, `assistant`, or `tool` |
 | <a id="round-trip"></a>**round trip** | one send to the model and one reply back. A tool by hand costs two: one to get the call, one to give the result. Chapter 04. |
+| <a id="router"></a>**router** | one model call, no tools, that says one word. Your code uses the word to pick the tools. Chapter 08. |
 | <a id="runner"></a>**runner** | the program that loads a model and answers HTTP calls. Ollama, llama.cpp. |
 | <a id="step"></a>**step** | one turn of [the loop](#loop): one send, and the tool that came back from it. The model decides how many a question takes. Chapter 05. |
 | <a id="step-cap"></a>**step cap** | the most [steps](#step) one question may take. Past it, your code ends the question. Chapter 07. |
