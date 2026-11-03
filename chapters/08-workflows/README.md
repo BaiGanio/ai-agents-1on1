@@ -3,7 +3,7 @@
 > **C# is written and run. TypeScript is not.** `code/csharp/` builds with no warnings, and
 > every number and every line of output on this page comes from a real run of it on a real
 > machine. `code/ts/` does not exist yet, so the TypeScript section describes the code that gets
-> typed and its file links are dead. No camera script is written yet.
+> typed and its file links are dead. The C# camera script is written; the TypeScript one is not.
 >
 > **The folder the tools change is a copy.** Every run below points `REPO` at a **copy** of this
 > repo's `docs/` folder, at `/tmp/repo-08`, because [`sample-repo/`](../../sample-repo/) holds one
@@ -18,7 +18,7 @@
 [`code/csharp/Guards.cs`](code/csharp/Guards.cs) ·
 [`code/csharp/Helper.cs`](code/csharp/Helper.cs) · `code/ts/` *(not written)* ·
 prompts: [`router.md`](code/prompts/router.md) · [`checker.md`](code/prompts/checker.md)
-**Scripts:** `SCRIPT-csharp.md` *(not written)* · `SCRIPT-ts.md` *(not written)*
+**Scripts:** [`SCRIPT-csharp.md`](SCRIPT-csharp.md) · `SCRIPT-ts.md` *(not written)*
 **New words:** [router](../../docs/GLOSSARY.md#router) ·
 [checker](../../docs/GLOSSARY.md#checker) · [chain](../../docs/GLOSSARY.md#chain) ·
 [workflow](../../docs/GLOSSARY.md#workflow)

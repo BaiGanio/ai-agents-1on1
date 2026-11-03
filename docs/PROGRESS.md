@@ -17,13 +17,42 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 06 | memory | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 06.A | writing | ✅ | — | ✅ *(four files, run against a copy of `docs/`)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 07 | guardrails | ✅ | — | ✅ *(six files, run against a copy of `docs/`)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
-| 08 | workflows | ✅ | — | ✅ *(eight files, run against a copy of `docs/`)* | — *(no script yet)* | — | — |
+| 08 | workflows | ✅ | — | ✅ *(eight files, run against a copy of `docs/`)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 09 | llama.cpp | — | — | — | — | — | — |
 | 10 | choosing a model | — | n/a | n/a | — | — | — |
 | 11 | side by side | — | — | — | — | — | — |
 | 12 | frameworks *(optional)* | — | — | — | — | — | — |
 
 ## Verified on this machine
+
+**2026-11-03, same machine. Chapter 08's C# camera script.** Ollama 0.40.6, `gemma4:e2b`.
+Every run pointed `REPO` at a fresh copy of `docs/` at `/tmp/repo-08`. `n` answers were piped.
+
+- **`SCRIPT-csharp.md`.** 22 steps in 6 acts, P1-P9. `scripts/check-script.py` passes: 24 code
+  blocks, verbatim and in file order. The blocks were filled from the finished files by a
+  generator. The checker script now lists `Agent.cs`, `Workflows.cs`, `router.md` and
+  `checker.md`.
+- **Code moved, nothing changed.** `Workflows.Overview` now sits right under `Once`, above
+  `Route` (decision 60). One comment in it no longer points at the evidence. Builds clean,
+  0 warnings, no line over 100 columns. `/overview` rerun on the final code: 3.00 s warm.
+- **In-between states, built and run.** End of Acts 1, 2 and 3 were built in a scratch folder:
+  all build clean. Their runs are the Proofs of steps 7, 10 and 15. Act 1 state, `What files
+  are here?`: 1 of 3 runs gave an empty answer after the listing. `/overview` on the Act 2
+  state: 15.66 s first, 3.43 s warm.
+- **Router cuts tokens.** `What files are here?`: 590 tokens in with all seven tools, **305**
+  with the `look` list.
+- **Checker, lie, final code:** `FAIL` **4 of 4**. After the retry: **0 of 4 passed**. 2 of the
+  4 retries were honest (*"SUMMARY.md was not written"*) and the checker failed them anyway.
+  The README's "4 passed, 4 failed" is from the 2026-11-02 runs.
+- **Evidence cut at 300, in the app:** the checker still caught the lie **4 of 4**. The 0 of 10
+  in the README was by `curl` and does not repeat in the app today. So the script's "break it"
+  is not the 300 cut.
+- **Break it: the first router prompt** (*"You sort questions. Answer with one word."*).
+  `Delete SETUP.md.` → `router: Command`, so `look`, and the model said it cannot delete,
+  **3 of 3**, 1.19 s. A write question → `Write` 2 times, `Rename` once, all `look`. The file
+  stayed every time.
+- **Chapter 07's script has drifted.** `check-script.py` on it: 6 blocks in step 6 (`Helper.cs`)
+  fail. The grey dots of commit `12fab5c` moved the lines. Not fixed here.
 
 **2026-11-02, same machine. Chapter 08 C# code and docs.** Ollama 0.40.6, `gemma4:e2b`. Runs
 point `REPO` at a fresh copy of `docs/` at `/tmp/repo-08`.
@@ -782,9 +811,12 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 | 57 | **Chapter 08 has three workflows, on top of chapter 07's agent.** **Router:** one short model call, no tools, gives back one word: `look`, `change` or `remember`. Your code then hands the agent only that word's tools. `look` gets `list_files`, `read_file`, `search_text`. `change` gets those plus the three writing tools. `remember` gets `save_note`. Any other word counts as `look`, the read-only one. **Checker:** after the agent answers, one model call, no tools, reads this question's tool results and the answer. It says `PASS`, or `FAIL` and a reason. On `FAIL` the agent gets one retry with the reason. It runs before short memory drops the tool results. **Chain:** a `/overview` command. Code lists the files, one model call per file writes one line, one last call joins the lines. The model picks no step. Router and checker run on **every** question. No switch: chapter 07's code is the plain agent to compare with. The step cap and the clock cover the whole question, every call in it. | 2026-11-01 | the author's choices. The router picks tools, not prompts, so a `look` question cannot delete a file: it builds on chapter 07. The checker checks the answer against the tool results because decision 56 left a measured open problem: after a `n`, the model said "written" 7 of 8. A checker can catch that, and a junior sees why a second call earns its cost. The chain has no `y/n` and no write, so it shows "code picks every step" with nothing else in the way. Always on, because a switch is one more idea. **Risk:** two more calls per question, a few seconds each on `gemma4:e2b`. Measure it. |
 | 58 | **Chapter 08's C# moves the inner loop out of `Program.cs` into `Agent.cs`, as one function.** It is moved, not typed on camera, like `Schemas.cs` in 07. The three workflows go in a new `Workflows.cs`. `Helper.Ask` takes the tool list as a parameter, so the router and the checker can send none. `Program.cs` then reads top to bottom: router, agent, checker. | 2026-11-01 | the author's choice. Every workflow calls the loop, so it cannot stay inside `Program.cs`'s `while`. `Helper.cs` is at 192 lines, so it gets the parameter and nothing else. |
 | 59 | **Chapter 08 refines decision 57 in three ways.** The checker is **skipped when no tool ran** (nothing to check against). A second `FAIL` after the retry **prints the answer and a grey `[checker: FAIL again, ...]` line**; it does not hide the answer. `/overview` reads the **top-level files** of `REPO` only. The checker gets the tool results cut to 60 characters and **no question**. | 2026-11-02 | the author's choices, and two measured fixes. A long result or the question made the checker miss lies (0 of 10) or fail honest answers (6 of 6). See the 2026-11-02 entry. |
+| 60 | **Chapter 08's C# video types the chain first, then the router, then the checker.** `Workflows.Overview` moves up to sit under `Once`, so `Workflows.cs` is typed top to bottom. The README keeps its order: router, checker, chain. | 2026-11-03 | the by-script check wants each file typed top to bottom, and `Program.cs` has the `/overview` branch above the router. The chain first is also the simplest story: code picks every step, then code picks around the agent. |
 
 ## To do
 
+- **Chapter 07's `SCRIPT-csharp.md` has drifted.** 6 blocks in step 6 (`Helper.cs`) fail
+  `check-script.py` since the grey dots (commit `12fab5c`). Fix the line ranges.
 - **Chapter 07's C# is done: code, docs and a verified runbook.** Its TypeScript is not, and
   `SCRIPT-ts.md` does not exist. Blocked like chapters 04-06.A.
 - **Chapter 07's repeat check has never fired for a good reason.** Its one measured fire was

@@ -18,16 +18,20 @@ import sys
 
 # The files a camera script may quote. A chapter that adds one goes here.
 CANDIDATES = [
+    "code/csharp/Agent.cs",
     "code/csharp/ChatProtocol.cs",
     "code/csharp/Guards.cs",
     "code/csharp/Helper.cs",
     "code/csharp/Program.cs",
     "code/csharp/Schemas.cs",
     "code/csharp/Tools.cs",
+    "code/csharp/Workflows.cs",
     "code/ts/src/helper.ts",
     "code/ts/src/main.ts",
     "code/ts/src/tools.ts",
+    "code/prompts/checker.md",
     "code/prompts/librarian.md",
+    "code/prompts/router.md",
 ]
 
 # A block's fence language says which files it may match, so a C# block cannot pass by

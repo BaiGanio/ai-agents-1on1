@@ -22,6 +22,27 @@ public static class Workflows
         }
     }
 
+    // Chain. Code lists the files, code loops over them, code joins the results. The model is
+    // asked three kinds of small question and picks no step.
+    public static async Task Overview()
+    {
+        string root = Path.GetFullPath(Helper.RepoRoot);
+        List<string> lines = [];
+        foreach (string file in Directory.GetFiles(root).Order())
+        {
+            // Cut, because a long file is a long wait for one line, and one line is all we want.
+            string text = File.ReadAllText(file);
+            string one = await Once(
+                Path.GetFileName(file),
+                "Write one line, at most 15 words, that says what this file is for.",
+                text.Length > 4000 ? text[..4000] : text);
+            lines.Add($"{Path.GetFileName(file)}: {one}");
+        }
+
+        await Once("join", "Join these lines into one paragraph of at most three sentences.",
+            string.Join("\n", lines));
+    }
+
     static string Prompt(string name) => File.ReadAllText($"../prompts/{name}.md");
 
     // Router. Anything but the other two words is "look", the list that cannot change a file.
@@ -42,26 +63,5 @@ public static class Workflows
         return verdict.StartsWith("FAIL", StringComparison.OrdinalIgnoreCase)
             ? verdict[4..].Trim(' ', ',', ':', '-')
             : "";
-    }
-
-    // Chain. Code lists the files, code loops over them, code joins the results. The model is
-    // asked three kinds of small question and picks no step.
-    public static async Task Overview()
-    {
-        string root = Path.GetFullPath(Helper.RepoRoot);
-        List<string> lines = [];
-        foreach (string file in Directory.GetFiles(root).Order())
-        {
-            // Cut for the same reason as the evidence: a long file is a long wait for one line.
-            string text = File.ReadAllText(file);
-            string one = await Once(
-                Path.GetFileName(file),
-                "Write one line, at most 15 words, that says what this file is for.",
-                text.Length > 4000 ? text[..4000] : text);
-            lines.Add($"{Path.GetFileName(file)}: {one}");
-        }
-
-        await Once("join", "Join these lines into one paragraph of at most three sentences.",
-            string.Join("\n", lines));
     }
 }
