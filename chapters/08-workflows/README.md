@@ -98,6 +98,60 @@ one call per file, then one call to join.
 A workflow is more predictable and cheaper to reason about. An agent copes with a question you
 did not plan for. This chapter's app uses both: the model still picks inside the loop.
 
+## How the calls fit together
+
+**The router, the checker and every `/overview` call are separate one-time calls.** None of
+them sees the chat history. Only the agent uses `messages`.
+
+All of them go through one function, `Workflows.Once`:
+
+```csharp
+Message reply = await Helper.Ask(
+    [new("system", system), new("user", user)], null, timer.Token);
+```
+
+- It builds a **new list of two messages**: a system text and a user text. It does not use
+  `messages`.
+- It sends `null` for the tools, so the model **cannot call a tool**.
+- It gives back **one string**. Nothing goes into `messages`.
+
+So each workflow call is a small question with no memory. The model gives back text. Your code
+decides what to do with it.
+
+**One question, call by call.** You type `Read STYLE.md and write a one-line summary of it into
+SUMMARY.md.`
+
+| # | Call | What it sends | Uses `messages`? | What your code does with the reply |
+|---|---|---|---|---|
+| 1 | Router | `router.md` and your question | no | the word `change` picks the tool list: `Schemas.For("change")` |
+| 2 | Agent | all of `messages` and that tool list | **yes** | chapter 07's loop. It runs the tools. The answer goes into `messages`. |
+| 3 | Checker | `checker.md`, the tool results cut to 60 characters, and the answer | no | `PASS`: done. `FAIL`: step 4. |
+| 4 | Retry, only on `FAIL` | your code adds a user message to `messages`, *"A checker says your answer is wrong: ..."*, and runs the agent again | **yes** | the only place a workflow writes into the chat |
+| 5 | Checker again | the same as step 3 | no | `FAIL` again: a grey `[checker: FAIL again, ...]` line. The answer stays on screen. |
+
+**`/overview` is a second path.** It never touches `messages`, and no agent runs.
+
+| Call | What it sends | Uses `messages`? |
+|---|---|---|
+| one per file | *"Write one line, at most 15 words, that says what this file is for."* and the file's text | no |
+| join | *"Join these lines into one paragraph of at most three sentences."* and the lines | no |
+
+**What each one gives the program.**
+
+- **The router limits what the agent can do.** A `look` question gets the three read tools
+  only. The delete tool is not in the request, so the model cannot ask for it. Fewer tools also
+  make a smaller request: `What files are here?` went in at 305 tokens with the `look` list, and
+  590 with all seven tools.
+- **The checker checks what the agent said.** It compares the answer with what the tools really
+  returned. The model says "written", the tool said `NOT written`: your code sees it and asks
+  once more.
+- **The chain does a job with fixed steps.** Your code picks every step: list the files, one
+  call per file, one call to join. The model only writes text.
+
+In one line: the agent is the model deciding in a loop. A workflow is **your code** making
+small, separate model calls around that loop, to control what the agent can do and to check
+what it says.
+
 ## Measured, and what it cost
 
 All on `gemma4:e2b`, warm, with the app's start included.
