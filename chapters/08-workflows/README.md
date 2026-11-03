@@ -68,11 +68,9 @@ answer and a grey `[checker: FAIL again, ...]`. It never hides the answer.
 
 ## Everyday picture
 
-**A front desk, and a second pair of eyes.** You walk in with a job. The desk clerk does not do
-it. The clerk says one word, "records" or "repairs", and sends you to that room. In the
-records room there is no shredder at all. When the job is done, a colleague reads the receipt
-and the report side by side. *"The report says shredded. The receipt says refused."* Back it
-goes.
+**Ordering a pizza.** The person on the phone asks one thing: pickup or delivery? That is the
+router. The cook makes the pizza the same way every time: dough, sauce, cheese, oven. That is
+the chain. Before the box leaves, someone checks it against the order slip. That is the checker.
 
 ## What this chapter adds
 

@@ -14,13 +14,14 @@ typing, so a bad take is one paste away.
 
 This chapter starts as a copy of chapter 06.A's code: four files, and a `prompts/` folder. Two
 files are created: `Schemas.cs` (moved, not typed) and `Guards.cs`. The prompt does not change.
-**71 new code lines go on air.**
+**104 new code lines go on air**, 33 of them the grey dots in `Helper.cs`.
 
 > **Never point `REPO` at a real folder in this video.** Every run points `REPO` at
 > `/tmp/repo-07`, a copy of this repo's `docs/` folder. P7 makes it. The output in each
 > **Proof** is from a real run against a copy like it. Those runs were piped, so the `y` or `n`
 > you type does not show in them. On screen it does, right after `[y/N]`, and this script shows
-> it there.
+> it there. The grey dots while the model reads came after these runs, so they are not in
+> the Proofs either.
 
 The order follows the files. The loop's rules go in first, because `Guards.Ask` needs the clock.
 Then the fence, then the ask. Each act ends with a run.
@@ -257,25 +258,72 @@ the whole question.** Many fast calls can be as stuck as one slow one.
 
 **Proof.** Nothing visible.
 
-### 6. Helper.cs takes a token
+### 6. Helper.cs takes a token, and shows dots
 
-**Say.** "The clock has to reach the network call. In C# it travels as a cancellation token."
+**Say.** "The clock has to reach the network call. In C# it travels as a cancellation token.
+And while we are in this file: a big file makes the model read for a long time, and the screen
+sits still. So we add grey dots."
 
-**Type.** In [`code/csharp/Helper.cs`](code/csharp/Helper.cs), **line 74**. Add a parameter to
-`HandleStream`, after `calls`. Put a comma after `List<ToolCall> calls`:
+**Type.** In [`code/csharp/Helper.cs`](code/csharp/Helper.cs), **lines 74-75**. Add two
+parameters to `HandleStream`, after `calls`. Put a comma after `List<ToolCall> calls`:
 
 ```csharp
+        Func<Task> quiet,
         CancellationToken stop)
 ```
 
-**Lines 78-79**. Pass it to both reads:
+**Lines 79-80**. Pass the token to both reads:
 
 ```csharp
         using var reader = new StreamReader(await response.Content.ReadAsStreamAsync(stop));
         while (await reader.ReadLineAsync(stop) is { } line)
 ```
 
-**Lines 114-116**. The comment and the signature of `Ask`:
+**Lines 90-94**. The dots stop before the token count prints. Add braces to the `if`:
+
+```csharp
+            if (chunk.PromptEvalCount is int tokens)
+            {
+                await quiet();
+                Console.Write($"{Grey} [{tokens} tokens in]{Reset}");
+            }
+```
+
+**Line 98**. The same, at the top of the thinking branch:
+
+```csharp
+                await quiet();
+```
+
+**Line 109**. And at the top of the content branch:
+
+```csharp
+                await quiet();
+```
+
+**Lines 118-134**. Under `HandleStream`, the dots themselves:
+
+```csharp
+    // Grey dots until the first word. A big file can take the model a long time to read, and
+    // without these the screen sits still the whole while. \b moves the cursor back, so each
+    // frame draws over the last one.
+    static async Task Spin(CancellationToken stop)
+    {
+        try
+        {
+            for (int i = 0; ; i++)
+            {
+                Console.Write($"{Grey}{new string('.', i % 4),-3}{Reset}\b\b\b");
+                await Task.Delay(300, stop);
+            }
+        }
+        catch (OperationCanceledException) { }
+
+        Console.Write("   \b\b\b");
+    }
+```
+
+**Lines 138-140**. The comment and the signature of `Ask`:
 
 ```csharp
     // Chapter 05 calls it in a while loop, and that loop is the whole chapter. Chapter 07 hands
@@ -283,27 +331,59 @@ the whole question.** Many fast calls can be as stuck as one slow one.
     public static async Task<Message> Ask(List<Message> history, CancellationToken stop)
 ```
 
-**Line 120**. The schemas moved:
+**Line 144**. The schemas moved:
 
 ```csharp
         ChatRequest request = new(Model, history, Schemas.All, Stream: true, Think: Think);
 ```
 
-**Lines 131-132**. The send:
+Move the three lines `StringBuilder content`, `StringBuilder thinking` and
+`List<ToolCall> calls` up, right under the `request` line. Then **lines 150-158**, under them:
 
 ```csharp
-            await OllamaHttpClient.SendAsync(
-                message, HttpCompletionOption.ResponseHeadersRead, stop);
+        // The dots run until the first thing is printed, or until anything goes wrong. Quiet is
+        // safe to call twice, so the finally can always call it.
+        using CancellationTokenSource dots = CancellationTokenSource.CreateLinkedTokenSource(stop);
+        Task spinner = Spin(dots.Token);
+        async Task Quiet()
+        {
+            dots.Cancel();
+            await spinner;
+        }
 ```
 
-**Line 141**. And the stream:
+**Lines 160-182**. Replace the send, the error check and the `HandleStream` call with this.
+It is the same send, now inside a `try`, with the token on it:
 
 ```csharp
-        await HandleStream(response, content, thinking, calls, stop);
+        try
+        {
+            using HttpRequestMessage message =
+                new(HttpMethod.Post, "/api/chat")
+                {
+                    Content = JsonContent.Create(request, options: AgentJsonOptions),
+                };
+
+            // ResponseHeadersRead hands us the stream as it arrives. Without it HttpClient waits
+            // for the last byte, and the stream stops being a stream.
+            using var response =
+                await OllamaHttpClient.SendAsync(
+                    message, HttpCompletionOption.ResponseHeadersRead, stop);
+
+            if (!response.IsSuccessStatusCode)
+                await HandleResponseError(response);
+
+            await HandleStream(response, content, thinking, calls, Quiet, stop);
+        }
+        finally
+        {
+            await Quiet();
+        }
 ```
 
 **Note.** Four places, one token. **The send and the stream both stop** when it fires. Miss
-the stream, and a slow answer keeps coming after the clock ran out.
+the stream, and a slow answer keeps coming after the clock ran out. The dots stop at the first
+thing printed, and the `finally` stops them on an error too.
 
 **Proof.** The squiggle in `Helper.cs` is gone. `Program.cs` is red now: `Ask` wants a token.
 

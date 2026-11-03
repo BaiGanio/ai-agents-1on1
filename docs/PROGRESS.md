@@ -51,8 +51,11 @@ Every run pointed `REPO` at a fresh copy of `docs/` at `/tmp/repo-08`. `n` answe
   `Delete SETUP.md.` → `router: Command`, so `look`, and the model said it cannot delete,
   **3 of 3**, 1.19 s. A write question → `Write` 2 times, `Rename` once, all `look`. The file
   stayed every time.
-- **Chapter 07's script has drifted.** `check-script.py` on it: 6 blocks in step 6 (`Helper.cs`)
-  fail. The grey dots of commit `12fab5c` moved the lines. Not fixed here.
+- **Chapter 07's script had drifted, now fixed.** The grey dots (commit `12fab5c`) were added
+  to `Helper.cs` after the script was written, so 6 blocks in step 6 failed and the script never
+  typed the dots. Step 6 now types them too, in file order. `check-script.py` passes on it again.
+  The chapter now adds 104 code lines, not 71 (416 against 06.A's 312). Step 6 leaves `Helper.cs`
+  the same as the finished file, which builds clean. The in-between states were not rerun.
 
 **2026-11-02, same machine. Chapter 08 C# code and docs.** Ollama 0.40.6, `gemma4:e2b`. Runs
 point `REPO` at a fresh copy of `docs/` at `/tmp/repo-08`.
@@ -815,8 +818,6 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 
 ## To do
 
-- **Chapter 07's `SCRIPT-csharp.md` has drifted.** 6 blocks in step 6 (`Helper.cs`) fail
-  `check-script.py` since the grey dots (commit `12fab5c`). Fix the line ranges.
 - **Chapter 07's C# is done: code, docs and a verified runbook.** Its TypeScript is not, and
   `SCRIPT-ts.md` does not exist. Blocked like chapters 04-06.A.
 - **Chapter 07's repeat check has never fired for a good reason.** Its one measured fire was

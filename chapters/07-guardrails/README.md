@@ -172,7 +172,7 @@ rm -rf /tmp/repo-07 && cp -R ../../../../docs /tmp/repo-07
 REPO=/tmp/repo-07 dotnet run
 ```
 
-**71 new code lines** (383 against chapter 06.A's 312), against the ~60 guide in
+**104 new code lines** (416 against chapter 06.A's 312, 33 of them the grey dots), against the ~60 guide in
 [`PLAN.md`](../../docs/PLAN.md). `dotnet build` is clean, 0 warnings. No prompt line. The
 prompt files are the same as chapter 06.A's.
 
