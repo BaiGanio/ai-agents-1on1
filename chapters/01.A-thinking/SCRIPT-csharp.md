@@ -1,6 +1,6 @@
 # Chapter 01.A — camera script, C#
 
-Target 12 minutes. Read this file top to bottom while you record. Nothing else needs to be open:
+Target 13 minutes. Read this file top to bottom while you record. Nothing else needs to be open:
 every command and every line of code is here.
 
 Every step is **Say / Type / Proof**, and some add a **Note** — the one sentence you must not
@@ -16,8 +16,8 @@ not type those. They are printed so all three files read whole, in order, on thi
 
 The shape of the chapter: **the conversation barely changes, the plumbing does the new work.**
 A third file appears, `ChatProtocol.cs`, and the records move into it. `Helper.cs` gets the
-thinking switch, two colour codes, and two methods — one that reads the stream, one that reads
-an error. `Program.cs` swaps one call for a stream and then calls those two methods. That is
+thinking switch, two colour codes, and three methods — one that reads the stream, one that
+prints a grey line of numbers under each answer, and one that reads an error. `Program.cs` swaps one call for a stream and then calls those two methods. That is
 why `Program.cs` ends at 53 lines and still reads top to bottom.
 
 The TypeScript video is [`SCRIPT-ts.md`](SCRIPT-ts.md). Steps 1, 2, 3 and 4 are shared with it
@@ -28,9 +28,9 @@ word for word, so a TypeScript viewer never has to watch this one.
 | 0 — the six seconds | 1 | 0:00–1:30 |
 | 1 — the thinking is already there, by curl | 2–4 | 1:30–4:00 |
 | 2 — ChatProtocol.cs, the wire gets its own file | 5–6 | 4:00–5:00 |
-| 3 — Helper.cs, the switch, the colours, the reader | 7–13 | 5:00–9:00 |
-| 4 — Program.cs, four lines of difference | 14–21 | 9:00–10:30 |
-| 5 — break it, and hand off | 22–25 | 10:30–12:00 |
+| 3 — Helper.cs, the switch, the colours, the reader, the numbers | 7–13.A | 5:00–10:00 |
+| 4 — Program.cs, four lines of difference | 14–21 | 10:00–11:30 |
+| 5 — break it, and hand off | 22–25 | 11:30–13:00 |
 
 ---
 
@@ -190,14 +190,17 @@ wire, and this is the file you will open each time.
 
 **Proof.** The build breaks. Say that it will, and that the next step fixes it.
 
-### 6. The new file · ChatProtocol.cs lines 1-13
+### 6. The new file · ChatProtocol.cs lines 1-23
 
-**Say.** "New file. Three records, and two of them grow by one field."
+**Say.** "New file. Three records. Two grow by one field, and the last one grows by four: the
+counts we saw on the last curl line in step 3."
 
 **Type.** Create `ChatProtocol.cs` and type all of it.
 
 ```csharp
 // The wire format, and nothing else. Helper.cs is the plumbing. Program.cs is the conversation.
+
+using System.Text.Json.Serialization;
 
 // Thinking has a default, so every `new Message("user", prompt)` from chapter 01 still compiles.
 public record Message(string Role, string Content, string? Thinking = null);
@@ -209,7 +212,15 @@ public record ChatRequest(
     bool? Think = false
 );
 
-public record ChatResponse(Message Message);
+// One line of the stream. Only the last line has the counts, so on every other line they are
+// null. Ollama writes these four names in snake_case, and camelCase would never find them.
+public record ChatResponse(
+    Message Message,
+    [property: JsonPropertyName("prompt_eval_count")] int? PromptEvalCount = null,
+    [property: JsonPropertyName("eval_count")] int? EvalCount = null,
+    [property: JsonPropertyName("eval_duration")] long? EvalDuration = null,
+    [property: JsonPropertyName("total_duration")] long? TotalDuration = null
+);
 ```
 
 **Note.** Two things, and say both.
@@ -221,11 +232,15 @@ build goes green again without you touching it.
 Two: `bool? Think` is the three states from step 4, written down. A `bool` has two states and
 the wire has three, so the question mark is the lesson, not a style choice.
 
-**Proof.** The build is clean again. `ChatProtocol.cs` is 13 lines.
+Three: the four counts need `JsonPropertyName`. Ollama writes `eval_count`, and our camelCase
+option looks for `evalCount`. Without the attribute there is no error, only a `null`. Every
+other line of the stream has no counts at all, so they are nullable and default to `null`.
+
+**Proof.** The build is clean again. `ChatProtocol.cs` is 23 lines.
 
 ---
 
-## Act 3 — Helper.cs, the switch, the colours, the reader · 5:00–9:00
+## Act 3 — Helper.cs, the switch, the colours, the reader, the numbers · 5:00–10:00
 
 ### 7. One new `using` · Helper.cs lines 1-3
 
@@ -355,7 +370,7 @@ that cannot think". That is step 23 arriving early. Say it, then move on.
 
 **Proof.** `Program.cs` is shorter and still builds.
 
-### 13. The stream reader · Helper.cs lines 52-84
+### 13. The stream reader · Helper.cs lines 52-86
 
 **Say.** "This is the body of the chapter, and it lives in the helper, because reading a stream
 is plumbing. Four small pieces. Run after each one."
@@ -377,8 +392,9 @@ is plumbing. Four small pieces. Run after each one."
         {
             if (line.Length == 0) continue;
 
-            Message part =
-                JsonSerializer.Deserialize<ChatResponse>(line, AgentJsonOptions)!.Message;
+            ChatResponse chunk =
+                JsonSerializer.Deserialize<ChatResponse>(line, AgentJsonOptions)!;
+            Message part = chunk.Message;
 
             if (!string.IsNullOrEmpty(part.Thinking))
             {
@@ -393,9 +409,10 @@ is plumbing. Four small pieces. Run after each one."
                 Console.Write(part.Content);
                 content.Append(part.Content);
             }
+
+            if (chunk.EvalCount is not null) PrintStats(chunk);
         }
     }
-}
 ```
 
 **Note.** Three things to say here, in this order.
@@ -411,11 +428,47 @@ remembering are two jobs, and the caller is the one that remembers.
 Three: `is { } line` means "not null, and call it `line`". `ReadLineAsync` returns null at the
 end of the stream, so that one pattern is also how the loop ends.
 
-**Proof.** `Helper.cs` is 84 lines and the build is clean.
+Line 84 calls `PrintStats`, which is not there yet. Say so. It is the next step.
+
+**Proof.** The build breaks on `PrintStats`, on purpose.
+
+### 13.A. The grey line of numbers · Helper.cs lines 88-101
+
+**Say.** "Under every answer, one grey line: what went in, what came out, how fast, how long. Like
+the status line in a coding agent. Four numbers from Ollama, and one sum."
+
+**Type.**
+
+```csharp
+    // One grey line after each answer, so you see what it cost. "out" counts the thinking too.
+    // Ollama gives time in nanoseconds, a billionth of a second, so we divide by 1e9.
+    static void PrintStats(ChatResponse last)
+    {
+        int tokensIn = last.PromptEvalCount ?? 0;
+        int tokensOut = last.EvalCount ?? 0;
+        double writeSeconds = (last.EvalDuration ?? 0) / 1e9;
+        double totalSeconds = (last.TotalDuration ?? 0) / 1e9;
+
+        Console.Write(
+            $"\n{Grey}[in {tokensIn} | out {tokensOut} | total {tokensIn + tokensOut} | "
+            + $"{tokensOut / writeSeconds:F1} tok/s | {totalSeconds:F1} s]{Reset}");
+    }
+}
+```
+
+**Note.** Two things.
+
+One: `out` counts the thinking too. Do not explain it yet. Step 23 shows it, when the number
+drops from about 300 to about 9.
+
+Two: the times come in nanoseconds, a billionth of a second. `1e9` is how C# writes one
+billion. The decimal mark follows the machine's language: this Mac prints `69,8`.
+
+**Proof.** `Helper.cs` is 101 lines and the build is clean.
 
 ---
 
-## Act 4 — Program.cs, four lines of difference · 9:00–10:30
+## Act 4 — Program.cs, four lines of difference · 10:00–11:30
 
 ### 14. The header and two `using` lines · Program.cs lines 1-8
 
@@ -573,7 +626,7 @@ step 23.
 
 ---
 
-## Act 5 — Break it, and hand off · 10:30–12:00
+## Act 5 — Break it, and hand off · 11:30–13:00
 
 ### 22. Run it, two turns
 
@@ -599,7 +652,11 @@ And in three?
 was 'Perceives, reasons, acts, achieves goals'."* The list is the memory, and you can read it
 happening on screen.
 
-**Proof.** Grey text scrolling, a blank line, an answer, twice.
+The grey line, from a real run on 2026-11-11: `[in 26 | out 330 | total 356 | 69,8 tok/s |
+4,7 s]`, then `[in 51 | out 257 | total 308 | 77,0 tok/s | 3,4 s]`. Point at `in`. It doubled,
+because the whole list went back. Chapter 06 is about that number.
+
+**Proof.** Grey text scrolling, a blank line, an answer, and a grey line of numbers, twice.
 
 ### 23. Flip the switch off
 
@@ -622,9 +679,13 @@ off, and the fast answer was `Autonomous decision-making intelligent software.` 
 the slow one. Say that plainly. Thinking is not free and it is not always better. You now own
 the choice.
 
+Then point at the grey line. A real run on 2026-11-11: `[in 19 | out 9 | total 28 | 50,3 tok/s
+| 0,3 s]`. With thinking on it said `out 330`. Same answer size, about 30 times the tokens. The
+`tok/s` hardly moved. The machine is not slower. It writes more.
+
 Put the line back to `true` before the next step.
 
-**Proof.** No grey. An answer, four times faster.
+**Proof.** No grey notes. An answer, four times faster, and `out` in single digits.
 
 ### 24. Break it on a model that cannot think
 

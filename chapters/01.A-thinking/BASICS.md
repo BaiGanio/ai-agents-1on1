@@ -113,3 +113,21 @@ They print as nothing. They are instructions to the terminal, not letters. If yo
 second one, your whole terminal stays grey after the program ends.
 
 We use grey for the thinking so your eye can skip it. The answer is the plain text.
+
+## 4. Counting time and speed
+
+Ollama measures time in **nanoseconds**. One second is 1,000,000,000 nanoseconds, written
+`1e9` in code. So to get seconds, divide by `1e9`:
+
+```text
+eval_duration = 4 700 000 000      ->   4 700 000 000 / 1e9 = 4.7 seconds
+```
+
+**Speed** is how much in how long. For a model it is **tokens per second**:
+
+```text
+tokens out / seconds  =  330 / 4.7  =  about 70 tokens per second
+```
+
+A bigger number is a faster machine, or a smaller model. It does not say if the answer is good.
+

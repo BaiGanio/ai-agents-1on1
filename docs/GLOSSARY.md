@@ -33,6 +33,7 @@ If a word is missing, add it here before you use it in a chapter.
 | <a id="message"></a>**message** | one turn of talk: a `role` and some `content` |
 | <a id="mlx"></a>**MLX** | Apple's engine for running models on a Mac. Ollama uses it for some models. |
 | <a id="model"></a>**model** | a program that reads text and writes the text most likely to come next |
+| <a id="nanosecond"></a>**nanosecond** | one billionth of a second. Ollama gives its times in nanoseconds. Divide by `1e9` to get seconds. Chapter 01.A. |
 | <a id="native-tool-calling"></a>**native tool calling** | you send your tool list as a `tools` field and the call comes back in a `tool_calls` field. No prose, no parse. Needs a model that supports it. Chapter 05. |
 | <a id="notes-file"></a>**notes file** | a plain text file the agent adds a line to, and reads back at the next start. Long memory. Chapter 06. |
 | <a id="ollama"></a>**Ollama** | a runner. It loads a model and gives it an HTTP endpoint on port 11434. |
@@ -56,6 +57,7 @@ If a word is missing, add it here before you use it in a chapter.
 | <a id="thinking"></a>**thinking** | notes the model writes to itself before it answers. Slower, often better. You can turn it off. Chapter 01.A. |
 | <a id="timeout"></a>**timeout** | a time limit. Past it, your code stops waiting. Chapter 07 has one for each question. |
 | <a id="token"></a>**token** | a piece of a word. Models read and write tokens, not letters. |
+| <a id="tokens-per-second"></a>**tokens per second** | how fast a model writes: tokens out divided by the seconds it took. Printed as `tok/s`. Chapter 01.A. |
 | <a id="tool"></a>**tool** | a function in *your* code that the model may ask you to run |
 | <a id="tool-call"></a>**tool call** | the model writes "run `list_files` with `path: .`". Your code runs it. The model runs nothing. |
 | <a id="tool-result"></a>**tool result** | the text your code sends back after it ran a tool. Just another [message](#message). Chapter 04. |

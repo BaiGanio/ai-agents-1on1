@@ -1,7 +1,8 @@
 # Chapter 01.A — Thinking
 
-**Video:** about 12 minutes. Two videos: one TypeScript, one C#.
-**Code:** the chapter 01 code, plus 44 new lines of C#.
+**Video:** about 13 minutes (C#), 12 (TypeScript). Two videos: one TypeScript, one C#.
+**Code:** the chapter 01 code, plus 66 new lines of C#: 44 for thinking, 22 for the stats
+line. TypeScript has no stats line yet.
 **Files:** [`code/ts/src/main.ts`](code/ts/src/main.ts) ·
 [`code/csharp/ChatProtocol.cs`](code/csharp/ChatProtocol.cs) ·
 [`code/csharp/Helper.cs`](code/csharp/Helper.cs) ·
@@ -10,7 +11,9 @@
 **New words:** [thinking](../../docs/GLOSSARY.md#thinking) ·
 [streaming](../../docs/GLOSSARY.md#streaming) ·
 [JSON Lines](../../docs/GLOSSARY.md#json-lines) ·
-[environment variable](../../docs/GLOSSARY.md#environment-variable)
+[environment variable](../../docs/GLOSSARY.md#environment-variable) ·
+[tokens per second](../../docs/GLOSSARY.md#tokens-per-second) ·
+[nanosecond](../../docs/GLOSSARY.md#nanosecond)
 **New to streams, or to a value that can be "not set"?** Read [`BASICS.md`](BASICS.md) first.
 
 ## What we solve
@@ -21,6 +24,9 @@ things. It turns on [streaming](../../docs/GLOSSARY.md#streaming), so the words 
 time instead of all at the end. And it gives you one switch for the thinking itself: watch the
 notes appear first, in grey, or skip them and get the answer fast. You decide which one your
 agent uses.
+
+Under each answer it prints one grey line of numbers: tokens in, tokens out, the total, the
+speed, and the time. So you see what each answer cost, not only that you waited.
 
 The switch is one line in your own code, not a flag on the command. You pick it once per
 project, not once per run.
@@ -37,6 +43,7 @@ cd chapters/01.A-thinking/code/csharp && dotnet run
 #     the functional loop.
 #
 # Perceives, reasons, acts, achieves goals.
+# [in 26 | out 330 | total 356 | 69,8 tok/s | 4,7 s]
 ```
 
 Thinking off — one word changed in [`code/csharp/Helper.cs`](code/csharp/Helper.cs):
@@ -48,8 +55,13 @@ public static readonly bool? Think = false;
 ```bash
 cd chapters/01.A-thinking/code/csharp && dotnet run
 # You: In five words, what is an AI agent?
-# gemma4:e2b: Autonomous decision-making intelligent software.
+# gemma4:e2b: Perceives, reasons, acts autonomously.
+# [in 19 | out 9 | total 28 | 50,3 tok/s | 0,3 s]
 ```
+
+The grey line tells the story. With thinking on, a five-word answer cost **330** tokens out.
+With it off, **9**. The model writes at about the same speed both times. It writes 30 times
+more with thinking on, and that is the wait.
 
 Measured on this machine: **6.2 s** with thinking, **1.5 s** without, both including the half
 second `dotnet run` costs. Same model, same question. Thinking cost four times the wait for an
@@ -127,6 +139,27 @@ Three things to see. A thinking line has a `thinking` field and an empty `conten
 line has only `content`. And the **last** line is the only one with the counts — `eval_count`
 is 379 tokens for an answer of two words.
 
+## The grey line under each answer
+
+Four numbers on that last line are all we need:
+
+| Field | What it is | On the grey line |
+|---|---|---|
+| `prompt_eval_count` | tokens the model read: the whole message list | `in` |
+| `eval_count` | tokens the model wrote: thinking **and** answer | `out` |
+| `eval_duration` | time spent writing them, in [nanoseconds](../../docs/GLOSSARY.md#nanosecond) | used for `tok/s` |
+| `total_duration` | the whole call, load and read and write, in nanoseconds | the last number, in seconds |
+
+`total` is `in + out`. `tok/s` is [tokens per second](../../docs/GLOSSARY.md#tokens-per-second):
+`out` divided by `eval_duration` in seconds. That is the speed of your machine, and it barely
+moves when thinking goes on or off.
+
+Watch `in` on the second question. It grows, because the whole list goes back every time. In
+one run here it went from 26 to 51. That number comes back in chapter 06.
+
+The decimal mark comes from your computer's language settings. This machine prints `69,8`.
+An English one prints `69.8`.
+
 ## TypeScript
 
 > **Not in step with the C# side yet.** The TypeScript code still reads a `THINK=on|off`
@@ -157,8 +190,8 @@ Two things in the file are not obvious:
 
 | File | What is in it | What this chapter does to it |
 |---|---|---|
-| [`ChatProtocol.cs`](code/csharp/ChatProtocol.cs) | the three records, and nothing else | **new file.** The records move out of `Helper.cs`, and two of them gain a field. |
-| [`Helper.cs`](code/csharp/Helper.cs) | the plumbing | gains the `Think` switch, two colour codes, and two methods: `HandleStream` and `HandleResponseError` |
+| [`ChatProtocol.cs`](code/csharp/ChatProtocol.cs) | the three records, and nothing else | **new file.** The records move out of `Helper.cs`. `Message` and `ChatRequest` gain one field. `ChatResponse` gains the four counts. |
+| [`Helper.cs`](code/csharp/Helper.cs) | the plumbing | gains the `Think` switch, two colour codes, and three methods: `HandleStream`, `PrintStats` and `HandleResponseError` |
 | [`Program.cs`](code/csharp/Program.cs) | the conversation, and nothing else | one `PostAsJsonAsync` call becomes a stream, then two calls into `Helper` |
 
 The split is the reason `Program.cs` is still 53 lines and still reads top to bottom: send,
@@ -187,6 +220,9 @@ Three things in the files are not obvious:
 - **Two `StringBuilder`s, not one.** You print each piece as it arrives, but the message list
   needs the finished message. Printing and remembering are two jobs. `HandleStream` takes both
   builders from the caller for the same reason: it prints, the caller remembers.
+- **`JsonPropertyName` on the four counts.** Ollama writes `eval_count`. Our camelCase option
+  looks for `evalCount`, finds nothing, and leaves `null`. No error. The grey line is gone, or
+  shows `∞ tok/s`. The attribute gives the real name, one field at a time.
 
 ## What differs between the two
 
@@ -196,6 +232,7 @@ Three things in the files are not obvious:
 | half a line | **your problem** — the `buffer` variable | handled. `ReadLineAsync` waits for a whole line. |
 | drop an unset field | free. `JSON.stringify` skips `undefined`. | one option: `WhenWritingNull` |
 | start reading early | free. `fetch` does not wait. | one flag: `ResponseHeadersRead` |
+| grey stats line | **not yet.** Decision 61 adds it to C# only, to try it first. | `PrintStats` in `Helper.cs` |
 
 Each side pays for the other's free thing. TypeScript gives you bytes and makes you find the
 lines. C# gives you lines and makes you ask for the bytes early.
@@ -208,6 +245,8 @@ lines. C# gives you lines and makes you ask for the bytes early.
 | `404 Not Found: {"error":"model 'nope:1b' not found"}` | the model name is wrong, or it is not pulled | `ollama pull <name>`, and check `ollama list` |
 | nothing prints, then everything at once (C#) | `ResponseHeadersRead` is missing | add it to `http.SendAsync` |
 | `SyntaxError: Unexpected end of JSON input` (TS) | you parsed a half line. The `buffer` is missing or wrong. | keep the `lines.pop()` line |
+| no grey line under the answer, and no error (C#) | `eval_count` has no `JsonPropertyName`, so `EvalCount` stays `null` | put the attribute back on it in `ChatProtocol.cs` |
+| `[in 22 \| out 2 \| total 24 \| ∞ tok/s \| 0,1 s]` (C#) | `eval_duration` has no `JsonPropertyName`, so it is 0, and 2 ÷ 0 is infinity | put the attribute back on it |
 | grey text stays grey after the program ends | the reset code never printed | end every grey write with `\x1b[0m` |
 
 Every error above is copied from a real run on this machine.
@@ -216,8 +255,9 @@ Every error above is copied from a real run on this machine.
 
 Thinking is not free, so measure it before you keep it.
 
-1. Count the tokens. The last streamed line has an `eval_count` field. Print it, with
-   thinking on and with thinking off, for the same question. Write both numbers down.
+1. Add one number to the grey line: how long you waited for the **first word of the answer**.
+   With thinking on, that is the wait you feel. Ollama does not send it, so you measure it.
+   Then run the same question with thinking on and off, and write both numbers down.
 2. Ask a question where thinking should help: `"A shirt costs 23. I pay with 50 and a 2 coin.
    What change do I get?"` Run it both ways, five times each.
 3. Decide. Does the slow answer beat the fast one often enough to pay for the wait?
@@ -231,6 +271,8 @@ point — you now own the switch, so you can ask.
 - [ ] `Think = false` prints only the answer, and is clearly faster
 - [ ] the second question in one run gets a shorter answer than the first, because the list is
       the memory
+- [ ] a grey line with `in`, `out`, `total`, `tok/s` and seconds prints under every answer (C#)
+- [ ] you can say why `out` is 30 times bigger with thinking on
 - [ ] both stacks do the same thing
 - [ ] you ran `MODEL=phi4-mini:3.8b` with `Think = true` and saw the 400
 - [ ] you can say what breaks if you delete `ResponseHeadersRead` (C#) or the `buffer` line (TS)

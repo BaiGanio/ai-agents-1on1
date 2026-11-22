@@ -10,7 +10,7 @@ One row per chapter. Update it when a state changes. This is the first file to o
 |---|---|---|---|---|---|---|---|
 | 00 | the agent we build | — | n/a | n/a | — | — | — |
 | 01 | the model | ✅ | ✅ | ✅ | ✅ | — | — *(old tag `ch01-model` is out of date)* |
-| 01.A | thinking | ✅ | ✅ *(out of step — reads THINK from the environment)* | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
+| 01.A | thinking | ✅ | ✅ *(out of step — reads THINK from the environment)* | ✅ *(three files, decision 37, grey stats line, decision 61)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
 | 02 | the prompt | ✅ | ✅ | ✅ *(three files, decision 37)* | ✅ *(C# is a verified runbook, TS is still prose)* | — | — |
 | 04 | tools by hand | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
 | 05 | the loop | ✅ | — | ✅ *(four files, run against a stand-in folder)* | ⚠️ *(C# is a verified runbook, TS missing)* | — | — |
@@ -24,6 +24,24 @@ One row per chapter. Update it when a state changes. This is the first file to o
 | 12 | frameworks *(optional)* | — | — | — | — | — | — |
 
 ## Verified on this machine
+
+**2026-11-11, M1 Pro, 32 GB, macOS. Chapter 01.A's grey stats line, C# only.** Ollama 0.40.15,
+`gemma4:e2b`. Two questions piped: `In five words, what is an AI agent?`, then `And in three?`.
+
+- **Files.** `ChatProtocol.cs` 23 lines (was 13), `Helper.cs` 101 (was 84), `Program.cs` 53, no
+  change. `dotnet build` clean, 0 warnings, no line over 100 columns.
+- **Thinking on, two runs.** `[in 26 | out 330 | total 356 | 69,8 tok/s | 4,7 s]` then
+  `[in 51 | out 257 | total 308 | 77,0 tok/s | 3,4 s]`. Second run: `in 26 | out 254 | 69,4
+  tok/s | 3,7 s`, then `in 50 | out 257 | 72,5 tok/s | 3,6 s`.
+- **Thinking off, two runs.** `[in 19 | out 9 | total 28 | 50,3 tok/s | 0,3 s]` then
+  `[in 42 | out 8 | total 50 | 54,2 tok/s | 0,2 s]`. Second run: `out 10 | 60,1 tok/s` and
+  `out 8 | 59,5 tok/s`, both 0,2 s.
+- **Break it.** No `JsonPropertyName` on `eval_count`: no grey line, no error. None on
+  `eval_duration`: `[in 22 | out 2 | total 24 | ∞ tok/s | 0,1 s]`.
+- The decimal mark is a comma because of this machine's language setting.
+- `check-script.py` finds 0 blocks in this older script, so it proves nothing here. All 17 code
+  blocks were checked by hand against the files: verbatim, at the lines they claim.
+- Not changed: the TypeScript side, and every chapter after 01.A (decision 61).
 
 **2026-11-03, same machine. Chapter 08's C# camera script.** Ollama 0.40.6, `gemma4:e2b`.
 Every run pointed `REPO` at a fresh copy of `docs/` at `/tmp/repo-08`. `n` answers were piped.
@@ -815,6 +833,7 @@ Ollama 0.40.6, `gemma4:e2b`, .NET 10.0.401. This supersedes the two-file run bel
 | 58 | **Chapter 08's C# moves the inner loop out of `Program.cs` into `Agent.cs`, as one function.** It is moved, not typed on camera, like `Schemas.cs` in 07. The three workflows go in a new `Workflows.cs`. `Helper.Ask` takes the tool list as a parameter, so the router and the checker can send none. `Program.cs` then reads top to bottom: router, agent, checker. | 2026-11-01 | the author's choice. Every workflow calls the loop, so it cannot stay inside `Program.cs`'s `while`. `Helper.cs` is at 192 lines, so it gets the parameter and nothing else. |
 | 59 | **Chapter 08 refines decision 57 in three ways.** The checker is **skipped when no tool ran** (nothing to check against). A second `FAIL` after the retry **prints the answer and a grey `[checker: FAIL again, ...]` line**; it does not hide the answer. `/overview` reads the **top-level files** of `REPO` only. The checker gets the tool results cut to 60 characters and **no question**. | 2026-11-02 | the author's choices, and two measured fixes. A long result or the question made the checker miss lies (0 of 10) or fail honest answers (6 of 6). See the 2026-11-02 entry. |
 | 60 | **Chapter 08's C# video types the chain first, then the router, then the checker.** `Workflows.Overview` moves up to sit under `Once`, so `Workflows.cs` is typed top to bottom. The README keeps its order: router, checker, chain. | 2026-11-03 | the by-script check wants each file typed top to bottom, and `Program.cs` has the `/overview` branch above the router. The chain first is also the simplest story: code picks every step, then code picks around the agent. |
+| 61 | **Chapter 01.A prints one grey stats line under each answer, in C# only:** `[in N \| out N \| total N \| N tok/s \| N s]`, from the last stream line (`prompt_eval_count`, `eval_count`, `eval_duration`, `total_duration`). It is **not** carried into chapter 02 or later, and the TypeScript side does not have it yet. The author decides later whether to carry it forward. | 2026-11-11 | viewers should see what is going on, like the status line in a coding agent, from the first chapter that streams. Kept to one chapter first so it can be tried before 7 chapters and their scripts change. Note: if it is carried forward, chapter 06's `[N tokens in]` (decision 49) becomes part of this line. |
 
 ## To do
 

@@ -63,8 +63,9 @@ public static class Helper
         {
             if (line.Length == 0) continue;
 
-            Message part =
-                JsonSerializer.Deserialize<ChatResponse>(line, AgentJsonOptions)!.Message;
+            ChatResponse chunk =
+                JsonSerializer.Deserialize<ChatResponse>(line, AgentJsonOptions)!;
+            Message part = chunk.Message;
 
             if (!string.IsNullOrEmpty(part.Thinking))
             {
@@ -79,6 +80,22 @@ public static class Helper
                 Console.Write(part.Content);
                 content.Append(part.Content);
             }
+
+            if (chunk.EvalCount is not null) PrintStats(chunk);
         }
+    }
+
+    // One grey line after each answer, so you see what it cost. "out" counts the thinking too.
+    // Ollama gives time in nanoseconds, a billionth of a second, so we divide by 1e9.
+    static void PrintStats(ChatResponse last)
+    {
+        int tokensIn = last.PromptEvalCount ?? 0;
+        int tokensOut = last.EvalCount ?? 0;
+        double writeSeconds = (last.EvalDuration ?? 0) / 1e9;
+        double totalSeconds = (last.TotalDuration ?? 0) / 1e9;
+
+        Console.Write(
+            $"\n{Grey}[in {tokensIn} | out {tokensOut} | total {tokensIn + tokensOut} | "
+            + $"{tokensOut / writeSeconds:F1} tok/s | {totalSeconds:F1} s]{Reset}");
     }
 }

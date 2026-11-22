@@ -85,3 +85,16 @@ one small file you can read in ten seconds. And it keeps `Program.cs` at 53 line
 conversation stays the thing you see when you open the project.
 
 </details>
+
+**Q8.** The grey line said `out 330` with thinking on and `out 9` with it off, for the same
+five-word answer. Why? And why did `tok/s` stay about the same?
+
+<details><summary>A</summary>
+
+`out` counts every token the model wrote, and the thinking is writing too. The answer was about
+9 tokens both times. The other 320 were notes. `tok/s` is the speed of your machine and the
+model, and the switch does not change either. So thinking does not make the model slower. It
+makes it write more, and more at the same speed is a longer wait.
+
+</details>
+

@@ -52,7 +52,7 @@ never on lines.
 |---|---|---|---|---|
 | 00 | `the-agent-we-build` | the finished demo, and the six parts of an agent | none | 8 |
 | 01 | `the-model` | raw HTTP to a local model. It only reads text and writes text. | ~40 lines | 12 |
-| 01.A | `thinking` | the model thinks before it answers. One switch in your own code, and streaming so you watch it live. | ~30 lines | 12 |
+| 01.A | `thinking` | the model thinks before it answers. One switch in your own code, streaming so you watch it live, and a grey line with tokens in, out, speed and time. | ~66 lines | 13 |
 | 02 | `the-prompt` | the system prompt. The cheapest way to change behaviour. | ~20 lines | 12 |
 | 04 | `tools-by-hand` | ask for JSON, parse it, run a function. Tool calling is just text. | ~70 lines | 15 |
 | 05 | `the-loop` | the native `tools` field, and the while-loop. Now it is an agent. | ~60 lines | 15 |
